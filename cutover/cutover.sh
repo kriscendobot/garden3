@@ -1,39 +1,40 @@
 #!/bin/sh
-# cutover.sh — move the prior garden's repository aside and publish this one
-# in a fresh repository under the old name. DRY RUN BY DEFAULT.
+# cutover.sh — what remains of the cutover to the fresh repository.
+# DRY RUN BY DEFAULT.
+#
+# Already done, by the maintainer, outside this script:
+#   - kriscendobot/garden was renamed to kriscendobot/gardens-of-yore;
+#   - a fresh, empty, public kriscendobot/garden was created.
+# This script never renames or creates a repository. `state` checks that both
+# are as expected and every other step refuses if they are not.
 #
 # Usage: cutover.sh [--apply] <step>
-#   plan       print every step and command; contacts nothing (the default)
-#   preflight  check this checkout and the tools; read-only
-#   quiet      check the prior garden is quiet; read-only, uses the network
-#   rename     rename the existing repository aside
-#   archive    make the renamed repository read-only on GitHub
-#   create     create the fresh repository under the old name
-#   push       add the remote and push the branch layout; set the default branch
+#   plan       print every remaining step and command; contacts nothing (default)
+#   preflight  check this checkout; read-only, local
+#   state      check both repositories are as expected; read-only, anonymous
+#   archive    make gardens-of-yore read-only on GitHub (skips if it already is)
+#   push       add the remote, push the branch layout, make main the default
 #   verify     confirm what is there
+#   rename | create   refused: already done
 #
-# Without --apply every step only prints what it would do. With it, a step
-# does one thing and stops; nothing chains. Read RUNBOOK.md first: the order
-# of the steps is the safety of this procedure.
+# Without --apply a step only prints what it would do. With it, a step does
+# one thing and stops. Read RUNBOOK.md first.
 #
 # Settings (environment):
-#   OLD      the repository as it is now        (default kriscendobot/garden)
-#   ASIDE    the name it is moved aside to      (default garden-prior)
-#   ROOT     the new garden's root checkout     (default: this script's ../..)
-#   QUIET_MINUTES  how long journal2 must have been still (default 30)
-#   HOSTS_CONFIRMED  space-separated "<host>=halted", one per known host, set by
-#                    the person who checked each one (RUNBOOK.md, step 2)
+#   NEW    the fresh repository         (default kriscendobot/garden)
+#   YORE   the prior garden, moved aside (default kriscendobot/gardens-of-yore)
+#   ROOT   the new garden's root checkout (default: this script's ../..)
+#   HOSTS_CONFIRMED  space-separated "<host>=halted", one per known prior host,
+#                    set by the person who checked each (RUNBOOK.md, step 2)
 set -eu
 
 APPLY=0
 [ "${1:-}" = --apply ] && { APPLY=1; shift; }
 STEP="${1:-plan}"
-OLD="${OLD:-kriscendobot/garden}"
-ASIDE="${ASIDE:-garden-prior}"
-OWNER="${OLD%%/*}"
+NEW="${NEW:-kriscendobot/garden}"
+YORE="${YORE:-kriscendobot/gardens-of-yore}"
 HERE="$(cd "$(dirname "$0")" && pwd -P)"
 ROOT="${ROOT:-$(cd "$HERE/../.." && pwd -P)}"
-QUIET_MINUTES="${QUIET_MINUTES:-30}"
 # Every host known to have run the prior garden (shed:designs/lineage.md).
 KNOWN_HOSTS="endolin-garden-ece02cb4 oros-studio-garden-ce242c49 endolin-garden2-5bcdff64"
 BRANCHES="main shed board archive journal library clients gate"
@@ -46,100 +47,98 @@ run() { # run <command...>: print it; execute it only with --apply
   return 0
 }
 plots() { git -C "$ROOT" for-each-ref --format='%(refname:short)' 'refs/heads/plot/*'; }
+# Read a public repository's branch names with no credential at all.
+heads() { GIT_TERMINAL_PROMPT=0 git -c credential.helper= ls-remote --heads "https://github.com/$1.git" 2>/dev/null | sed 's|.*refs/heads/||'; }
 
 preflight() {
-  say "preflight (read-only):"
-  command -v gh >/dev/null 2>&1 || die "gh is not installed"
+  say "preflight (read-only, local):"
   [ "$(git -C "$ROOT" symbolic-ref --short HEAD)" = shed ] || die "$ROOT is not on the shed branch"
   [ -z "$(git -C "$ROOT" status --porcelain)" ] || die "$ROOT has uncommitted changes"
   for b in $BRANCHES; do git -C "$ROOT" show-ref --verify --quiet "refs/heads/$b" || die "no local branch $b; run scripts/shards/bootstrap.sh"; done
   [ -n "$(plots)" ] || die "no plot branches; cut at least one"
-  if git -C "$ROOT" remote get-url origin >/dev/null 2>&1; then die "$ROOT already has an origin ($(git -C "$ROOT" remote get-url origin)); this procedure adds it"; fi
-  say "  ok: on shed, clean, branches $BRANCHES and $(plots | tr '\n' ' ')exist, no origin yet"
+  say "  ok: on shed, clean, branches $BRANCHES and $(plots | tr '\n' ' ')exist"
 }
 
 hosts_confirmed() {
   for h in $KNOWN_HOSTS; do
     case " ${HOSTS_CONFIRMED:-} " in
       *" $h=halted "*) say "  confirmed halted: $h" ;;
-      *) die "host $h is not confirmed halted. The prior garden is said to be halted; check each host and set HOSTS_CONFIRMED (RUNBOOK.md, step 2)." ;;
+      *) die "host $h is not confirmed halted. A prior host that was missed or restarted now talks to $NEW; check each and set HOSTS_CONFIRMED (RUNBOOK.md, step 2)." ;;
     esac
   done
 }
 
-quiet() {
-  say "quiet (read-only): has anything written to $OLD's journal2 in the last $QUIET_MINUTES minutes?"
+state() {
+  say "state (read-only, anonymous):"
   if [ "$APPLY" != 1 ]; then
-    say "    would fetch the tip of journal2 from https://github.com/$OLD.git and compare its commit time with now"
+    say "    would list the branches of https://github.com/$YORE.git and https://github.com/$NEW.git"
     return 0
   fi
-  tmp="$(mktemp -d)"
-  git init --quiet --bare "$tmp"
-  git -C "$tmp" fetch --quiet --depth 1 "https://github.com/$OLD.git" journal2 || die "cannot read journal2 of $OLD"
-  last="$(git -C "$tmp" log -1 --format=%ct FETCH_HEAD)"; rm -rf "${tmp:?}"
-  age=$(( ($(date +%s) - last) / 60 ))
-  [ "$age" -ge "$QUIET_MINUTES" ] || die "journal2 was written $age minutes ago: a prior host is running. Find it and halt it, wait, and check again."
-  say "  ok: journal2 has been still for $age minutes"
+  yore="$(heads "$YORE")"; new="$(heads "$NEW")"
+  printf '%s\n' "$yore" | grep -qx main2 || die "$YORE has no main2: it is not the prior garden, or cannot be read"
+  printf '%s\n' "$yore" | grep -qx journal2 || die "$YORE has no journal2"
+  say "  ok: $YORE is the prior garden ($(printf '%s\n' "$yore" | wc -l) branches)"
+  if printf '%s\n' "$new" | grep -qx main2; then die "$NEW still holds the prior garden's branches: the rename has not happened"; fi
+  if [ -z "$new" ]; then say "  ok: $NEW exists and is empty: ready for the first push"
+  elif printf '%s\n' "$new" | grep -qx shed; then say "  ok: $NEW already holds the new layout: the first push has been done"
+  else die "$NEW holds branches that are neither the prior garden's nor the new layout: $(printf '%s' "$new" | tr '\n' ' ')"; fi
 }
 
 case "$STEP" in
   plan)
-    say "The cutover, in order. Nothing is contacted by printing this."
+    say "The cutover. Nothing is contacted by printing this."
     say ""
-    say "  $OLD  is renamed to  $OWNER/$ASIDE  (with its 65 branches, issues, pull requests, keys, hooks, Pages)"
-    say "  a fresh, empty  $OLD  is created, and receives:"
-    for b in $BRANCHES $(plots); do say "      $b  $(git -C "$ROOT" rev-parse --short "refs/heads/$b")"; done
-    say "  its default branch becomes: main"
+    say "  done   $NEW was renamed to $YORE (the maintainer)"
+    say "  done   a fresh, empty $NEW was created (the maintainer)"
     say ""
+    say "  remaining, in order:"
     say "  1. preflight   ./cutover.sh preflight"
     say "  2. verify every prior host is halted: $KNOWN_HOSTS"
-    say "       (and note this machine's prior checkout, and the tower's read-only view)"
-    say "  3. quiet       ./cutover.sh --apply quiet"
-    say "  4. rename      HOSTS_CONFIRMED='...' ./cutover.sh --apply rename"
-    say "  5. archive     ./cutover.sh --apply archive     ($OWNER/$ASIDE becomes read-only)"
-    say "  6. create      HOSTS_CONFIRMED='...' ./cutover.sh --apply create"
-    say "  7. access      set who may push, and branch protection, on the fresh repository"
-    say "  8. push        ./cutover.sh --apply push"
-    say "  9. verify      ./cutover.sh --apply verify"
-    say ""
-    say "Until step 6 everything is undone by unarchiving and renaming the repository back."
+    say "       They now reach the NEW repository by the old name. This matters more, not less, now."
+    say "  3. state       ./cutover.sh --apply state"
+    say "  4. archive     ./cutover.sh --apply archive     ($YORE becomes read-only)"
+    say "  5. access      set who may push, and branch protection, on $NEW"
+    say "  6. the bot logs in on the publishing host (./garden login), if the push is to be the bot's"
+    say "  7. push        HOSTS_CONFIRMED='...' ./cutover.sh --apply push"
+    say "       which pushes:"
+    for b in $BRANCHES $(plots); do say "           $b  $(git -C "$ROOT" rev-parse --short "refs/heads/$b")"; done
+    say "       and makes main the default branch"
+    say "  8. verify      ./cutover.sh --apply verify"
     ;;
   preflight) preflight ;;
-  quiet) quiet ;;
-  rename)
-    preflight
-    say "rename: every known prior host must be confirmed first."
-    hosts_confirmed
-    say "rename $OLD to $OWNER/$ASIDE:"
-    run gh repo rename "$ASIDE" --repo "$OLD" --yes
-    say "The old URL now redirects to $OWNER/$ASIDE. That redirect ENDS at step 6."
+  state) state ;;
+  rename | create)
+    die "'$STEP' is already done: $YORE is the prior garden and $NEW is the fresh repository. This script does not rename or create repositories. See: cutover.sh state"
     ;;
   archive)
-    say "archive $OWNER/$ASIDE: read-only on GitHub. A prior host that was missed can then"
-    say "no longer push to it, which is one more way to notice it."
-    run gh repo archive "$OWNER/$ASIDE" --yes
-    ;;
-  create)
-    preflight
-    hosts_confirmed
-    say "create a fresh $OLD. From this moment the old URL is this new repository:"
-    say "any prior host that was missed or restarted will fetch from it and fail."
-    run gh repo create "$OLD" --public --description "The garden: a fleet of coding agents steered through GitHub."
+    say "archive $YORE: read-only on GitHub. A prior host that was missed can then no longer push to it."
+    if [ "$APPLY" = 1 ] && [ "$(gh repo view "$YORE" --json isArchived --jq .isArchived)" = true ]; then
+      say "  already archived; nothing to do"
+    else
+      run gh repo archive "$YORE" --yes
+    fi
     ;;
   push)
     preflight
-    say "push the layout to $OLD (set access and branch protection before any host watches it):"
-    run git -C "$ROOT" remote add origin "git@github.com:$OLD.git"
+    hosts_confirmed
+    [ "$APPLY" != 1 ] || state
+    say "push the layout to $NEW (access and branch protection should be set first):"
+    if git -C "$ROOT" remote get-url origin >/dev/null 2>&1; then
+      [ "$(git -C "$ROOT" remote get-url origin)" = "git@github.com:$NEW.git" ] || die "$ROOT has another origin: $(git -C "$ROOT" remote get-url origin)"
+      say "    origin is already git@github.com:$NEW.git"
+    else
+      run git -C "$ROOT" remote add origin "git@github.com:$NEW.git"
+    fi
     # shellcheck disable=SC2046
     run git -C "$ROOT" push origin $BRANCHES $(plots)
-    run gh repo edit "$OLD" --default-branch main
+    run gh repo edit "$NEW" --default-branch main
     ;;
   verify)
     say "verify:"
-    run gh repo view "$OLD" --json defaultBranchRef,visibility
-    run git ls-remote --heads "https://github.com/$OLD.git"
-    run git ls-remote --heads "https://github.com/$OWNER/$ASIDE.git" main2 journal2
+    run gh repo view "$NEW" --json defaultBranchRef,visibility
+    run gh repo view "$YORE" --json isArchived
+    [ "$APPLY" != 1 ] || { say "    branches of $NEW:"; heads "$NEW" | sed 's/^/      /'; }
     ;;
-  *) die "usage: cutover.sh [--apply] plan|preflight|quiet|rename|archive|create|push|verify" ;;
+  *) die "usage: cutover.sh [--apply] plan|preflight|state|archive|push|verify" ;;
 esac
 [ "$APPLY" = 1 ] || say "(dry run: nothing was done. Pass --apply to do this one step.)"

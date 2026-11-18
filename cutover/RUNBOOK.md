@@ -6,115 +6,83 @@ updated: "2026-11-17"
 
 # Cutover runbook
 
-Move the prior garden's repository aside whole, and publish this garden in a
+The prior garden's repository has been moved aside and this garden goes into a
 fresh repository under the old name. Design: `shed:designs/lineage.md`.
-`./cutover.sh` prints what each step would do; `--apply` does one step.
-**None of this has been run.**
+`./cutover.sh` prints what each remaining step would do; `--apply` does one.
 
-## Where things stand
+## Done, by the maintainer, outside the script
 
-The prior garden is **already halted** (the maintainer's word) and will be
-**archived**. So no host is repointed and nothing keeps running beside the new
-garden. This procedure cannot see the remote hosts; it asks a person to check
-each one and refuses to go on until they have.
+- [x] `kriscendobot/garden` renamed to **`kriscendobot/gardens-of-yore`**.
+- [x] A fresh `kriscendobot/garden` created: public, empty.
 
-## The hazard, first
+The script never renames or creates a repository; `rename` and `create` are
+refused as already done, and `state` checks that both are as expected.
 
-Hosts of the prior garden fetch from `kriscendobot/garden`. After the rename
-(step 4) GitHub redirects that URL to the renamed repository, **only until a
-new repository takes the name** (step 6). From then on a prior host that was
-missed, or was restarted by a timer or a reboot, is talking to the fresh
-repository: it finds none of the branches it expects, fails every fetch, and
-may try to push its old branches into the new repository. The fresh repository
-also carries a `clients` branch, which exists to control hosts that watch it.
-A prior host does not know that branch; the danger is confusion and stray
-pushes, not obedience.
+## The hazard, now live
 
-**So: every known prior host is verified halted, and will not start by
-itself, before step 6. Until step 6, everything here is undone by unarchiving
-and renaming the repository back.**
+Hosts of the prior garden fetch from `kriscendobot/garden`. That name is now
+the **fresh repository**: the redirect to the old one ended when the new one
+was created. The prior garden is halted (the maintainer's word). A prior host
+that was missed, or that a timer or a reboot restarts, will find none of the
+branches it expects, fail every fetch, and may try to push its old branches
+into the new repository. So step 2 below still stands, and matters more now.
 
-## Settings
+Anyone who revives a prior host must point it at `gardens-of-yore`: its
+checkout's `origin` **and** `GARDEN_PRODUCTION_JOURNAL_REPO`, because the prior
+garden's `common.sh` refuses any origin but the name it has fixed.
 
-| Setting | Default | |
-| --- | --- | --- |
-| `OLD` | `kriscendobot/garden` | the repository as it is now |
-| `ASIDE` | `garden-prior` | the name it is moved aside to: **not confirmed; choose** |
-| `QUIET_MINUTES` | 30 | how long `journal2` must have been still |
+## Remaining
 
-## Steps
+1. **Preflight.** `./cutover.sh preflight`: the checkout is on `shed`, clean,
+   and has every branch. Run the shed's tests and lint first.
 
-1. **Preflight.** `./cutover.sh preflight`. The new garden's checkout is on
-   `shed`, clean, has every branch, and has no `origin` yet. Run the shed's
-   tests and lint first.
+2. **Verify every prior host is halted**, and will not start by itself (no
+   restart policy, no timer or login item that runs `./garden`).
 
-2. **Verify every prior host is halted.** On each: the container is stopped
-   (`docker ps` shows no garden container) **and will not come back** (no
-   restart policy, no host timer or login item that runs `./garden`).
+   | Host | Verify |
+   | --- | --- |
+   | `endolin-garden-ece02cb4` (the leader) | no garden container running; nothing restarts it |
+   | `oros-studio-garden-ce242c49` (a Mac) | the same; needs someone at the Mac, or Docker Desktop quit |
+   | `endolin-garden2-5bcdff64` | archived in `journal2:hosts/` but has a deploy record: confirm it is off |
+   | this machine's `/home/kris/prior-garden` | a checkout, not a host: its `origin` still says `kriscendobot/garden`, which is now the new repository. Do not fetch or push from it, or repoint it at `gardens-of-yore` |
+   | the tower's view (`tower/garden/`) | its `scripts/garden/attach.sh` fetches `kriscendobot/garden` expecting `main2` and `journal2`: a tower-side change, to `TOWER_GARDEN_URL` |
 
-   | Host | Where it finds the repository | Verify |
-   | --- | --- | --- |
-   | `endolin-garden-ece02cb4` (the leader) | its checkout's `origin`; `GARDEN_PRODUCTION_JOURNAL_REPO`, fixed in `common.sh` | container stopped; nothing restarts it |
-   | `oros-studio-garden-ce242c49` (a Mac) | the same | the same; needs someone at the Mac, or Docker Desktop quit |
-   | `endolin-garden2-5bcdff64` | archived in `journal2:hosts/`, but has a deploy record | confirm it is really off |
-   | this machine's `/home/kris/prior-garden` | `origin` = `git@github.com:kriscendobot/garden.git` | a checkout, not a host: do not fetch or push from it after step 6, or repoint its `origin` at the renamed repository |
-   | the tower's view (`tower/garden/`) | `https://github.com/kriscendobot/garden.git` in its `scripts/garden/attach.sh`, expecting `main2`, `journal2` | a tower-side change: point `TOWER_GARDEN_URL` at the renamed repository, or stop refreshing it |
+   Then name each host in `HOSTS_CONFIRMED` as `<host>=halted`; the push
+   refuses without all three.
 
-   Hosts that were never recorded cannot be listed here. Step 3 is the check
-   that catches them.
+3. **State.** `./cutover.sh --apply state` (read-only, anonymous):
+   `gardens-of-yore` holds `main2` and `journal2`; `garden` is empty.
 
-3. **Quiet.** `./cutover.sh --apply quiet` (read-only). It fails if anything
-   has written to `journal2` in the last `QUIET_MINUTES`. The prior garden
-   writes there about once a minute while any host runs, so stillness is the
-   evidence that all are halted. If it fails, find the host.
+4. **Archive.** `./cutover.sh --apply archive`: `gardens-of-yore` becomes
+   read-only on GitHub. Skipped if it already is. Its issues, pull requests,
+   deploy keys, webhooks, Pages site, Actions secrets and repository-scoped
+   tokens stayed with it and are not in the new repository.
 
-4. **Rename.** `HOSTS_CONFIRMED='endolin-garden-ece02cb4=halted
-   oros-studio-garden-ce242c49=halted endolin-garden2-5bcdff64=halted'
-   ./cutover.sh --apply rename`. The script refuses unless every known host is
-   named as `halted`; setting that is the checker's signature.
-
-   What goes with the renamed repository, and is **not** in the new one:
-   issues and pull requests and their numbers; deploy keys; webhooks; the
-   Pages site and settings; Actions settings and secrets; branch protection;
-   and any fine-grained token scoped to it (scoped by repository id: it
-   follows the rename and grants nothing on the new repository).
-
-5. **Archive.** `./cutover.sh --apply archive`. The renamed repository becomes
-   read-only on GitHub: its branches, issues and pull requests stay readable
-   and nothing can push to it. Run `quiet` once more: `journal2` must not have
-   moved.
-
-6. **Create.** `HOSTS_CONFIRMED='...' ./cutover.sh --apply create`. The point
-   of no easy return: the old name now means the fresh repository. Old links
-   in issues and commit messages resolve here from now on. The older alias
-   `kriskowal/garden` (from the 2026-07-28 transfer) resolved through this
-   name too; where it leads afterwards was not established: test it.
-
-7. **Access, before any host watches.** On the fresh repository set who has
+5. **Access, before any host watches.** On `kriscendobot/garden` set who has
    write access, and branch protection at least on `clients`, `shed` and
    `main`. **Push access to `clients` is the control on every client host**
-   (`shed:designs/clients.md`), so settle it before a client host starts
-   watching. New deploy keys and the bot's token for the new repository are
-   created here; the old ones stayed with the old repository.
+   (`shed:designs/clients.md`).
 
-8. **Push.** `./cutover.sh --apply push`: adds `origin`, pushes `main`,
-   `shed`, `board`, `archive`, `journal`, `library`, `clients`, `gate` and
-   every `plot/*`, and makes `main` the default branch.
+6. **The bot's login**, on the host that will publish: `./garden login`
+   (`shed:designs/keys.md`). Decide whether the first push is made by the bot
+   from inside the box or by a maintainer from the host; `cutover.sh push`
+   uses whatever git credential the shell that runs it has.
 
-9. **Verify.** `./cutover.sh --apply verify`. Then carry
-   `journal2:maintainers/allowlist` from the renamed repository into
-   `journal:config/maintainers.yay` (a maintainer's edit), and set up the
-   first host with the wizard on `main`.
+7. **Push.** `HOSTS_CONFIRMED='…' ./cutover.sh --apply push`: adds `origin`,
+   pushes `main`, `shed`, `board`, `archive`, `journal`, `library`, `clients`,
+   `gate` and every `plot/*`, and makes `main` the default branch.
+
+8. **Verify.** `./cutover.sh --apply verify`. Then carry
+   `journal2:maintainers/allowlist` from `gardens-of-yore` into
+   `journal:config/maintainers.yay`, and name a leader in
+   `journal:config/hosts.yay`.
+
+**None of the remaining steps has been run.**
 
 ## Not covered
 
-- The transcripts repository (`kriscendobot/garden-transcripts`) is separate
-  and is not renamed.
-- Open pull requests and issues stay with the renamed, archived repository,
-  readable. Which to re-file is the maintainers' to decide.
-- The Pages site of the old repository, and removing the prior garden's
-  containers and state from its hosts.
-
-## Still open
-
-The name for the moved-aside repository: `garden-prior` is only the default.
+- The transcripts repository (`kriscendobot/garden-transcripts`) is separate.
+- Open pull requests and issues stay with `gardens-of-yore`. Which to re-file
+  is the maintainers' to decide.
+- The old repository's Pages site, and removing the prior garden's containers
+  and state from its hosts.
