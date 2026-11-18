@@ -20,10 +20,8 @@ minion.town runs `endojs/endo-but-for-bots`: a Rust supervisor hosting
 JavaScript workers, speaking OCapN. Endo is hardened JavaScript: code runs in
 compartments with no ambient authority, and can act only through object
 references it has been handed (capabilities), calling them with eventual sends.
-The tower already corresponds with the town through its own Endo daemon and
-holds a publishing capability; its designs for ocap.site describe pages
-published by capability. (Those designs are the tower's and were read only
-for what the idiom is.)
+(The tower's own designs on these were consulted only to confirm what the
+idiom is; nothing of theirs is repeated here.)
 
 So the translation is from "a script with the whole machine's authority,
 finding things by path and environment" to "an object with only the

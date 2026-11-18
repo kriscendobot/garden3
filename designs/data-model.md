@@ -35,9 +35,8 @@ Python, Rust and Scheme.
   **Yaydown**: Markdown with strict YAY front matter and exactly one blank
   line after the closing `---` (`scripts/tower/provision-yay.sh`). That
   branch is not on upstream `main`.
-- Branches named for tagged values and references exist in the tower's clone.
-  They are the tower's; they were not read for this design and nothing here
-  depends on them.
+- Only upstream `main` and the published crate were read for this design.
+  Work in progress beyond them, if any, is not relied on.
 
 ## How the tower uses it
 
