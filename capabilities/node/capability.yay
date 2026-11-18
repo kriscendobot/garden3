@@ -11,7 +11,7 @@ sources:
       strip: 1
       url: "https://nodejs.org/dist/v22.22.1/node-v22.22.1-linux-x64.tar.xz"
   arm64:
-    - sha256: null
+    - sha256: "0f3550d58d45e5d3cf7103d9e3f69937f09fe82fb5dd474c66a5d816fa58c9ee"
       strip: 1
       url: "https://nodejs.org/dist/v22.22.1/node-v22.22.1-linux-arm64.tar.xz"
 summary: "Node.js and npm, for the JavaScript projects the garden works on and for agent harnesses distributed through npm."

@@ -5,24 +5,58 @@ install:
   - files: []
     run:
       - "sh"
-      - "{prefix}/installer/install.sh"
+      - "{prefix}/installer-rustc/install.sh"
       - "--prefix={prefix}/toolchain"
       - "--disable-ldconfig"
-      - "--components=rustc,cargo,rust-std-x86_64-unknown-linux-gnu,rust-std-aarch64-unknown-linux-gnu"
+  - files: []
+    run:
+      - "sh"
+      - "{prefix}/installer-cargo/install.sh"
+      - "--prefix={prefix}/toolchain"
+      - "--disable-ldconfig"
+  - files: []
+    run:
+      - "sh"
+      - "{prefix}/installer-rust-std/install.sh"
+      - "--prefix={prefix}/toolchain"
+      - "--disable-ldconfig"
+  - files: []
+    run:
+      - "rm"
+      - "-rf"
+      - "{prefix}/installer-rustc"
+      - "{prefix}/installer-cargo"
+      - "{prefix}/installer-rust-std"
 name: "rust"
 requires: []
 sources:
   amd64:
-    - into: "installer"
-      sha256: null
+    - into: "installer-rustc"
+      sha256: "4b4c596fc5268435c310a79c2e231a5a3567572c930ac0740ef9e147e83baf4e"
       strip: 1
-      url: "https://static.rust-lang.org/dist/rust-1.91.1-x86_64-unknown-linux-gnu.tar.xz"
+      url: "https://static.rust-lang.org/dist/rustc-1.91.1-x86_64-unknown-linux-gnu.tar.xz"
+    - into: "installer-cargo"
+      sha256: "8d17d5a4734e684228adee4ea4a75da94eb7f71993804adf29f344709e65fe09"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/cargo-1.91.1-x86_64-unknown-linux-gnu.tar.xz"
+    - into: "installer-rust-std"
+      sha256: "4066d5dce6017dcd116c75972b3ec6c26fe5a1fa59f02a1da9e127d1f4a1aa7f"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/rust-std-1.91.1-x86_64-unknown-linux-musl.tar.xz"
   arm64:
-    - into: "installer"
-      sha256: null
+    - into: "installer-rustc"
+      sha256: "b9040293bc84d8b48cb859dcd0e95955c13ea29e3e637c7556bf7f0c12972217"
       strip: 1
-      url: "https://static.rust-lang.org/dist/rust-1.91.1-aarch64-unknown-linux-gnu.tar.xz"
-summary: "The Rust toolchain (rustc and cargo), for building the warden from the shed at each rejuvenation and for the Rust projects the garden works on."
+      url: "https://static.rust-lang.org/dist/rustc-1.91.1-aarch64-unknown-linux-gnu.tar.xz"
+    - into: "installer-cargo"
+      sha256: "827692e153382eadc39b6f1262e20ed9671e1c0abf2fb14b5095816d2b295a15"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/cargo-1.91.1-aarch64-unknown-linux-gnu.tar.xz"
+    - into: "installer-rust-std"
+      sha256: "2a919a0e5df46e1bfe4b8be8fbc81cf48bf9813be34ff5f212a2a68f03eb517f"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/rust-std-1.91.1-aarch64-unknown-linux-musl.tar.xz"
+summary: "rustc, cargo and the musl standard library: enough to build the warden from the shed with no C compiler and no system linker. Every host has it. A job that needs a fuller Rust toolchain (a C linker, the gnu standard library) needs more than this."
 verify:
   - expect: "^cargo 1\\.91\\.1 "
     run:

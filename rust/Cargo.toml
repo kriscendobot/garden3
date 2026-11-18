@@ -1,5 +1,6 @@
 [workspace]
 members = ["warden"]
+exclude = ["conformance"]
 resolver = "2"
 
 [profile.release]

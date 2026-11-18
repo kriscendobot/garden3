@@ -22,6 +22,7 @@ fi
 if command -v cargo >/dev/null 2>&1; then
   ( cd rust && cargo fmt --check ) && note "cargo fmt --check" ok || { note "cargo fmt --check" FAILED; rc=1; }
   ( cd rust && cargo clippy --offline --quiet --all-targets -- -D warnings ) && note "cargo clippy" ok || { note "cargo clippy" FAILED; rc=1; }
+  ( cd rust/conformance && cargo fmt --check && cargo clippy --offline --quiet --all-targets -- -D warnings ) && note "conformance fmt, clippy" ok || { note "conformance fmt, clippy" FAILED; rc=1; }
 else
   note cargo "SKIPPED: not installed"
 fi

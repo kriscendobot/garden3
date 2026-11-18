@@ -4,13 +4,27 @@
 //! account's processes, re-owning a home, and running as another account),
 //! which are checked to refuse cleanly here.
 
-use libyay::{parse, Value};
+use std::collections::HashMap;
 use std::fs;
 use std::os::unix::fs::{symlink, PermissionsExt};
 use std::path::PathBuf;
 use std::process::Command;
 
-fn warden(args: &[&str]) -> (i32, Value) {
+/// A reply is a flat YAY object, one `key: value` per line. (That it is YAY
+/// upstream's parser reads back is the conformance crate's test, not this one's.)
+type Reply = HashMap<String, String>;
+
+fn parse(text: &str) -> Result<Reply, String> {
+    text.lines()
+        .map(|l| {
+            l.split_once(": ")
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .ok_or(format!("not `key: value`: {l}"))
+        })
+        .collect()
+}
+
+fn warden(args: &[&str]) -> (i32, Reply) {
     let out = Command::new(env!("CARGO_BIN_EXE_warden"))
         .args(args)
         .output()
@@ -18,29 +32,22 @@ fn warden(args: &[&str]) -> (i32, Value) {
     let text = String::from_utf8(out.stdout).expect("utf8");
     (
         out.status.code().unwrap_or(-1),
-        parse(&text).unwrap_or_else(|e| panic!("reply is not YAY: {e}\n{text}")),
+        parse(&text).unwrap_or_else(|e| panic!("{e}\n{text}")),
     )
 }
 
-fn field<'a>(v: &'a Value, key: &str) -> &'a Value {
-    match v {
-        Value::Object(m) => m
-            .get(key)
-            .unwrap_or_else(|| panic!("no `{key}` in the reply")),
-        _ => panic!("the reply is not an object"),
-    }
+fn field<'a>(v: &'a Reply, key: &str) -> &'a str {
+    v.get(key)
+        .unwrap_or_else(|| panic!("no `{key}` in the reply"))
+        .as_str()
 }
-fn text(v: &Value, key: &str) -> String {
-    match field(v, key) {
-        Value::String(s) => s.clone(),
-        other => panic!("`{key}` is not a string: {other:?}"),
-    }
+fn text(v: &Reply, key: &str) -> String {
+    field(v, key).trim_matches('"').to_string()
 }
-fn int(v: &Value, key: &str) -> i64 {
-    match field(v, key) {
-        Value::Integer(n) => n.to_string().parse().unwrap(),
-        other => panic!("`{key}` is not an integer: {other:?}"),
-    }
+fn int(v: &Reply, key: &str) -> i64 {
+    field(v, key)
+        .parse()
+        .unwrap_or_else(|_| panic!("`{key}` is not an integer"))
 }
 
 fn scratch(name: &str) -> PathBuf {
@@ -81,7 +88,7 @@ fn plant_and_clear() {
         "]",
     ]);
     assert_eq!(code, 0, "{reply:?}");
-    assert_eq!(field(&reply, "ok"), &Value::Bool(true));
+    assert_eq!(field(&reply, "ok"), "true");
     assert_eq!(int(&reply, "planted"), 2);
     let tomb = home.join("repositories");
     assert!(
@@ -169,7 +176,7 @@ fn run_keeps_to_the_home_the_environment_and_the_deadline() {
     assert_eq!(code, 0, "{reply:?}");
     assert_eq!(
         (int(&reply, "status"), field(&reply, "timed_out")),
-        (7, &Value::Bool(false))
+        (7, "false")
     );
     let out = fs::read_to_string(&log).unwrap();
     assert!(
@@ -210,7 +217,7 @@ fn run_keeps_to_the_home_the_environment_and_the_deadline() {
     assert_eq!(code, 0, "{reply:?}");
     assert_eq!(
         (int(&reply, "status"), field(&reply, "timed_out")),
-        (124, &Value::Bool(true))
+        (124, "true")
     );
     assert!(int(&reply, "elapsed_s") < 10);
     std::thread::sleep(std::time::Duration::from_secs(3));
@@ -337,7 +344,7 @@ fn refusals() {
             (want_code, want),
             "{args:?} -> {reply:?}"
         );
-        assert_eq!(field(&reply, "ok"), &Value::Bool(false));
+        assert_eq!(field(&reply, "ok"), "false");
     }
     // Unprivileged, the three root-only acts refuse rather than half-work.
     if unsafe { libc_geteuid() } != 0 {

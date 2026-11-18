@@ -75,11 +75,14 @@ export const assemble = (powers = makeNodePowers()) => {
    * entrypoint installs it from. The lockfile pins every crate by checksum.
    */
   const build = async () => {
-    const cargoEnv = { ...env, PATH: `${path.join(capRoot, 'bin')}:${env.PATH ?? ''}`, CARGO_TARGET_DIR: path.join(stateDir, 'rust-target') };
-    const r = run('cargo', ['build', '--release', '--locked', '--manifest-path', path.join(rootRepo, 'rust/Cargo.toml')], { env: cargoEnv });
-    if (r.status !== 0) throw new Refusal('build', `the warden did not build: ${r.stderr.trim().split('\n').pop()}`);
+    // For musl, linked by the linker inside the toolchain: no C compiler, no
+    // system linker and no registry are needed (rust/.cargo/config.toml).
+    const target = `${{ amd64: 'x86_64', arm64: 'aarch64' }[powers.arch()] ?? powers.arch()}-unknown-linux-musl`;
+    const cargoEnv = { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin`, HOME: stateDir, CARGO_HOME: path.join(stateDir, 'cargo-home'), CARGO_TARGET_DIR: path.join(stateDir, 'rust-target') };
+    const r = run('cargo', ['build', '--release', '--locked', '--offline', '--target', target, '--manifest-path', path.join(rootRepo, 'rust/Cargo.toml')], { env: cargoEnv, cwd: path.join(rootRepo, 'rust') });
+    if (r.status !== 0) throw new Refusal('build', `the warden did not build: ${r.stderr.trim().split('\n').slice(-3).join(' | ')}`);
     const caps = makeFiles(capRoot);
-    caps.writeBytes('warden/warden.new', makeFiles(stateDir).readBytes('rust-target/release/warden'), 0o755);
+    caps.writeBytes('warden/warden.new', makeFiles(stateDir).readBytes(`rust-target/${target}/release/warden`), 0o755);
     caps.rename('warden/warden.new', 'warden/warden');
     return { warden: powers.sha256File(caps.path('warden/warden')), arch: powers.arch() };
   };

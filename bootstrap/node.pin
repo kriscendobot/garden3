@@ -7,4 +7,4 @@
 #   garden capabilities pin node
 # and copy the hashes here.
 amd64 22.22.1 9a6bc82f9b491279147219f6a18add1e18424dce90d41d2a5fcd69d4924ba3aa https://nodejs.org/dist/v22.22.1/node-v22.22.1-linux-x64.tar.xz
-arm64 22.22.1 unpinned https://nodejs.org/dist/v22.22.1/node-v22.22.1-linux-arm64.tar.xz
+arm64 22.22.1 0f3550d58d45e5d3cf7103d9e3f69937f09fe82fb5dd474c66a5d816fa58c9ee https://nodejs.org/dist/v22.22.1/node-v22.22.1-linux-arm64.tar.xz

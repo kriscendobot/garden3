@@ -1,0 +1,7 @@
+# The warden is built for musl and linked by the linker that ships inside the
+# Rust toolchain, so a host needs no C compiler and no system linker.
+[target.x86_64-unknown-linux-musl]
+linker = "rust-lld"
+
+[target.aarch64-unknown-linux-musl]
+linker = "rust-lld"

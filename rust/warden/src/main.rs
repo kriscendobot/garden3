@@ -6,8 +6,7 @@
 //! slot's home, giving the home to the account, and running a job as that
 //! account under its deadline. See designs/slots.md and designs/services.md.
 //!
-//! The request is one YAY value written as SHON on the command line, parsed
-//! with libyay's shon module:
+//! The request is one YAY value written as SHON on the command line:
 //!
 //!     warden [ --op clear --root /garden/slots --slot slot01 --uid 2001 ]
 //!
@@ -21,9 +20,8 @@
 //! slot named `slotNN`; it follows no symbolic link when it removes or
 //! re-owns a tree.
 
-use libyay::{encode, shon::parse_shon_bracket, Format, Value};
-use num_bigint::BigInt;
-use num_traits::ToPrimitive;
+mod wire;
+
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
@@ -32,6 +30,7 @@ use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
+use wire::{encode_reply, parse_flat, parse_request, Value};
 
 extern "C" {
     fn kill(pid: i32, sig: i32) -> i32;
@@ -63,10 +62,7 @@ fn text(req: &HashMap<String, Value>, key: &str) -> Result<String, Refusal> {
 fn number(req: &HashMap<String, Value>, key: &str) -> Result<Option<u64>, Refusal> {
     match req.get(key) {
         None | Some(Value::Null) => Ok(None),
-        Some(Value::Integer(n)) => match n.to_u64() {
-            Some(v) => Ok(Some(v)),
-            None => refuse("invalid", format!("`{key}` is out of range")),
-        },
+        Some(Value::Integer(n)) => Ok(Some(*n)),
         _ => refuse("invalid", format!("`{key}` is an integer")),
     }
 }
@@ -111,13 +107,16 @@ fn policy() -> Result<Option<Policy>, Refusal> {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(e) => return refuse("policy", format!("cannot read {path}: {e}")),
     };
-    match libyay::parse(&text) {
-        Ok(Value::Object(doc)) => Ok(Some(Policy {
+    match parse_flat(&text) {
+        Some(doc) => Ok(Some(Policy {
             slots_root: text_of(&doc, "slots_root")?,
             uid_min: number(&doc, "uid_min")?.unwrap_or(u64::MAX),
             uid_max: number(&doc, "uid_max")?.unwrap_or(0),
         })),
-        _ => refuse("policy", format!("{path} is not a YAY object")),
+        None => refuse(
+            "policy",
+            format!("{path} is not a flat YAY object of strings and integers"),
+        ),
     }
 }
 
@@ -257,8 +256,8 @@ fn clear(req: &HashMap<String, Value>) -> Outcome {
         message: format!("cannot raze {}: {e}", home.display()),
     })?;
     let mut out = HashMap::new();
-    out.insert("killed".into(), Value::Integer(BigInt::from(killed)));
-    out.insert("removed".into(), Value::Integer(BigInt::from(removed)));
+    out.insert("killed".into(), Value::Integer(killed));
+    out.insert("removed".into(), Value::Integer(removed));
     Ok(out)
 }
 
@@ -306,10 +305,7 @@ fn plant(req: &HashMap<String, Value>) -> Outcome {
         fs::create_dir_all(home.join(name)).map_err(io)?;
     }
     let mut out = HashMap::new();
-    out.insert(
-        "planted".into(),
-        Value::Integer(BigInt::from(tombstones.len())),
-    );
+    out.insert("planted".into(), Value::Integer(tombstones.len() as u64));
     Ok(out)
 }
 
@@ -429,46 +425,29 @@ fn run(req: &HashMap<String, Value>) -> Outcome {
         status.code().unwrap_or(137)
     };
     let mut out = HashMap::new();
-    out.insert("status".into(), Value::Integer(BigInt::from(code)));
+    out.insert("status".into(), Value::Integer(code as u64));
     out.insert("timed_out".into(), Value::Bool(timed_out));
     out.insert(
         "elapsed_s".into(),
-        Value::Integer(BigInt::from(started.elapsed().as_secs())),
+        Value::Integer(started.elapsed().as_secs()),
     );
     Ok(out)
 }
 
 fn reply(mut doc: HashMap<String, Value>, ok: bool) {
     doc.insert("ok".into(), Value::Bool(ok));
-    let mut text = encode(&Value::Object(doc), Format::Yay);
-    if !text.ends_with('\n') {
-        text.push('\n');
-    }
-    let _ = std::io::stdout().write_all(text.as_bytes());
+    let _ = std::io::stdout().write_all(encode_reply(&doc).as_bytes());
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let request = match parse_shon_bracket(&args) {
-        Ok((Value::Object(req), used)) if used == args.len() => req,
-        Ok(_) => {
-            reply(
-                HashMap::from([
-                    ("code".into(), Value::String("invalid".into())),
-                    (
-                        "error".into(),
-                        Value::String("the request is one SHON object: warden [ --op ... ]".into()),
-                    ),
-                ]),
-                false,
-            );
-            std::process::exit(2);
-        }
+    let request = match parse_request(&args) {
+        Ok(req) => req,
         Err(e) => {
             reply(
                 HashMap::from([
                     ("code".into(), Value::String("invalid".into())),
-                    ("error".into(), Value::String(e.0)),
+                    ("error".into(), Value::String(e)),
                 ]),
                 false,
             );

@@ -27,15 +27,14 @@ install steps copy in.
 
 A manifest whose source has no `sha256` cannot be installed. Fill hashes with
 `garden capabilities pin <name>`, check them against the upstream project's
-published checksums, and commit the diff. The manifests below marked as not
-pinned were written without network access; `test/capabilities.test.js` keeps
+published checksums, and commit the diff. `test/capabilities.test.js` keeps
 this table honest.
 
 | Capability | Pinned | Notes |
 | --- | --- | --- |
-| `buildkit` | amd64 | hashes carried from the tower's Dockerfile |
-| `node` | amd64 | the first capability; also pinned in `bootstrap/node.pin`. The amd64 hash is of the archive in this machine's nvm cache, not yet compared with nodejs.org's published checksums; arm64 has none |
-| `rust` | no | builds the warden at each rejuvenation |
+| `node` | amd64, arm64 | base: every host. Also in `bootstrap/node.pin`. The amd64 archive was downloaded (nvm cache) and matches nodejs.org's `SHASUMS256.txt`; the arm64 hash is taken from that file |
+| `rust` | amd64, arm64 | base: every host. rustc, cargo and the musl standard library, from static.rust-lang.org; the amd64 archives were downloaded and match the publisher's `.sha256` files; the arm64 hashes are taken from those files |
+| `gh` | amd64, arm64 | for a host that publishes. 2.105.0; the amd64 archive was downloaded and matches the release's checksums file; the arm64 hash is taken from it |
+| `buildkit` | amd64 | hashes carried from the tower's Dockerfile; no arm64 source |
 | `shellcheck` | no | used by `scripts/lint.sh` when present |
-| `gh` | no | used only by the steward, with the bot's token |
 | `claude-code` | draft | needs a committed lockfile before it can be pinned |

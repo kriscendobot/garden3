@@ -1,0 +1,12 @@
+[package]
+name = "warden-conformance"
+version = "0.1.0"
+edition = "2021"
+description = "Tests of the warden's wire notations against upstream libyay."
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+libyay = "1.1.1"
+
+[workspace]

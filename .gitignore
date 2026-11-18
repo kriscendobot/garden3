@@ -24,3 +24,4 @@
 /rust/target/
 /test/.tmp-*/
 node_modules/
+/rust/conformance/target/

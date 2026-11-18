@@ -4,17 +4,17 @@ name: "gh"
 requires: []
 sources:
   amd64:
-    - sha256: null
+    - sha256: "79e7ab5db738c48777b696e374f8b428f0647debfb424f44d2f426370407fe2f"
       strip: 1
-      url: "https://github.com/cli/cli/releases/download/v2.62.0/gh_2.62.0_linux_amd64.tar.gz"
+      url: "https://github.com/cli/cli/releases/download/v2.105.0/gh_2.105.0_linux_amd64.tar.gz"
   arm64:
-    - sha256: null
+    - sha256: "b1278c75107423d818f1937fd92cafc9e5e9b606631568f68d7fb816f5885a02"
       strip: 1
-      url: "https://github.com/cli/cli/releases/download/v2.62.0/gh_2.62.0_linux_arm64.tar.gz"
-summary: "The GitHub CLI. Only the steward runs it, with the bot's token read from a key file; jobs do not receive the token."
+      url: "https://github.com/cli/cli/releases/download/v2.105.0/gh_2.105.0_linux_arm64.tar.gz"
+summary: "The GitHub CLI. For a host that publishes: the bot logs in with it, and its login is where the bot's token is kept. Only the steward runs it; jobs do not."
 verify:
-  - expect: "gh version 2\\.62\\.0"
+  - expect: "^gh version 2\\.105\\.0 "
     run:
       - "gh"
       - "--version"
-version: "2.62.0"
+version: "2.105.0"
