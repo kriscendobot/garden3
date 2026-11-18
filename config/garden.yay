@@ -1,0 +1,24 @@
+board:
+  claim_ttl_seconds: 14400
+  clock_tolerance_seconds: 300
+  expiry_grace_seconds: 600
+budget:
+  planning_ceiling: 0.9
+  reservation_tokens: 2000000
+handoff:
+  review_from: 2
+plots:
+  - "alder"
+  - "birch"
+quiescence:
+  ack_timeout_seconds: 3600
+  archive_ref_prefix: "refs/archive"
+  archive_retention_months: 2
+  cadence_days: 7
+  journal_retention_months: 6
+slots:
+  count: 4
+  uid_base: 2000
+worker:
+  kill_after_seconds: 30
+  window_seconds: 2400
