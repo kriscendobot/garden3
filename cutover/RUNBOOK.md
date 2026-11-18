@@ -41,7 +41,7 @@ garden's `common.sh` refuses any origin but the name it has fixed.
 
    | Host | Verify |
    | --- | --- |
-   | `endolin-garden-ece02cb4` (the leader) | no garden container running; nothing restarts it |
+   | `endolin-garden-ece02cb4` (the leader) | the prior garden's container is gone. **The new garden's box on this machine has the same name**, because a host's name is derived from the machine and the checkout's path, and both are the same. A running `endolin-garden-ece02cb4` on a `garden-base` image is the new one; verify the image, not the name |
    | `oros-studio-garden-ce242c49` (a Mac) | the same; needs someone at the Mac, or Docker Desktop quit |
    | `endolin-garden2-5bcdff64` | archived in `journal2:hosts/` but has a deploy record: confirm it is off |
    | this machine's `/home/kris/prior-garden` | a checkout, not a host: its `origin` still says `kriscendobot/garden`, which is now the new repository. Do not fetch or push from it, or repoint it at `gardens-of-yore` |
