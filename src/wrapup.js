@@ -13,7 +13,8 @@
 // What a job does on the first note is unchanged: land what is proven, save
 // the rest, and either finish (if what remains fits) or hand off and say so.
 // The hand-off is the planning event of designs/omega.md; the note is what
-// prompts it. A job that does neither is stopped at its deadline by the
+// prompts it. A job that hands off names no successor: a planner is posted in
+// its place to plan the rest (the priors' "one sequential successor" is gone). A job that does neither is stopped at its deadline by the
 // warden, its uncommitted work is saved to wip/<id> at harvest, and it is
 // requeued: an overrun, not a hand-off.
 
@@ -28,15 +29,18 @@ export const leads = windowS => {
 const human = s => (s >= 120 ? `${Math.round(s / 60)} minutes` : `${Math.max(0, Math.round(s))} seconds`);
 
 /** The clock paragraph of a job's prompt. */
-export const clockNote = ({ id, windowS, deadlineIso }) => {
+export const clockNote = ({ id, windowS, deadlineIso, planner = false }) => {
   const { warn, final } = leads(windowS);
+  const handOff = planner
+    ? '- You are a planner: your work is the plan. Write `outbox/handoff.yay` with `steps`, each with an `id`, a `title` and a `body` that says what it starts from; order them with `after`. Plan all the way to completion: every step that remains, as your children, in one flat list. If you cannot finish planning in time, write the steps you are sure of and say in `outbox/report.md` what is still unplanned.'
+    : '- Otherwise hand off. Write `outbox/handoff.yay` with `reason`, `done` (what is finished and committed) and `remaining` (what is left, as you understand it), then say the same in `outbox/report.md`. Do not name a successor and do not post one: a planner is posted in your place to plan the remaining steps to completion.';
   return [
     `Your clock: this run of \`${id}\` has ${human(windowS)} of wall time, and it is stopped at ${deadlineIso} (\`date -u\` tells you the time). A deadline note reaches you after a tool call when ${human(warn)} are left, and a final one at ${human(final)}. A long command delays them, so keep each command well inside the time left.`,
     '',
     'When the first note comes, or sooner when you see the job will not fit, wrap it up:',
     '- Land what is proven: commit it on your job branch in the project checkout.',
     '- If what remains fits in the time left, finish, and write your report to `outbox/report.md`.',
-    '- Otherwise hand off. Write `outbox/handoff.yay` naming the steps that remain (`reason`, and `steps`, each with an `id`, a `title` and a `body` that says what it starts from; use `after` to order them), then say in `outbox/report.md` what is done and what is left. That records a hand-off, not a finished job: your job waits on those steps and closes when they are done.',
+    handOff,
     'At the final note, commit safe work in progress at once. If the run is stopped anyway, your uncommitted work is saved to a `wip/` branch, but do not count on it. Never report an unfinished job as complete.',
   ].join('\n');
 };
@@ -57,7 +61,7 @@ export const note = ({ id, windowS, deadlineEpoch, nowEpoch, flags }) => {
     if (flags.has('final')) return null;
     flags.set('final');
     flags.set('warning');
-    return `Garden deadline note, final: about ${human(left)} are left in this run of \`${id}\` (it is stopped at ${at}Z). Commit safe work in progress now, then write your report: hand off with \`outbox/handoff.yay\` if you parked the rest, as your prompt's clock says.`;
+    return `Garden deadline note, final: about ${human(left)} are left in this run of \`${id}\` (it is stopped at ${at}Z). Commit safe work in progress now, then write your report: hand off with \`outbox/handoff.yay\` if work remains, as your prompt's clock says.`;
   }
   if (flags.has('warning')) return null;
   flags.set('warning');

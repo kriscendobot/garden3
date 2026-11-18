@@ -129,8 +129,23 @@ export const makeBoardService = ({ shards, host, clock, config = {}, owner = 'bo
       return false;
     },
 
-    handoff: async (id, plan, { cost, generation } = {}) =>
-      (await change(`handoff(${id}) ${plan.steps?.length ?? 0} steps`, b => rules.handoff(b, id, plan, { host, generation, cost, reviewFrom: config.handoff?.review_from ?? 2 }, clock.now()))).result,
+    /**
+     * A job that ran out of time hands off: it is archived as handed-off and
+     * a planner takes its place (rules.handoff). Archive first, as for a
+     * completion.
+     */
+    handoff: async (id, note, { cost, generation } = {}) => {
+      if (!board.sync()) throw Object.assign(new Error('board offline'), { code: 'offline' });
+      const first = rules.handoff(loadBoard(board.tree), id, note, { host, generation, cost }, clock.now());
+      if (first === false) return false;
+      await writeArchive([first.record]);
+      const r = (await change(`handoff(${id}) to ${first.planner}`, b => rules.handoff(b, id, note, { host, generation, cost }, clock.now()))).result;
+      return r ? { planner: r.planner, changes: r.changes } : false;
+    },
+
+    /** A planner dispatches the steps it planned, as its children. */
+    plan: async (id, plan, { cost, generation } = {}) =>
+      (await change(`plan(${id}) ${plan.steps?.length ?? 0} steps`, b => rules.plan(b, id, plan, { host, generation, cost, reviewFrom: config.handoff?.review_from ?? 2 }, clock.now()))).result,
 
     release: async (id, { by = host, cost, generation } = {}) => (await change(`release(${id}) by ${by}`, b => rules.release(b, id, { by, cost, host, generation }, clock.now()))).result,
 

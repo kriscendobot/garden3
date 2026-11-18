@@ -70,24 +70,32 @@ test('a lost push is retried from the fresh tip, and clones stay shallow', async
   assert.equal(git(clone.dir, 'rev-list', '--count', 'HEAD'), '1', 'a synced clone holds one commit, whatever the history');
 });
 
-test('hand-off, back-track and sweep through the service', async t => {
+test('hand-off, plan, back-track and sweep through the service', async t => {
   const g = mkGarden(t);
   const { board } = svc(g, 'host-a');
-  await board.post({ id: 'a', role: 'builder', title: 'A' });
+  await board.post({ id: 'a', role: 'builder', title: 'A', body: 'Build A.\n' });
   await board.post({ id: 'b', role: 'builder', title: 'B', after: ['a'] });
-  await board.claim({ worker: 'w' });
-  const r = await board.handoff('a', { reason: 'out of time', elapsed_s: 2300, window_s: 2400, steps: [{ id: 'a-1', body: 'First part.\n' }, { id: 'a-2' }] }, { cost: { tokens: 1000 } });
+  const a = await board.claim({ worker: 'w' });
+  const h = await board.handoff('a', { reason: 'out of time', done: 'half', remaining: 'half' }, { cost: { tokens: 1000 }, generation: a.claim.generation });
+  assert.equal(h.planner, 'a-plan');
+  const at = (branch, id) => { const f = g.ls(branch).find(x => x.endsWith(`/${id}.yay`)); return f ? { file: f, ...parse(g.show(branch, f)) } : null; };
+  assert.deepEqual([at('archive', 'a').outcome, at('archive', 'a').handed_to, at('archive', 'a').cost.tokens], ['handed-off', 'a-plan', 1000], 'the job is archived, not lost');
+  assert.equal(at('board', 'a'), null);
+  assert.deepEqual([at('board', 'a-plan').file, at('board', 'a-plan').level, at('board', 'b').after, at('board', 'b').level], ['open/a-plan.yay', 1, ['a-plan'], 1]);
+  assert.equal(await board.handoff('a', { reason: 'again' }, { generation: a.claim.generation }), false, 'a replay is a no-op');
+
+  const p = await board.claim({ worker: 'w' });
+  assert.equal(p.id, 'b' === p.id ? 'never' : 'a-plan', 'the planner is claimable (b waits on it)');
+  await assert.rejects(board.plan('a-plan', { steps: [] }, { generation: p.claim.generation }), { code: 'empty' });
+  const r = await board.plan('a-plan', { steps: [{ id: 'a-1', body: 'First part.\n' }, { id: 'a-2', after: ['a-1'] }] }, { cost: { tokens: 100 }, generation: p.claim.generation });
   assert.equal(r.n, 1);
-  const level = id => parse(g.show('board', g.ls('board').find(f => f.endsWith(`/${id}.yay`)))).level;
-  assert.deepEqual([level('a'), level('b'), level('a-1')], [1, 1, 0]);
-  assert.ok(g.show('board', 'held/a.yay'));
+  assert.deepEqual([at('board', 'a-plan').file, at('board', 'a-plan').level, at('board', 'a-1').level], ['held/a-plan.yay', 1, 0]);
   assert.deepEqual(await board.abandon('a-1', { by: 'kriskowal', reason: 'dead end' }), ['a-1']);
-  assert.equal(parse(g.show('archive', g.ls('archive').find(f => f.endsWith('/a-1.yay')))).outcome, 'abandoned');
-  assert.equal(level('a'), 1, 'a-2 still holds the level');
+  assert.equal(at('archive', 'a-1').outcome, 'abandoned');
   await board.abandon('a-2');
-  assert.deepEqual([level('a'), level('b')], [0, 0], 'levels fall when the branches are gone');
-  assert.deepEqual(await board.sweep(), ['a: steps done; reopened for its closing run']);
-  assert.ok(g.show('board', 'open/a.yay'));
+  assert.deepEqual([at('board', 'a-plan').level, at('board', 'b').level], [1, 1], 'the planner still stands on the job it replaced');
+  assert.deepEqual(await board.sweep(), ['a-plan: steps done; reopened for its closing run']);
+  assert.ok(g.show('board', 'open/a-plan.yay'));
   assert.deepEqual(await board.sweep(), [], 'a sweep with nothing to do lands nothing');
 });
 
@@ -129,7 +137,7 @@ test('deadlines: two watchers expire one silent claim; the late run is fenced', 
 
   // The client wakes and reports, under the generation it was claimed with.
   await assert.rejects(client.board.complete('job', 'done', { generation: 1, cost: { tokens: 50 }, report: 'late\n' }), { code: 'superseded' });
-  await assert.rejects(client.board.handoff('job', { steps: [{ id: 's' }] }, { generation: 1 }), { code: 'superseded' });
+  await assert.rejects(client.board.handoff('job', { reason: 'late' }, { generation: 1 }), { code: 'superseded' });
   await assert.rejects(client.board.release('job', { generation: 1 }), { code: 'superseded' });
   assert.equal(g.ls('archive').some(f => f.endsWith('/job.yay')), false, 'nothing of the late run reached the archive');
   assert.equal(parse(g.show('board', 'claimed/watcher-1/job.yay')).claim.generation, 2, "the successor's claim stands");

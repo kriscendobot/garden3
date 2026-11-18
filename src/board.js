@@ -184,7 +184,7 @@ export const post = (board, spec, now) => {
     projects: list(spec.projects, p => /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(p) && !p.includes('..'), 'project'),
     priority,
     level: 0,
-    handoffs: 0,
+    plans: 0,
     attempts: 0,
     posted_at: now,
     posted_by: spec.by ?? 'unknown',
@@ -196,7 +196,7 @@ export const post = (board, spec, now) => {
       job[k] = spec[k];
     }
   }
-  for (const k of ['source', 'window_s', 'step_of', 'step_of_handoff', 'reviews', 'handoffs_seen', 'cost_seen']) {
+  for (const k of ['source', 'origin', 'window_s', 'step_of', 'step_of_plan', 'reviews', 'plans_seen', 'cost_seen', 'planner', 'replaces']) {
     if (spec[k] !== undefined) job[k] = spec[k];
   }
   if (spec.hold) job.hold = { reason: spec.hold, at: now };
@@ -331,35 +331,112 @@ export const expiriesByHost = board => {
 };
 
 /**
- * A claimed job, running out of time, hands off to an orchestration of new
- * jobs. This is the planning event. Returns false when this hand-off already
- * landed (a replay); otherwise {n, changes, review} where review is the id of
- * the accountant's review job posted for a repeated hand-off, if any.
+ * A claimed job, running out of time, hands off. This is the planning event,
+ * and it has one shape (designs/omega.md): the job does not name a successor.
+ * A **planner** is posted as its parent, to plan the steps that remain all the
+ * way to completion and dispatch them as its own children (`plan`).
+ *
+ *   - The job leaves the board, archived with outcome `handed-off`. Its work
+ *     is on its branch; its whole cost moves into the planner's `cost_under`.
+ *   - The planner takes the job's place: everything that waited on the job
+ *     now waits on the planner, and if the job was a step, the planner is
+ *     that step.
+ *   - The job is the planner's first underlying tree (`under`), so the
+ *     planner's level is the job's plus one at once, and everything above it
+ *     is recomputed.
+ *
+ * So a long run of sequential steps is one planner over a flat set of
+ * children, level 1 however many there are; a chain of single successors,
+ * each one level deeper than the last, cannot be written.
+ *
+ * `note` is {reason, done, remaining, steps?}: what the job says of its own
+ * state. Returns {planner, record, changes}, or false when this hand-off
+ * already landed.
  */
-export const handoff = (board, id, plan, { host, generation, cost, reviewFrom = 2 }, now) => {
-  if (!Array.isArray(plan.steps) || plan.steps.length === 0) refuse('empty', 'a hand-off needs at least one step');
+export const handoff = (board, id, note, { host, generation, cost }, now) => {
+  const plannerId = `${id}-plan`;
+  if (!present(board, id) && board.jobs[plannerId]?.job.replaces === id) return false;
+  const e = need(board, id);
+  const { job } = e;
+  fence(board, id, host, generation);
+  if (job.planner) refuse('is-planner', `${id} is a planner: it dispatches steps (plan), or is requeued; it does not hand off`);
+  if (present(board, plannerId)) refuse('duplicate', `${plannerId} is already on the board`);
+  charge(board, id, cost);
+  const level = levels(board)[id] ?? 0;
+  const spent = treeCost(board, id);
+  const record = archived(job, 'handed-off', now, { handed_to: plannerId, handoff: { reason: note.reason ?? '', elapsed_s: note.elapsed_s ?? null, window_s: note.window_s ?? null } });
+  const suggested = Array.isArray(note.steps) && note.steps.length ? `\nThe job suggested these steps:\n${note.steps.map(s => `- ${s.id ?? ''} ${s.title ?? ''}`.trimEnd()).join('\n')}\n` : '';
+  post(
+    board,
+    {
+      id: plannerId,
+      role: 'planner',
+      title: `Plan the rest of: ${job.title}`,
+      body:
+        `\`${id}\` ran out of time and handed off. Plan the steps that remain, all the way to\n` +
+        'completion, and dispatch them as your children. Do not do the work yourself.\n\n' +
+        `What was asked:\n\n${job.body ?? job.title}\n` +
+        `What it says is done: ${note.done ?? '(not stated)'}\n` +
+        `What it says remains: ${note.remaining ?? note.reason ?? '(not stated)'}\n` +
+        `Its work is on the branch job/${id}/${job.claim?.generation ?? 0} of each project it checked out.\n${suggested}`,
+      projects: job.projects,
+      priority: job.priority,
+      arc: job.arc,
+      source: job.source,
+      origin: job.origin,
+      step_of: job.step_of,
+      step_of_plan: job.step_of_plan,
+      by: id,
+      planner: true,
+      replaces: id,
+    },
+    now,
+  );
+  const planner = board.jobs[plannerId].job;
+  planner.under = { [id]: { level, step: true } };
+  planner.cost_under = spent;
+  // The planner takes the job's place in the graph.
+  for (const other of entries(board)) {
+    const o = other.job;
+    if (o.id === plannerId || !(o.after ?? []).includes(id)) continue;
+    o.after = [...new Set(o.after.map(x => (x === id ? plannerId : x)))].sort();
+    if ((o.steps ?? []).includes(id)) o.steps = [...new Set(o.steps.map(x => (x === id ? plannerId : x)))].sort();
+  }
+  delete board.jobs[id];
+  return { planner: plannerId, record, changes: recompute(board) };
+};
+
+/**
+ * A planner dispatches the steps it has planned, as its own children. Returns
+ * false when this plan already landed (a replay); otherwise {n, changes,
+ * review} where review is the id of the accountant's review job posted for a
+ * re-plan, if any.
+ */
+export const plan = (board, id, plan, { host, generation, cost, reviewFrom = 2 }, now) => {
+  if (!Array.isArray(plan.steps) || plan.steps.length === 0) refuse('empty', 'a plan needs at least one step');
   const stepIds = plan.steps.map(s => s.id);
   for (const s of stepIds) if (!isName(s)) refuse('invalid', `bad step id '${s}'`);
   const e = need(board, id);
   const { job } = e;
-  const landed = (job.handoff_log ?? []).flatMap(h => h.steps);
+  const landed = (job.plan_log ?? []).flatMap(h => h.steps);
   if (stepIds.every(s => landed.includes(s))) return false;
   fence(board, id, host, generation);
+  if (!job.planner) refuse('not-planner', `${id} is not a planner; a job that runs out of time hands off, and a planner is posted to plan the rest`);
   for (const s of stepIds) if (present(board, s)) refuse('duplicate', `step ${s} is already on the board`);
   const before = structuredClone(board.jobs);
   try {
-    return handoffUnchecked(board, id, plan, { cost, reviewFrom }, now);
+    return planUnchecked(board, id, plan, { cost, reviewFrom }, now);
   } catch (err) {
-    board.jobs = before; // a refused hand-off leaves the board as it was
+    board.jobs = before; // a refused plan leaves the board as it was
     throw err;
   }
 };
 
-const handoffUnchecked = (board, id, plan, { cost, reviewFrom }, now) => {
+const planUnchecked = (board, id, plan, { cost, reviewFrom }, now) => {
   const e = board.jobs[id];
   const { job } = e;
   const stepIds = plan.steps.map(s => s.id);
-  const n = (job.handoffs ?? 0) + 1;
+  const n = (job.plans ?? 0) + 1;
   for (const s of plan.steps) {
     post(
       board,
@@ -376,51 +453,51 @@ const handoffUnchecked = (board, id, plan, { cost, reviewFrom }, now) => {
         source: job.source,
         by: job.id,
         step_of: job.id,
-        step_of_handoff: n,
+        step_of_plan: n,
       },
       now,
     );
   }
   charge(board, id, cost);
-  job.handoffs = n;
+  job.plans = n;
   job.steps = [...new Set([...(job.steps ?? []), ...stepIds])].sort();
   job.after = [...new Set([...(job.after ?? []), ...stepIds])].sort();
-  job.handoff_log = [
-    ...(job.handoff_log ?? []),
+  job.plan_log = [
+    ...(job.plan_log ?? []),
     { n, at: now, reason: plan.reason ?? '', elapsed_s: plan.elapsed_s ?? null, window_s: plan.window_s ?? null, steps: stepIds },
   ];
-  job.hold = { reason: 'handoff', at: now };
+  job.hold = { reason: 'plan', at: now };
   delete job.claim;
   e.where = 'held';
   delete e.host;
   const bad = cycles(board);
   if (bad.length) {
-    refuse('cycle', `the hand-off closes a dependency cycle through: ${bad.join(' ')}`);
+    refuse('cycle', `the plan closes a dependency cycle through: ${bad.join(' ')}`);
   }
-  // Repeated hand-offs are surfaced, never blocked: from the second on, the
+  // Re-planning is surfaced, never blocked: from the second plan on, the
   // accountant is asked whether the scope is growing or the engagement is
   // merely not ending (roles/accountant/AGENT.md).
   let review = null;
-  if (n >= reviewFrom && !present(board, `review-${id}-h${n}`)) {
+  if (n >= reviewFrom && !present(board, `review-${id}-p${n}`)) {
     const total = treeCost(board, id);
-    review = `review-${id}-h${n}`;
+    review = `review-${id}-p${n}`;
     post(
       board,
       {
         id: review,
         role: 'accountant',
-        title: `Review engagement ${id}: hand-off ${n}`,
+        title: `Review engagement ${id}: plan ${n}`,
         priority: 3,
         arc: job.arc,
-        by: 'handoff',
+        by: 'plan',
         reviews: id,
-        handoffs_seen: n,
+        plans_seen: n,
         cost_seen: total,
         body:
-          `Job \`${id}\` has handed off ${n} times. The engagement has cost ${total.tokens} tokens ` +
+          `Planner \`${id}\` has dispatched steps ${n} times. The engagement has cost ${total.tokens} tokens ` +
           `over ${total.elapsed_s} s in ${total.engagements} runs so far.\n\n` +
-          'Read its record and hand-off log on the board, weigh the criteria in\n' +
-          'roles/accountant/AGENT.md (Repeated hand-offs), and report one of: continue,\n' +
+          'Read its record and plan log on the board, weigh the criteria in\n' +
+          'roles/accountant/AGENT.md (Re-planning), and report one of: continue,\n' +
           're-scope, or back-track (naming the branch to abandon).\n',
       },
       now,
@@ -530,7 +607,7 @@ export const sweep = (board, { isArchived, ttlSeconds = 14400, toleranceS = 300 
   const notes = [];
   for (const [id, e] of Object.entries(board.jobs)) {
     const { job } = e;
-    if (e.where === 'held' && job.hold?.reason === 'handoff' && (job.after ?? []).every(d => !present(board, d))) {
+    if (e.where === 'held' && job.hold?.reason === 'plan' && (job.after ?? []).every(d => !present(board, d))) {
       delete job.hold;
       e.where = 'open';
       notes.push(`${id}: steps done; reopened for its closing run`);

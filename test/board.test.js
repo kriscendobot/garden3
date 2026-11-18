@@ -19,8 +19,6 @@ const claimId = (b, id, host = 'h') => {
   const skip = Object.keys(b.jobs).filter(j => j !== id);
   assert.equal(B.claim(b, { ...all, host, skip }, NOW), id, `claim ${id}`);
 };
-const hand = (b, id, tokens, ...steps) =>
-  B.handoff(b, id, { reason: 'out of time', elapsed_s: 2300, window_s: 2400, steps: steps.map(s => (typeof s === 'string' ? { id: s } : s)) }, { host: 'h', cost: { tokens, elapsed_s: 2300 } }, NOW);
 const finish = (b, id, tokens = 0) => {
   claimId(b, id);
   const rec = B.complete(b, id, 'done', { host: 'h', cost: { tokens, elapsed_s: 10 } }, NOW);
@@ -66,83 +64,128 @@ test('claims: requirements, host pins, plots, and failed jobs block', () => {
   assert.equal(c.jobs.x.job.cost.tokens, 5, 'the failed run is still in the cost');
 });
 
-test('claim order: arc rank, then leaf-first, then priority, then age', () => {
+// A job that ran out of time hands off: a planner takes its place.
+const hand = (b, id, tokens, note = {}) =>
+  B.handoff(b, id, { reason: 'out of time', done: 'the survey', remaining: 'the build', elapsed_s: 2300, window_s: 2400, ...note }, { host: 'h', cost: { tokens, elapsed_s: 2300 } }, NOW);
+// A planner dispatches the steps it planned, as its children.
+const plan = (b, id, tokens, ...steps) =>
+  B.plan(b, id, { reason: 'planned', steps: steps.map(s => (typeof s === 'string' ? { id: s } : s)) }, { host: 'h', cost: { tokens, elapsed_s: 600 } }, NOW);
+const sweep = b => B.sweep(b, { isArchived: () => false }, NOW);
+// The usual opening: `id` runs out of time, its planner plans `steps`.
+const handAndPlan = (b, id, tokens, ...steps) => {
+  claimId(b, id);
+  const r = hand(b, id, tokens);
+  claimId(b, r.planner);
+  plan(b, r.planner, 0, ...steps);
+  return r.planner;
+};
+
+test('claim order: arc rank, then leaf-first over the job tree, then priority, then age', () => {
   const b = mk({ id: 'big', priority: 1 }, { id: 'late', priority: 7 }, { id: 'soon', priority: 2 }, { id: 'ranked', arc: 'endo', priority: 9 });
-  claimId(b, 'big');
-  hand(b, 'big', 0, 'big-1');
+  const planner = handAndPlan(b, 'big', 0, 'big-1');
+  // The planner (level 1) waits on its step; the step is a leaf (level 0).
+  assert.deepEqual(B.order(b, { endo: 1 }), ['ranked', 'big-1', 'soon', 'late'], 'the leaf of the tree is drawn with the other leaves, by priority and age');
   finish(b, 'big-1');
-  B.sweep(b, { isArchived: () => false, ttlSeconds: 1e9 }, NOW);
-  assert.deepEqual(B.order(b, { endo: 1 }), ['ranked', 'soon', 'late', 'big']);
+  sweep(b);
+  assert.deepEqual(B.order(b, { endo: 1 }), ['ranked', 'soon', 'late', planner], 'an inner node waits behind every leaf, whatever its priority');
 });
 
-test('level is max-plus-one over the trees a job handed off to', () => {
-  const b = mk({ id: 'a' }, { id: 'b', after: ['a'] }, { id: 'c', after: ['b'] }, { id: 'other' });
+test('a hand-off posts a planner in the job\'s place; the planner dispatches flat children', () => {
+  const b = mk({ id: 'a', arc: 'endo', projects: ['acme/lib'], body: 'Build the thing.\n' }, { id: 'b', after: ['a'] }, { id: 'c', after: ['b'] }, { id: 'other' });
   assert.deepEqual(levelsOf(b, 'a', 'b', 'c'), [0, 0, 0], 'a job that spawned nothing is at the base');
   claimId(b, 'a');
-  hand(b, 'a', 1000, 'a-1', 'a-2');
-  assert.deepEqual(levelsOf(b, 'a', 'a-1', 'a-2'), [1, 0, 0]);
-  assert.deepEqual(levelsOf(b, 'b', 'c', 'other'), [1, 1, 0], 'recomputed up the graph; unrelated work untouched');
-  assert.equal(where(b, 'a'), 'held');
-  assert.deepEqual(b.jobs.a.job.handoff_log[0].steps, ['a-1', 'a-2']);
-  assert.equal(b.jobs.a.job.cost.tokens, 1000, 'the run that ended in the hand-off is in the cost');
-  claimId(b, 'a-1');
-  hand(b, 'a-1', 500, 'a-1-x');
-  assert.deepEqual(levelsOf(b, 'a', 'a-1', 'a-2', 'b', 'c'), [2, 1, 0, 2, 2], 'a deeper subtree lifts every ancestor');
-  claimId(b, 'a-1-x');
-  hand(b, 'a-1-x', 200, 'p', 'q');
-  assert.deepEqual(levelsOf(b, 'a', 'a-1', 'a-1-x', 'p'), [3, 2, 1, 0]);
+  const r = hand(b, 'a', 1000);
+  assert.equal(r.planner, 'a-plan');
+  assert.equal(b.jobs.a, undefined, 'the job that ran out of time has left the board');
+  assert.deepEqual([r.record.outcome, r.record.handed_to, r.record.cost.tokens, r.record.handoff.window_s], ['handed-off', 'a-plan', 1000, 2400], 'archived as handed-off, with what it spent');
+  const p = b.jobs['a-plan'].job;
+  assert.deepEqual([p.role, p.planner, p.replaces, p.arc, p.projects, where(b, 'a-plan')], ['planner', true, 'a', 'endo', ['acme/lib'], 'open']);
+  assert.match(p.body, /Plan the steps that remain, all the way to\ncompletion.*What was asked:\n\nBuild the thing\.\n.*done: the survey\n.*remains: the build\n.*branch job\/a\/1/s);
+  assert.deepEqual(p.under, { a: { level: 0, step: true } }, 'the job is the planner\'s first underlying tree');
+  assert.equal(p.cost_under.tokens, 1000, 'and its cost is carried, never lost');
+  assert.deepEqual(b.jobs.b.job.after, ['a-plan'], 'what waited on the job now waits on the planner');
+  assert.deepEqual(levelsOf(b, 'a-plan', 'b', 'c', 'other'), [1, 1, 1, 0], 'one level of planning, recomputed up the graph');
   const before = JSON.stringify(b);
-  assert.equal(hand(b, 'a-1-x', 999, 'p', 'q'), false, 'replaying a landed hand-off is a no-op');
+  assert.equal(hand(b, 'a', 999), false, 'replaying a landed hand-off is a no-op');
   assert.equal(JSON.stringify(b), before);
+
+  claimId(b, 'a-plan');
+  plan(b, 'a-plan', 200, 'a-1', 'a-2');
+  assert.deepEqual(levelsOf(b, 'a-plan', 'a-1', 'a-2', 'b'), [1, 0, 0, 1], 'planning adds children, not levels');
+  assert.equal(where(b, 'a-plan'), 'held');
+  assert.deepEqual([b.jobs['a-plan'].job.plans, b.jobs['a-plan'].job.plan_log[0].steps, b.jobs['a-1'].job.step_of], [1, ['a-1', 'a-2'], 'a-plan']);
+  assert.equal(code(() => plan(b, 'a-1', 0, 'x')), 'not-held');
+});
+
+test('a long run of sequential steps is one planner over a flat set: level 1, not a chain', () => {
+  const b = mk({ id: 'long' }, { id: 'waits', after: ['long'] });
+  const steps = Array.from({ length: 12 }, (_, i) => ({ id: `s${String(i + 1).padStart(2, '0')}`, after: i ? [`s${String(i).padStart(2, '0')}`] : [] }));
+  const planner = handAndPlan(b, 'long', 500, ...steps);
+  assert.equal(level(b, planner), 1, 'twelve steps in sequence, one level');
+  assert.ok(steps.every(s => level(b, s.id) === 0), 'every step is a leaf: being sequenced adds nothing');
+  assert.equal(level(b, 'waits'), 1);
+  // There is no way to write the chain: a step cannot name its own successor.
+  claimId(b, 's01');
+  assert.equal(code(() => plan(b, 's01', 0, 'chain-link')), 'not-planner');
+  // Work through all twelve in order; the level never moves.
+  B.release(b, 's01', { by: 'test' }, NOW);
+  for (const s of steps) {
+    assert.deepEqual(B.ready(b).filter(x => x.startsWith('s')), [s.id], 'one at a time, in order');
+    finish(b, s.id, 100);
+    assert.equal(level(b, planner), 1);
+  }
+  sweep(b);
+  const rec = finish(b, planner, 50);
+  assert.deepEqual([rec.level, rec.cost_under.tokens, rec.cost.tokens], [1, 500 + 1200, 50], 'the engagement carries the original job\'s cost and every step\'s');
+  assert.deepEqual(b.jobs.waits.job.under, { 'long-plan': { level: 1, step: false } });
+});
+
+test('a step that itself runs out of time gets its own planner: a real second level', () => {
+  const b = mk({ id: 'a' }, { id: 'b', after: ['a'] });
+  const top = handAndPlan(b, 'a', 1000, 'a-1', 'a-2');
+  const inner = handAndPlan(b, 'a-1', 500, 'a-1-x', 'a-1-y');
+  assert.equal(inner, 'a-1-plan');
+  assert.deepEqual([b.jobs[top].job.steps, b.jobs[top].job.after], [['a-1-plan', 'a-2'], ['a-1-plan', 'a-2']], 'the inner planner is the step now');
+  assert.deepEqual(levelsOf(b, top, inner, 'a-2', 'a-1-x', 'b'), [2, 1, 0, 0, 2]);
+  assert.equal(b.jobs[inner].job.step_of, top);
 });
 
 test('finished trees still count; back-tracked ones do not; cost never falls', () => {
   const b = mk({ id: 'a' }, { id: 'b', after: ['a'] });
-  claimId(b, 'a');
-  hand(b, 'a', 1000, 'a-1', 'a-2');
-  claimId(b, 'a-1');
-  hand(b, 'a-1', 500, 'a-1-x');
-  claimId(b, 'a-1-x');
-  hand(b, 'a-1-x', 200, 'p', 'q');
+  const top = handAndPlan(b, 'a', 1000, 'a-1', 'a-2');
+  const inner = handAndPlan(b, 'a-1', 500, 'p', 'q');
   finish(b, 'p', 40);
   finish(b, 'q', 60);
-  B.sweep(b, { isArchived: () => false, ttlSeconds: 1e9 }, NOW);
-  assert.equal(level(b, 'a-1-x'), 1, 'a job keeps the level its finished steps gave it');
-  assert.deepEqual(b.jobs['a-1-x'].job.under.p, { level: 0, step: true });
-  assert.equal(b.jobs['a-1-x'].job.cost_under.tokens, 100, 'their cost moved under it');
-  assert.deepEqual(b.jobs['a-1-x'].job.steps, [], 'a record stops listing steps that finished');
-  assert.equal(where(b, 'a-1-x'), 'open', 'it reopens for its closing run');
-  assert.deepEqual(levelsOf(b, 'a', 'a-1', 'b'), [3, 2, 3]);
+  sweep(b);
+  assert.equal(level(b, inner), 1, 'a planner keeps the level its finished steps gave it');
+  assert.deepEqual(b.jobs[inner].job.under.p, { level: 0, step: true });
+  assert.equal(b.jobs[inner].job.cost_under.tokens, 600, 'the step that handed off, and both children');
+  assert.deepEqual(b.jobs[inner].job.steps, [], 'a record stops listing steps that finished');
+  assert.equal(where(b, inner), 'open', 'it reopens for its closing run');
+  assert.deepEqual(levelsOf(b, top, 'b'), [2, 2]);
 
-  const records = B.abandon(b, 'a-1', { by: 'kriskowal', reason: 'dead end' }, NOW);
-  assert.deepEqual(records.map(r => r.id), ['a-1-x', 'a-1'], 'the subtree is archived, steps first');
-  assert.ok(records.every(r => r.outcome === 'abandoned' && r.abandon_reason === 'dead end'));
-  assert.equal(records[1].cost.tokens, 500, 'an abandoned record keeps what it ran up');
-  assert.equal(b.jobs['a-1'], undefined);
-  assert.deepEqual(levelsOf(b, 'a', 'b'), [1, 1], 'levels above the branch fall to what remains');
-  assert.deepEqual(b.jobs.a.job.abandoned, ['a-1']);
-  assert.deepEqual(b.jobs.a.job.after, ['a-2']);
-  assert.equal(b.jobs.a.job.cost_under.tokens, 800, 'the whole branch stays in the cost: 500+200+40+60');
-  assert.equal(b.jobs.a.job.cost.tokens, 1000);
+  const records = B.abandon(b, inner, { by: 'kriskowal', reason: 'dead end' }, NOW);
+  assert.deepEqual(records.map(r => [r.id, r.outcome, r.abandon_reason]), [[inner, 'abandoned', 'dead end']]);
+  assert.deepEqual(levelsOf(b, top, 'b'), [1, 1], 'levels above the branch fall to what remains');
+  assert.deepEqual(b.jobs[top].job.abandoned, [inner]);
+  assert.deepEqual(b.jobs[top].job.after, ['a-2']);
+  assert.equal(b.jobs[top].job.cost_under.tokens, 1600, 'the whole branch stays in the cost: 1000 + 500 + 40 + 60');
 
   B.abandon(b, 'a-2', { by: 'kriskowal' }, NOW);
-  assert.deepEqual(levelsOf(b, 'a', 'b'), [0, 0], 'with no tree under it a job is back at the base');
-  assert.equal(b.jobs.a.job.cost_under.tokens, 800, 'cost never decreases');
-  B.sweep(b, { isArchived: () => false, ttlSeconds: 1e9 }, NOW);
-  assert.equal(where(b, 'a'), 'open');
-  const rec = finish(b, 'a', 300);
-  assert.deepEqual([rec.cost.tokens, rec.cost_under.tokens, rec.level], [1300, 800, 0]);
-  assert.deepEqual(b.jobs.b.job.under.a, { level: 0, step: false });
+  assert.deepEqual(levelsOf(b, top, 'b'), [1, 1], 'the planner still stands on the job it replaced');
+  assert.equal(b.jobs[top].job.cost_under.tokens, 1600, 'cost never decreases');
+  sweep(b);
+  const rec = finish(b, top, 300);
+  assert.deepEqual([rec.cost.tokens, rec.cost_under.tokens, rec.level], [300, 1600, 1]);
+  assert.deepEqual(b.jobs.b.job.under[top], { level: 1, step: false });
 });
 
 test('a diamond takes the max over its paths, and a plain dependency adds nothing', () => {
   const b = mk({ id: 'a' }, { id: 'l', after: ['a'] }, { id: 'r', after: ['a'] }, { id: 'z', after: ['l', 'r'] });
-  claimId(b, 'a');
-  hand(b, 'a', 0, 'a-1');
+  handAndPlan(b, 'a', 0, 'a-1');
   assert.deepEqual(levelsOf(b, 'l', 'r', 'z'), [1, 1, 1], 'not the sum of the two paths');
-  claimId(b, 'a-1');
-  hand(b, 'a-1', 0, 'a-1-1');
-  assert.deepEqual(levelsOf(b, 'a', 'l', 'r', 'z'), [2, 2, 2, 2]);
+  handAndPlan(b, 'a-1', 0, 'a-1-1');
+  assert.deepEqual(levelsOf(b, 'a-plan', 'l', 'r', 'z'), [2, 2, 2, 2]);
   B.post(b, { id: 'tail', role: 'builder', title: 't', after: ['z'] }, NOW);
   assert.equal(level(b, 'tail'), 2, 'sequenced after: the same level, without the plus one');
   const wide = { jobs: {
@@ -157,37 +200,45 @@ test('a diamond takes the max over its paths, and a plain dependency adds nothin
   assert.equal(B.levels(wide).top, 5, 'a finished step counts plus one');
 });
 
-test('repeated hand-offs are surfaced to the accountant, never blocked', () => {
+test('re-planning is surfaced to the accountant, never blocked, and stays flat', () => {
   const b = mk({ id: 'e', arc: 'endo' });
+  claimId(b, 'e');
+  const { planner } = hand(b, 'e', 1000);
   for (let n = 1; n <= 5; n += 1) {
-    claimId(b, 'e');
-    const r = hand(b, 'e', 1000, `e-s${n}`);
+    claimId(b, planner);
+    const r = plan(b, planner, 200, `e-s${n}`);
     assert.equal(r.n, n);
-    assert.equal(r.review, n >= 2 ? `review-e-h${n}` : null);
+    assert.equal(r.review, n >= 2 ? `review-${planner}-p${n}` : null);
     finish(b, `e-s${n}`, 100);
-    B.sweep(b, { isArchived: () => false, ttlSeconds: 1e9 }, NOW);
+    sweep(b);
   }
-  const e = b.jobs.e.job;
-  assert.equal(e.handoffs, 5, 'five hand-offs of one job all land');
-  assert.equal(e.level, 1, 'sequential re-planning does not inflate the level');
-  assert.deepEqual([e.cost.tokens, e.cost_under.tokens, e.handoff_log.length], [5000, 500, 5]);
-  assert.equal(b.jobs['review-e-h1'], undefined);
-  const review = b.jobs['review-e-h3'].job;
-  assert.deepEqual([review.role, review.arc, review.handoffs_seen, review.cost_seen.tokens], ['accountant', 'endo', 3, 3200]);
-  assert.deepEqual(e.after, [], 'a review does not block the job it reviews');
-  assert.equal(where(b, 'review-e-h3'), 'open');
+  const e = b.jobs[planner].job;
+  assert.equal(e.plans, 5, 'five plans by one planner all land');
+  assert.equal(e.level, 1, 'planning again does not deepen the tree');
+  assert.deepEqual([e.cost.tokens, e.cost_under.tokens, e.plan_log.length], [1000, 1500, 5]);
+  assert.equal(b.jobs[`review-${planner}-p1`], undefined);
+  const review = b.jobs[`review-${planner}-p3`].job;
+  assert.deepEqual([review.role, review.arc, review.plans_seen, review.cost_seen.tokens], ['accountant', 'endo', 3, 1000 + 600 + 200], 'the original job, three plans, two finished steps');
+  assert.deepEqual(e.after, [], 'a review does not block the planner it reviews');
+  assert.equal(where(b, `review-${planner}-p3`), 'open');
 });
 
 test('refusals, and graphs that are already malformed', () => {
-  const b = mk({ id: 'a' }, { id: 'b', after: ['a'] });
-  assert.equal(code(() => hand(b, 'a', 0, 'a-1')), 'not-held', 'a job nobody holds cannot hand off');
+  const b = mk({ id: 'a' }, { id: 'b', after: ['a'] }, { id: 'pl', planner: true });
+  assert.equal(code(() => hand(b, 'a', 0)), 'not-held', 'a job nobody holds cannot hand off');
   claimId(b, 'a');
+  assert.equal(code(() => plan(b, 'a', 0, 'x')), 'not-planner', 'an ordinary job cannot dispatch steps of its own');
+  B.post(b, { id: 'a-plan', role: 'builder', title: 'in the way' }, NOW);
+  assert.equal(code(() => hand(b, 'a', 0)), 'duplicate');
+  delete b.jobs['a-plan'];
+  claimId(b, 'pl');
+  assert.equal(code(() => hand(b, 'pl', 0)), 'is-planner', 'a planner dispatches or is requeued; it does not hand off');
   const before = JSON.stringify(b);
-  assert.equal(code(() => hand(b, 'a', 0)), 'empty');
-  assert.equal(code(() => hand(b, 'a', 0, 'b')), 'duplicate');
-  assert.equal(code(() => hand(b, 'a', 0, { id: 'a-1', after: ['b'] })), 'cycle');
-  assert.equal(code(() => hand(b, 'a', 0, 'ok-1', 'Not Ok')), 'invalid');
-  assert.equal(JSON.stringify(b), before, 'a refused hand-off leaves the board exactly as it was');
+  assert.equal(code(() => plan(b, 'pl', 0)), 'empty');
+  assert.equal(code(() => plan(b, 'pl', 0, 'b')), 'duplicate');
+  assert.equal(code(() => plan(b, 'pl', 0, { id: 'pl-1', after: ['w'] }, { id: 'w', after: ['pl'] })), 'cycle');
+  assert.equal(code(() => plan(b, 'pl', 0, 'ok-1', 'Not Ok')), 'invalid');
+  assert.equal(JSON.stringify(b), before, 'a refused plan leaves the board exactly as it was');
   const cyc = { jobs: {
     x: { where: 'open', job: { id: 'x', after: ['z'], steps: ['z'] } },
     y: { where: 'open', job: { id: 'y', after: ['x'], steps: ['x'] } },
@@ -259,7 +310,7 @@ test('a re-claim bumps the generation, and the superseded run is fenced', () => 
   const old = { host: 'client', generation: 1, cost: { tokens: 900, elapsed_s: 4100 } };
   assert.equal(code(() => B.complete(b, 'a', 'done', old, NOW)), 'superseded');
   assert.equal(code(() => B.fail(b, 'a', old, NOW)), 'superseded');
-  assert.equal(code(() => B.handoff(b, 'a', { steps: [{ id: 'a-1' }] }, old, NOW)), 'superseded');
+  assert.equal(code(() => B.handoff(b, 'a', { reason: 'late' }, old, NOW)), 'superseded');
   assert.equal(code(() => B.release(b, 'a', { by: 'client', ...old }, NOW)), 'superseded', 'it may not even requeue its successor');
   assert.equal(JSON.stringify(b), before, 'nothing the superseded run wrote took effect');
   // The same host re-claiming is fenced against its own earlier run too.

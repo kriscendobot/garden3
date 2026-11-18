@@ -26,8 +26,11 @@ env | sort > outbox/env.txt
 case "$id" in
   finish*) printf 'builder\\nLesson: read the job twice.\\n' > roles/builder/AGENT.md
            echo "Finished $id." > outbox/report.md ;;
-  big)     printf 'reason: "out of time"\\nsteps:\\n  - id: "big-1"\\n    title: "First half"\\n  - after:\\n      - "big-1"\\n    id: "big-2"\\n    title: "Second half"\\n' > outbox/handoff.yay
+  big)     printf 'done: "the survey"\\nreason: "out of time"\\nremaining: "two parts"\\n' > outbox/handoff.yay
            echo "Did the survey; two parts remain." > outbox/report.md ;;
+  big-plan) grep -q 'handed off' PROMPT.md JOB.yay || exit 9
+           printf 'steps:\\n  - id: "big-1"\\n    title: "First half"\\n  - after:\\n      - "big-1"\\n    id: "big-2"\\n    title: "Second half"\\n' > outbox/handoff.yay
+           echo "Planned two steps." > outbox/report.md ;;
   sleepy)  echo partial > scratch/notes; sleep 30 ;;
   *)       exit 3 ;;
 esac
@@ -91,18 +94,23 @@ test('a job that finishes: archived with its cost, lessons landed, slot razed', 
   assert.ok(!/leak/.test(env), `no key reaches a worker's environment:\n${env}`);
 });
 
-test('a job that hands off: steps posted, level raised, then closed', { skip }, async t => {
+test('a job that hands off gets a planner, which dispatches the rest as its children', { skip }, async t => {
   const { board, dispatcher, rec } = await setup(t);
   await board.post({ id: 'big', role: 'builder', title: 'Big' });
   await board.post({ id: 'after-big', role: 'builder', title: 'Waits', after: ['big'] });
   const r = await dispatcher.once();
-  assert.equal(r.outcome, 'handoff');
-  const big = rec('board', 'big');
-  assert.deepEqual([big.file, big.level, big.handoffs, big.steps, big.cost.tokens], ['held/big.yay', 1, 1, ['big-1', 'big-2'], 1000]);
-  assert.equal(big.handoff_log[0].window_s, 30, 'the hand-off records the clock it ran out on');
-  assert.equal(rec('board', 'after-big').level, 1, 'what waits on it rises too');
+  assert.deepEqual([r.id, r.outcome], ['big', 'handoff']);
+  assert.equal(rec('board', 'big'), null, 'the job left the board');
+  assert.deepEqual([rec('archive', 'big').outcome, rec('archive', 'big').handed_to, rec('archive', 'big').handoff.window_s], ['handed-off', 'big-plan', 30], 'archived as handed-off, with the clock it ran out on');
+  const p = rec('board', 'big-plan');
+  assert.deepEqual([p.file, p.role, p.level, p.cost_under.tokens], ['open/big-plan.yay', 'planner', 1, 1000], 'a planner stands in its place, carrying its cost');
+  assert.deepEqual([rec('board', 'after-big').after, rec('board', 'after-big').level], [['big-plan'], 1], 'what waited on the job waits on the planner, and rises');
+
+  const second = await dispatcher.once();
+  assert.deepEqual([second.id, second.outcome], ['big-plan', 'handoff'], 'the planner runs next, and dispatches');
+  const planned = rec('board', 'big-plan');
+  assert.deepEqual([planned.file, planned.level, planned.plans, planned.steps], ['held/big-plan.yay', 1, 1, ['big-1', 'big-2']], 'two steps, still level 1');
   assert.deepEqual(rec('board', 'big-2').after, ['big-1']);
-  assert.equal(rec('archive', 'big'), null, 'a hand-off is not a completion');
   // The steps have no stand-in behaviour: they fail, and keep blocking.
   assert.equal((await dispatcher.once()).outcome, 'failed');
   assert.equal(rec('board', 'big-1').file, 'failed/big-1.yay');
@@ -115,7 +123,7 @@ test('a job stopped at its deadline is requeued with its cost, never completed',
   const r = await dispatcher.once();
   assert.equal(r.outcome, 'overrun');
   const job = rec('board', 'sleepy');
-  assert.deepEqual([job.file, job.attempts, job.cost.engagements, job.handoffs, job.level], ['open/sleepy.yay', 1, 1, 0, 0], 'an overrun is not a planning event');
+  assert.deepEqual([job.file, job.attempts, job.cost.engagements, job.plans, job.level], ['open/sleepy.yay', 1, 1, 0, 0], 'an overrun is not a planning event');
   assert.equal(rec('archive', 'sleepy'), null);
   assert.deepEqual(fs.readdirSync(path.join(g.root, 'slots')), [], 'the slot is razed on this path too');
 });

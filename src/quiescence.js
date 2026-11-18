@@ -183,7 +183,7 @@ export const rollupArchive = (tree, nowIso, keepMonths) => {
     const jobs = Object.fromEntries((tree.exists(file) ? parse(tree.read(file)).jobs : []).map(j => [j.id, j]));
     for (const f of tree.list(dir)) {
       if (!f.endsWith('.yay')) continue;
-      const { body: _body, report: _report, handoff_log: _log, ...rest } = parse(tree.read(`${dir}/${f}`), f);
+      const { body: _body, report: _report, plan_log: _log, ...rest } = parse(tree.read(`${dir}/${f}`), f);
       jobs[rest.id] = rest;
     }
     tree.write(file, stringify({ month: ym, jobs: Object.values(jobs).sort((a, b) => (a.id < b.id ? -1 : 1)) }));

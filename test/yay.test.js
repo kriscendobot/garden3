@@ -13,7 +13,7 @@ test('records round-trip through YAY', () => {
     throttle: 0.2,
     big: 2000000,
     hold: { reason: 'handoff', at: '2026-11-17T00:00:00Z' },
-    handoff_log: [
+    plan_log: [
       { n: 1, steps: ['a-1', 'a-2'], reason: 'out of time', window_s: null },
       { n: 2, steps: [], reason: '' },
     ],
@@ -39,7 +39,7 @@ test('multi-line strings anywhere in a record survive, block or quoted', () => {
   const deep = {
     body: 'top\nlevel\n',
     hold: { note: 'nested\nobject\n' },
-    handoff_log: [{ n: 1, reason: 'in a\nlist item\n', steps: ['a'] }],
+    plan_log: [{ n: 1, reason: 'in a\nlist item\n', steps: ['a'] }],
     steps: [{ id: 's', body: 'a step\nbody\n', inner: { text: 'deeper\nstill\n' } }],
     lines: ['one\ntwo\n'],
   };

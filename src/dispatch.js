@@ -40,7 +40,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, files, cl
       const tree = files(home);
       const deadlineEpoch = Math.floor(started / 1000) + windowS;
       const deadlineIso = new Date(deadlineEpoch * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
-      tree.write('PROMPT.md', `Read roles/COMMON.md, then roles/PLOT.md and roles/${job.role}/AGENT.md, then do the job in JOB.yay.\n\n${clockNote({ id: job.id, windowS, deadlineIso })}\n`);
+      tree.write('PROMPT.md', `Read roles/COMMON.md, then roles/PLOT.md and roles/${job.role}/AGENT.md, then do the job in JOB.yay.\n\n${clockNote({ id: job.id, windowS, deadlineIso, planner: Boolean(job.planner) })}\n`);
       tree.mkdir('.hook-state');
       // The worker's environment is built from nothing: its clock, where
       // things are, and no key (keys.js). The harness gets its credential
@@ -89,6 +89,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, files, cl
     let superseded = false;
     try {
       if (kind === 'done') await board.complete(job.id, 'done', { cost, report, generation });
+      else if (kind === 'handoff' && job.planner) await board.plan(job.id, { elapsed_s: cost.elapsed_s, window_s: windowS, ...handoff }, { cost, generation });
       else if (kind === 'handoff') await board.handoff(job.id, { elapsed_s: cost.elapsed_s, window_s: windowS, ...handoff }, { cost, generation });
       else if (kind === 'overrun') await board.release(job.id, { cost, generation });
       else await board.complete(job.id, 'failed', { cost, generation });
