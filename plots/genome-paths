@@ -1,0 +1,13 @@
+# The genome: the paths a plot's branch may hold and change. One entry per
+# line; an entry ending in / is a prefix, anything else is an exact file.
+# Everything not listed here is the shed's, the same for every plot, and is
+# changed only by a reviewed pull request (designs/plots.md). Each plot also
+# holds plot.yay, its own settings, which is not listed.
+#
+# Ported in form from the tower's scripts/vestibule/genome-paths.
+roles/PLOT.md
+roles/builder/
+roles/designer/
+roles/reviewer/
+skills/project-checkout/
+skills/wrap-it-up/
