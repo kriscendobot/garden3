@@ -1,2 +1,4 @@
-hosts: []
-leader: null
+hosts:
+  - name: "endolin-garden-ece02cb4"
+    operator: "kriskowal"
+leader: "endolin-garden-ece02cb4"
