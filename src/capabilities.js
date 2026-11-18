@@ -66,7 +66,7 @@ export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, 
       } catch {
         return false;
       }
-      return r.status === 0 && (!step.expect || new RegExp(step.expect).test(`${r.stdout}${r.stderr}`));
+      return r.status === 0 && (!step.expect || new RegExp(step.expect, 'm').test(`${r.stdout}${r.stderr}`));
     });
   };
 

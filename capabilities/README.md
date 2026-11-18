@@ -34,7 +34,7 @@ this table honest.
 | Capability | Pinned | Notes |
 | --- | --- | --- |
 | `buildkit` | amd64 | hashes carried from the tower's Dockerfile |
-| `node` | no | the first capability; also pinned in `bootstrap/node.pin` for the entrypoint |
+| `node` | amd64 | the first capability; also pinned in `bootstrap/node.pin`. The amd64 hash is of the archive in this machine's nvm cache, not yet compared with nodejs.org's published checksums; arm64 has none |
 | `rust` | no | builds the warden at each rejuvenation |
 | `shellcheck` | no | used by `scripts/lint.sh` when present |
 | `gh` | no | used only by the steward, with the bot's token |
