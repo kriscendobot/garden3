@@ -1,0 +1,12 @@
+[package]
+name = "warden"
+version = "0.1.0"
+edition = "2021"
+description = "The garden's privileged helper: builds, runs and razes the per-job slots."
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+libyay = "1.1.1"
+num-bigint = "0.4"
+num-traits = "0.2"
