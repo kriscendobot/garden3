@@ -13,10 +13,11 @@ archiving its branches. The procedure itself is on the `gate` branch:
 
 ## The decision
 
-- The existing GitHub repository is renamed (proposed: `garden-prior`; a
-  parameter) and then archived, read-only. It keeps its 65 branches, its
+- The existing GitHub repository was renamed to **`kriscendobot/gardens-of-yore`**
+  (done, by the maintainer) and is to be archived, read-only. It keeps its 65 branches, its
   issues and pull requests, and everything attached to it.
-- A new repository takes the original name. It shares no git history with the
+- A new repository took the original name, `kriscendobot/garden` (done, by
+  the maintainer; public and empty until the first push). It shares no git history with the
   old one. Its default branch is `main`: a README and the setup wizard.
 - The prior garden is recorded as the immediate ancestor by reference
   ([ANCESTRY.md](../ANCESTRY.md)), and history is borrowed only as needed
@@ -44,6 +45,11 @@ Two things in the prior garden's code make repointing more than a URL change:
 variable; and it lists `kriskowal/garden` as an alias, the name the
 repository had before an earlier transfer, whose redirect also resolves
 through the name being reused.
+
+**Anyone reviving a prior host must point it at `gardens-of-yore`**: set its
+checkout's `origin` there *and* set `GARDEN_PRODUCTION_JOURNAL_REPO` to
+`kriscendobot/gardens-of-yore`, or its own `common.sh` will refuse that origin
+as foreign. Left as it is, a revived host talks to the new `kriscendobot/garden`.
 
 The maintainer has since said the prior garden is **already halted** and will
 be **archived**. So no host is repointed, and the renamed repository is made
@@ -82,15 +88,17 @@ Who may push is now the control on every client host
 
 ## Status
 
-`cutover.sh` is written, dry run by default, and was **not run**: this pass
+The rename and the creation of the fresh repository were done by the
+maintainer, outside the script. What remains: archiving `gardens-of-yore`
+read-only, setting push access and branch protection on the fresh repository,
+adding the remote, the first push, and making `main` the default branch.
+`cutover.sh` covers those, is a dry run by default, and was **not run**: this pass
 pushed nothing, added no remote and changed nothing on GitHub. It was
 exercised only in its dry-run mode against no network (it prints its plan).
 
 ## Open questions
 
-1. **The name for the moved-aside repository.** `garden-prior` is the
-   default; not confirmed.
-2. **Open work.** Open pull requests and issues stay with the old repository.
+1. **Open work.** Open pull requests and issues stay with the old repository.
    Which are re-filed against the new one?
-3. **The tower's view** must be repointed (or pointed at the new layout) by
+2. **The tower's view** must be repointed (or pointed at the new layout) by
    the tower's own maintainer-side change; the garden cannot do it.
