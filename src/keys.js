@@ -1,0 +1,67 @@
+// keys.js — keys are files, never environment variables.
+//
+// The prior garden handed six provider keys to every worker through the
+// container's environment. The garden takes the tower's way instead
+// (scripts/jobs/set-api-key.sh, worker-auth.py): a key is one file under
+// <state>/secrets/, mode 0600 in a 0700 directory, owned by the steward and
+// unreadable by any job's account. It is written from a terminal or a pipe,
+// never from argv; it is read only by the code that needs it, at the moment
+// it needs it; and it reaches exactly one child process, on that child's
+// stdin or through a helper it runs, never through the environment every
+// process inherits. Design: designs/keys.md.
+
+import { parse } from './yay.js';
+import { harden, refuse, isName } from './harden.js';
+
+/** Every variable that may carry a provider key: stripped from a worker's environment. */
+export const KEY_VARIABLES = harden([
+  'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'OPENAI_API_KEY', 'CODEX_API_KEY',
+  'FIREWORKS_API_KEY', 'MOONSHOT_API_KEY', 'OPENROUTER_API_KEY', 'OLLAMA_CLOUD_API_KEY', 'TYPESAFE_API_KEY',
+  'GH_TOKEN', 'GITHUB_TOKEN', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN',
+]);
+
+/** An environment with every key variable removed. */
+export const scrub = env => Object.fromEntries(Object.entries(env).filter(([k]) => !KEY_VARIABLES.includes(k) && !/_(API_KEY|TOKEN|SECRET)$/.test(k)));
+
+export const makeKeys = ({ files, stateDir, registryText }) => {
+  const state = files(stateDir);
+  const registry = registryText ? parse(registryText).keys : {};
+  const fileOf = name => `secrets/${name}`;
+  const known = name => {
+    if (!isName(name)) refuse('invalid', 'bad key name');
+    return registry[name] ?? refuse('unknown-key', `${name} is not in the key registry (keys/registry.yay)`);
+  };
+  return harden({
+    /** Store a key. The value must be one line with no whitespace, and match the registry's pattern. */
+    set: async (name, value) => {
+      const spec = known(name);
+      const v = String(value).replace(/\n$/, '');
+      if (!v || /\s/.test(v)) refuse('invalid', 'a key is one line with no whitespace');
+      if (spec.pattern && !new RegExp(spec.pattern).test(v)) refuse('invalid', `that does not look like a ${name} key`);
+      state.mkdir('secrets');
+      state.chmod('secrets', 0o700);
+      state.writeBytes(`${fileOf(name)}.new`, `${v}\n`, 0o600);
+      state.chmod(`${fileOf(name)}.new`, 0o600);
+      state.rename(`${fileOf(name)}.new`, fileOf(name));
+    },
+    remove: async name => state.remove(fileOf(known(name) && name)),
+    /** {name: {present, mode_ok, purpose}} for every registered key. Never a value. */
+    status: async () =>
+      harden(Object.fromEntries(Object.entries(registry).map(([name, spec]) => {
+        const present = state.exists(fileOf(name));
+        return [name, { present, mode_ok: present ? state.mode(fileOf(name)) === 0o600 : null, purpose: spec.purpose }];
+      }))),
+    /**
+     * Read a key, for the one consumer the registry names. Refused unless the
+     * file's mode is exactly 0600: a key anyone else could read is treated as
+     * no key at all.
+     */
+    read: async (name, consumer) => {
+      const spec = known(name);
+      if (spec.consumer !== consumer) refuse('wrong-consumer', `${name} is for ${spec.consumer}, not ${consumer}`);
+      if (!state.exists(fileOf(name))) refuse('no-key', `no ${name} key on this host`);
+      if (state.mode(fileOf(name)) !== 0o600) refuse('bad-mode', `${name} is readable by others; treat it as leaked and replace it`);
+      return state.read(fileOf(name)).replace(/\n$/, '');
+    },
+  });
+};

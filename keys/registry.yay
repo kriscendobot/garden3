@@ -1,0 +1,8 @@
+keys:
+  anthropic-worker:
+    consumer: "worker"
+    purpose: "The model credential a worker's harness uses. Given to the harness through its key helper, never its environment."
+  github-bot:
+    consumer: "steward"
+    pattern: "^(gh[a-z]_|github_pat_)[A-Za-z0-9_]+$"
+    purpose: "The bot account's GitHub token. Only the steward's publishing and watching code reads it; no job ever holds it."
