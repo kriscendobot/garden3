@@ -1,0 +1,26 @@
+# Root worktrees of the garden's other shards (WORKTREES.md). Never tracked
+# from the shed.
+/main/
+/board/
+/archive/
+/journal/
+/library/
+/clients/
+/gate/
+/plots/*/
+
+# Host-local state: shard clones, the capability record, keys, harvests.
+/.garden-state/
+
+# Job slots, upstream bare repositories, and mail in transit.
+/slots/
+/repositories/
+/mail/
+
+# A client host's consent is the owner's, and stays on that machine.
+/CLIENT-CONSENT.yay
+
+# Build and test leftovers.
+/rust/target/
+/test/.tmp-*/
+node_modules/

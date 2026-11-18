@@ -1,0 +1,10 @@
+{
+  "name": "garden",
+  "private": true,
+  "type": "module",
+  "description": "The garden: a fleet of coding agents steered through GitHub.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test"
+  }
+}
