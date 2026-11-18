@@ -28,6 +28,10 @@ test('garden <service> <method> [ value ]', t => {
   r = garden('board', 'post', '[', '--id', 'Bad Id', '--role', 'builder', '--title', 'x', ']');
   assert.deepEqual([r.status, r.reply.ok, r.reply.code], [1, false, 'invalid'], 'a refusal is a reply, with its code');
   assert.equal(garden('nosuch', 'x').status, 2);
+  const noMethod = garden('keys', 'nosuch');
+  assert.deepEqual([noMethod.status, noMethod.reply.code], [1, 'usage'], 'an unknown method is a refusal that lists the real ones, not a crash');
+  assert.match(noMethod.reply.error, /this service has: .*status/);
+  assert.equal(garden('host', 'build').reply.code, 'build', 'host build is a method (it fails here only for want of a toolchain on PATH)');
   assert.equal(garden('board', 'post', '[', '--id').status, 2, 'malformed SHON is a usage error');
   assert.deepEqual(garden('keys', 'status').reply.result['github-bot'].present, false);
   assert.equal(garden('keys', 'set', 'anthropic-worker', 'sk-inArgv').status, 2, 'a key is never taken from argv');

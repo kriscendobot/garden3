@@ -40,13 +40,18 @@ whole of the separation between one job and the next in a slot.)
    what to do instead. `worktrees/`, `scratch/` and `outbox/` are made.
 5. `JOB.yay` (the record) and `.slot.yay` (what was laid down, for harvest).
 6. **Own** (`warden own`): the home is given to the slot's account, mode 0700.
-   The slots directory is 0711 and root's, so a job can reach its own home and
-   list nothing.
+   The slots directory is 0711 and the steward's, so a job can reach its own
+   home and list nothing.
 7. **Run** (`warden run`): the worker's command, as the slot's account, in its
    own process group, with exactly the environment dispatch names (the clock,
    where things are; no key), until its deadline ([wrap-it-up.md](wrap-it-up.md)).
 8. **Harvest**: work is carried out (below).
 9. **Clear** again. Also every slot at boot and at each quiescence.
+
+Between 7 and 8 the warden **releases** the slot: it kills whatever the
+account still runs and gives the home back to the steward, who could not read
+it while it was the job's. What a slot holds is recorded in the steward's
+state, not in the home.
 
 The slot is cleared on every path out of dispatch, including a run that could
 not start.
@@ -108,11 +113,14 @@ so being able to call the warden is not being root.
 Implemented and tested in `sim` mode (no accounts) through the real warden:
 home contents, tombstones, one checkout per project, harvest of commits, wip,
 genome and outbox, hooks not run, razing (`test/slots.test.js`,
-`test/dispatch.test.js`, `rust/warden/tests`). **Not run:** `users` mode. The
-warden's three root-only acts (killing another account's processes, re-owning a
-home, running as another account) are tested only to refuse cleanly when not
-root. Design only: the steward publishing harvested branches and acting on
-`outbox/` requests for GitHub.
+`test/dispatch.test.js`, `rust/warden/tests`). **`users` mode has now run for
+real**, in the box on one host, by hand: a home built by the steward, given
+to `slot01` (uid 2001, mode 0700, unreadable to the steward), a command run
+as that account with only the named environment, unable to read the state
+directory or list the slots directory, stopped at its deadline with its
+background child, released, harvested and razed. Not run: a whole dispatch in
+`users` mode with a real harness and a project checkout. Design only: the
+steward publishing harvested branches.
 
 ## Open questions
 

@@ -39,11 +39,11 @@ gives it the mail to carry, keeping the names found on disk.
 
 ```
 tower -> garden   <tower>/mail/garden/YYYY-MM-DD-GARDEN-<slug>.md
-                    -> <garden>/mail/inbox/YYYYMMDD-tower-<slug>.md
+                    -> <garden>/.garden-state/mail/inbox/YYYYMMDD-tower-<slug>.md
                     original -> <tower>/mail/garden/archive/YYYY-MM-DD-carried-GARDEN-<slug>.md
-garden -> tower   <garden>/mail/outbox/YYYY-MM-DD-TOWER-<slug>.md
+garden -> tower   <garden>/.garden-state/mail/outbox/YYYY-MM-DD-TOWER-<slug>.md
                     -> <tower>/drop/from-garden/YYYYMMDD-garden-<slug>.md
-                    original -> <garden>/mail/outbox/archive/
+                    original -> the outbox's archive/
 ```
 
 - `pending` lists what waits on each bank with its sha256 and size.
@@ -54,7 +54,8 @@ garden -> tower   <garden>/mail/outbox/YYYY-MM-DD-TOWER-<slug>.md
   leaves before it goes) while removing the copying by hand.
 - The copy is checked by hash on arrival; a receipt records direction, slug,
   hash, size and time, and **no content**.
-- `mail/` is ignored by git on the garden's side. The tower is private and the
+- Mail lives under the state directory (`.garden-state/mail/`), which is 0700
+  and the steward's: a job's account cannot read it, and git ignores it. The tower is private and the
   garden is public: arriving mail is not published by arriving. It becomes
   work when the steward posts a job for it, which is the point at which its
   text enters a public branch, and the maintainer approved that text for the

@@ -39,6 +39,8 @@ export const makeHost = ({ files, run, rootRepo, stateDir, host, clock, shards, 
 
   return harden({
     refreshShed,
+    /** Build this host's binaries (the warden) from the shed, for this host. */
+    build: async () => (build ? build() : refuse('no-build', 'this host was assembled with nothing to build')),
     /** The whole of a host's rejuvenation. Returns what to acknowledge with. */
     rejuvenate: async ({ shed, applyTruncation = true } = {}) => {
       const at = await refreshShed(shed);

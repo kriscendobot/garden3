@@ -38,7 +38,10 @@ while [ "$i" -le "$COUNT" ]; do
   i=$((i + 1))
 done
 mkdir -p "$SLOTS" "$CAP/bin" "$STATE/steward"
-chown root:root "$SLOTS" && chmod 0711 "$SLOTS"      # slots can reach their own home, and list nothing
+# The steward builds each job's home here, and the warden then gives it to the
+# slot's account, mode 0700. Slot accounts can reach their own home and list
+# nothing: the directory is the steward's, 0711.
+chown steward:steward "$SLOTS" && chmod 0711 "$SLOTS"
 chown steward:steward "$STATE" "$STATE/steward" "$CAP" "$CAP/bin"
 chmod 0700 "$STATE" "$STATE/steward"                 # keys, gh's store and the ssh key live under here
 
@@ -66,8 +69,7 @@ as_steward() { setpriv --reuid steward --regid steward --init-groups /usr/local/
 # 2. The first capability: node.
 case "$(uname -m)" in x86_64) arch=amd64 ;; aarch64 | arm64) arch=arm64 ;; *) arch="$(uname -m)" ;; esac
 pin="$(grep "^$arch " "$ROOT/bootstrap/node.pin")" || die "there is no node pinned for this machine's architecture ($arch); see bootstrap/node.pin"
-set -- $pin
-version="$2" sha="$3" url="$4"
+version="$(printf '%s' "$pin" | cut -d' ' -f2)"; sha="$(printf '%s' "$pin" | cut -d' ' -f3)"; url="$(printf '%s' "$pin" | cut -d' ' -f4)"
 if [ ! -x "$CAP/node/$version/bin/node" ]; then
   [ "$sha" != unpinned ] || die "node is not pinned for $arch; see bootstrap/node.pin"
   say "fetching node $version"
@@ -93,10 +95,13 @@ as_steward garden capabilities adopt node >/dev/null || die "the node capability
 as_steward garden bot prepare >/dev/null || die "the steward's home could not be prepared"
 
 # 3. The warden. It is rebuilt at each rejuvenation; install whatever is built.
-if [ ! -x "$CAP/warden/warden" ]; then
-  say "installing the rust capability and building the warden (first boot)"
-  as_steward garden capabilities install rust >/dev/null || die "the rust capability did not install (is it pinned for $arch? capabilities/README.md)"
-  as_steward garden host build >/dev/null || die "the warden did not build; see designs/services.md"
+# Rebuilt whenever its source on the shed has changed since it was built.
+stamp="$(cd "$ROOT/rust" && find warden Cargo.toml Cargo.lock .cargo -type f ! -path '*/tests/*' | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1)"
+if [ ! -x "$CAP/warden/warden" ] || [ "$(cat "$CAP/warden/stamp" 2>/dev/null)" != "$stamp" ]; then
+  say "installing the rust capability and building the warden"
+  out="$(as_steward garden capabilities install rust 2>&1)" || die "the rust capability did not install (is it pinned for $arch? capabilities/README.md): $out"
+  out="$(as_steward garden host build 2>&1)" || die "the warden did not build: $out"
+  printf '%s\n' "$stamp" >"$CAP/warden/stamp"
 fi
 install -o root -g steward -m 4750 "$CAP/warden/warden" /usr/local/libexec/garden-warden
 printf 'slots_root: "%s"\nuid_max: %s\nuid_min: %s\n' "$SLOTS" "$((UID_BASE + COUNT))" "$((UID_BASE + 1))" >/etc/garden/warden.yay
@@ -105,7 +110,7 @@ chmod 0644 /etc/garden/warden.yay
 # 4. Hand over.
 case "${1:-supervise}" in
   supervise)
-    as_steward garden slots clearAll >/dev/null || die "the slots could not be cleared: the warden is not working"
+    out="$(as_steward garden slots clearAll 2>&1)" || die "the slots could not be cleared: the warden is not working: $out"
     say "ready: warden $(/usr/local/libexec/garden-warden '[' --op version ']' | tr '\n' ' ')"
     exec setpriv --reuid steward --regid steward --init-groups /usr/local/bin/garden-env garden supervisor run
     ;;

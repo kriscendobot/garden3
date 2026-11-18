@@ -134,6 +134,19 @@ fn plant_and_clear() {
         (0, 0),
         "clearing an empty slot is a no-op"
     );
+    // release: the home comes back to the caller, readable and writable.
+    fs::create_dir_all(root.join("slot04/worktrees")).unwrap();
+    let (code, reply) = warden(&["[", "--op", "release", "--root", r, "--slot", "slot04", "]"]);
+    assert_eq!((code, int(&reply, "killed")), (0, 0), "{reply:?}");
+    assert!(fs::write(root.join("slot04/worktrees/x"), "x").is_ok());
+    let (code, reply) = warden(&[
+        "[", "--op", "release", "--root", r, "--slot", "slot04", "--uid", "64999", "]",
+    ]);
+    assert_eq!(
+        (code, text(&reply, "code").as_str()),
+        (1, "not-root"),
+        "killing another account's processes still needs root"
+    );
     fs::remove_dir_all(&root).unwrap();
 }
 

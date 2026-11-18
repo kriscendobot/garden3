@@ -64,7 +64,7 @@ Established from the references:
 
 | What | Where it is configured |
 | --- | --- |
-| `endolin-garden-ece02cb4`, the leader | its checkout's `origin`; `GARDEN_PRODUCTION_JOURNAL_REPO` |
+| `endolin-garden-ece02cb4`, the leader | its checkout's `origin`; `GARDEN_PRODUCTION_JOURNAL_REPO`. The new garden's first box, on the same machine and path, has this same name: tell them apart by image (`garden-base`), not by name |
 | `oros-studio-garden-ce242c49` | the same, on the Mac |
 | `endolin-garden2-5bcdff64` | archived in `hosts/`, still has a deploy record: check it is really off |
 | the checkout at `/home/kris/prior-garden` on this machine | `origin` is `git@github.com:kriscendobot/garden.git` |

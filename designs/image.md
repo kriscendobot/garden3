@@ -11,7 +11,7 @@ Files: `Dockerfile`, `entrypoint.sh`, `garden`, `bootstrap/node.pin`.
 
 ## What the image contains
 
-`debian:trixie-slim` and five packages. Nothing of the garden is copied in:
+`debian:trixie-slim` and six packages. Nothing of the garden is copied in:
 the build context is empty (`.dockerignore` is `*`).
 
 | In the image | Why it cannot be a capability |
@@ -21,17 +21,20 @@ the build context is empty (`.dockerignore` is `*`).
 | `git` | the shed arrives and is refreshed by git |
 | `xz-utils` | the first capability is a `.tar.xz` |
 | `uidmap` | `newuidmap` and `newgidmap` must be root-owned setuid on the system path, for building a successor image rootless |
+| `openssh-client` | every host pushes to the repository (a claim is a push) and the bot's login generates an ssh key; OpenSSH publishes source, not binaries, so there is nothing to pin as a capability |
 
 Not in the image: any JavaScript runtime, any toolchain, any agent CLI, the
 GitHub CLI, an init system. The prior garden's image is 14.6 GB (measured by
 `docker image ls` on this host) with systemd, three language toolchains, four
 agent CLIs and Ollama with its ROCm runtime baked in for every host.
 
-**Size and rebuild cost.** Not measured: no image was built in this pass.
-Estimated at 150 to 200 MB, most of it the Debian base and git with its
-dependencies. A rebuild is one `apt-get` layer over the base: tens of
-megabytes, and it downloads nothing that is a capability, because the
-`Dockerfile` names none. Software for a host arrives on that host, when it
+**Size and rebuild cost, measured** on the first host: the image is 275 MB
+(`docker image ls`), against 14.6 GB. A rebuild is one `apt-get` layer over
+the base and took 38 s; it downloads nothing that is a capability, because
+the `Dockerfile` names none. What a host installs is in its capability
+volume: here node 205 MB, the Rust toolchain 630 MB, gh 41 MB. First boot
+(fetch node, fetch and unpack Rust, build the warden) is about 40 s of work;
+a restart is ready in about 5 s. Software for a host arrives on that host, when it
 needs it ([capabilities.md](capabilities.md)).
 
 ## Where everything else comes from
@@ -98,14 +101,19 @@ warden need rather than Docker's default set plus `SYS_ADMIN`.
 
 ## Status
 
-Written, parsed (`sh -n`) and checked for shape by `test/bootstrap.test.js`.
-**Not run:** no image was built and no container started in this pass, so the
-`Dockerfile`, `entrypoint.sh`, the launcher including `adopt` and `promote`,
-and the in-box BuildKit build are untested. `debian:trixie-slim` is named by
-tag, not pinned by digest. Node is pinned for amd64 (and that capability was
-installed and verified from the real archive, offline); node for arm64 and
-the `rust` capability have no sha256 yet, so a first boot stops with a clear
-message at the warden build until they are filled.
+**Run for real on one amd64 host.** The image was built, the box started, and
+first boot completed: accounts, node from its pin, the Rust toolchain as a
+capability, the warden built with no C compiler and installed setuid with its
+policy, the slots cleared through it, and the supervisor idling quietly with
+no remote. A job was run in a slot as its own account under a deadline, and
+could read neither the state directory nor the slots directory. Bugs that only
+running it found are listed in [services.md](services.md).
+
+Not run: `adopt` and `promote`, the in-box BuildKit build, an arm64 host.
+`debian:trixie-slim` is named by tag, not pinned by digest. On this host
+Docker's default resolver does not answer inside containers, so the launcher
+reads host-local settings from `.garden-launcher` (a build network and a
+resolver for the box).
 
 ## Open questions
 

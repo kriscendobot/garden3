@@ -40,12 +40,19 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
   };
   const account = slot => (mode === 'users' ? { uid: uidBase + Number(slot.slice(4)), gid: uidBase + Number(slot.slice(4)) } : {});
   const check = slot => (isSlot(slot) ? slot : refuse('invalid', `bad slot name ${slot}`));
+  // What a slot holds is recorded in the steward's state, not in the slot's
+  // home: once the home is the job's (0700, the slot account's), the steward
+  // cannot read into it until the warden releases it.
   const info = slot => {
-    const text = slots.readIf(`${check(slot)}/.slot.yay`);
+    const text = state.readIf(`slots/${check(slot)}.yay`);
     return text ? parse(text) : null;
   };
 
-  const clear = async slot => ask({ op: 'clear', root: slots.root, slot: check(slot), ...(mode === 'users' ? { uid: account(slot).uid } : {}) });
+  const clear = async slot => {
+    const r = ask({ op: 'clear', root: slots.root, slot: check(slot), ...(mode === 'users' ? { uid: account(slot).uid } : {}) });
+    state.remove(`slots/${slot}.yay`);
+    return r;
+  };
 
   /** Unpack one commit's tree into a directory: files only, no .git. */
   const exportTree = (commit, dir) => {
@@ -66,7 +73,7 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
     },
     info: async slot => info(slot),
     /** Slots that hold a job, by what is on disk. */
-    occupied: async () => slots.list('.').filter(s => isSlot(s) && info(s)),
+    occupied: async () => state.list('slots').filter(f => f.endsWith('.yay')).map(f => f.slice(0, -4)).filter(s => isSlot(s) && info(s)),
 
     /**
      * Build a slot's home for one job, from nothing:
@@ -96,7 +103,7 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
       exportTree(plotCommit, home.root);
       ask({ op: 'plant', root: slots.root, slot, tombstones: TOMBSTONES, dirs: WORKDIRS });
       home.write('JOB.yay', stringify(job));
-      home.write('.slot.yay', stringify({ slot, job: job.id, generation: job.claim?.generation ?? 0, plot, shed_commit: shedCommit, plot_commit: plotCommit, prepared_at: clock.now() }));
+      state.write(`slots/${slot}.yay`, stringify({ slot, job: job.id, generation: job.claim?.generation ?? 0, plot, shed_commit: shedCommit, plot_commit: plotCommit, prepared_at: clock.now() }));
       if (mode === 'users') ask({ op: 'own', root: slots.root, slot, ...account(slot) });
       log(`prepared ${slot} for ${job.id} on plot ${plot}`);
       return home.root;
@@ -125,6 +132,9 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
      */
     harvest: async slot => {
       const rec = info(slot) ?? refuse('empty', `${slot} holds no job`);
+      // The job has ended: whatever its account still runs is killed, and its
+      // home comes back to the steward, who can now read it and carry out.
+      ask({ op: 'release', root: slots.root, slot, ...(mode === 'users' ? { uid: account(slot).uid } : {}) });
       const home = slots.sub(slot);
       const id = rec.job;
       const gen = rec.generation ?? 0;
@@ -178,7 +188,7 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
     clear,
     /** Raze every slot: at boot, and at each quiescence. */
     clearAll: async () => {
-      const names = new Set([...Array.from({ length: count }, (_, i) => slotName(i + 1)), ...slots.list('.').filter(isSlot)]);
+      const names = new Set([...Array.from({ length: count }, (_, i) => slotName(i + 1)), ...slots.list('.').filter(isSlot), ...state.list('slots').filter(f => f.endsWith('.yay')).map(f => f.slice(0, -4)).filter(isSlot)]);
       for (const s of names) await clear(s);
       return [...names].sort();
     },

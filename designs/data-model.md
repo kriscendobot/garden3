@@ -70,8 +70,13 @@ One data model in four places:
 - **SHON in JavaScript** (`src/shon.js`) is the garden's own reading of
   `SHON.md`: null, booleans, numbers, strings, arrays, objects. Bytes and the
   file readers are refused. Its output was checked once against `binyay`,
-  which read it as intended; and the warden reads it with upstream's Rust
-  `shon` in every slot test.
+  which read it as intended.
+- **In Rust, the warden does not link `libyay`** (it would bring a C
+  toolchain into the base image: [services.md](services.md)). It reads SHON
+  and writes YAY with its own few lines, and `rust/conformance` tests them
+  against upstream `libyay`'s `shon` and parser. So "embedding YAY" is, for
+  now, embedding its notation and testing against its library, not linking
+  it, on the Rust side.
 - **Integers**: YAY keeps integers apart from floats and upstream gives them
   as `BigInt`. The garden converts a safe integer to a number on reading and
   refuses a larger one, because nothing it records needs more.
@@ -83,7 +88,7 @@ flags to parse. The same call can later be an eventual send.
 
 Nothing for YAY is in the base image and nothing needs to be a capability:
 the JavaScript parser is a vendored file on the shed, and the Rust crate is
-compiled into the warden from crates.io by the lockfile. The `yay` command is
+used only by the conformance tests on a developer's machine. The `yay` command is
 not used by the garden; it would be a capability if a job wanted it.
 
 ## Toward OCapN and Endo

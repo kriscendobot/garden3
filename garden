@@ -21,7 +21,21 @@ contract() { sha256sum "$HERE/Dockerfile" | cut -d' ' -f1; }
 label_of() { docker image inspect --format "{{ index .Config.Labels \"$LABEL\" }}" "$1" 2>/dev/null || true; }
 die() { echo "garden: $*" >&2; exit 1; }
 
-build() { docker build --label "$LABEL=$(contract)" -t "$IMAGE" -f "$HERE/Dockerfile" "$HERE"; }
+# Host-local settings, for a host whose Docker needs them (ignored by git):
+#   GARDEN_BUILD_NETWORK  the network `docker build` uses (default: Docker's)
+#   GARDEN_NETWORK        the network the box runs on (default: Docker's bridge)
+#   GARDEN_DNS            a resolver for the box, if the network's own does not answer
+[ -f "$HERE/.garden-launcher" ] && . "$HERE/.garden-launcher"
+net_args() {
+  if [ "$1" = build ]; then [ -n "${GARDEN_BUILD_NETWORK:-}" ] && printf -- '--network %s ' "$GARDEN_BUILD_NETWORK"
+  else
+    [ -n "${GARDEN_NETWORK:-}" ] && printf -- '--network %s ' "$GARDEN_NETWORK"
+    [ -n "${GARDEN_DNS:-}" ] && printf -- '--dns %s ' "$GARDEN_DNS"
+  fi
+  true
+}
+# shellcheck disable=SC2046
+build() { docker build $(net_args build) --label "$LABEL=$(contract)" -t "$IMAGE" -f "$HERE/Dockerfile" "$HERE"; }
 create() {
   docker image inspect "$IMAGE" >/dev/null 2>&1 || build
   # The checkout is mounted at its own path, as the tower does, so that a
@@ -31,7 +45,8 @@ create() {
   common="$(git -C "$HERE" rev-parse --path-format=absolute --git-common-dir)"
   case "$common" in "$HERE"/*) common_mount="" ;; *) common_mount="-v $common:$common" ;; esac
   # No -e for any key. --init gives the box a reaping PID 1 without baking one in.
-  docker run -d --name "$NAME" --hostname "$NAME" --init \
+  # shellcheck disable=SC2046
+  docker run -d --name "$NAME" --hostname "$NAME" --init $(net_args run) \
     --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER --cap-add KILL \
     --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges=false \
     --tmpfs /tmp --tmpfs /run \

@@ -52,7 +52,16 @@ export const assemble = (powers = makeNodePowers()) => {
   const clock = powers.clock;
   const lazy = make => {
     let made;
-    return new Proxy({}, { get: (_, method) => (...args) => (made ??= make())[method](...args) });
+    return new Proxy(
+      {},
+      {
+        get: (_, method) => (...args) => {
+          made ??= make();
+          if (typeof made[method] !== 'function') throw new Refusal('usage', `there is no method '${String(method)}'; this service has: ${Object.keys(made).join(', ')}`);
+          return made[method](...args);
+        },
+      },
+    );
   };
   const shards = lazy(() => {
     makeFiles(stateDir).mkdir('.');
@@ -80,7 +89,12 @@ export const assemble = (powers = makeNodePowers()) => {
     // system linker and no registry are needed (rust/.cargo/config.toml).
     const target = `${{ amd64: 'x86_64', arm64: 'aarch64' }[powers.arch()] ?? powers.arch()}-unknown-linux-musl`;
     const cargoEnv = { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin`, HOME: stateDir, CARGO_HOME: path.join(stateDir, 'cargo-home'), CARGO_TARGET_DIR: path.join(stateDir, 'rust-target') };
-    const r = run('cargo', ['build', '--release', '--locked', '--offline', '--target', target, '--manifest-path', path.join(rootRepo, 'rust/Cargo.toml')], { env: cargoEnv, cwd: path.join(rootRepo, 'rust') });
+    let r;
+    try {
+      r = run('cargo', ['build', '--release', '--locked', '--offline', '--target', target, '--manifest-path', path.join(rootRepo, 'rust/Cargo.toml')], { env: cargoEnv, cwd: path.join(rootRepo, 'rust') });
+    } catch (err) {
+      throw new Refusal('build', `cargo could not be run (is the rust capability installed?): ${err.code ?? err.message}`);
+    }
     if (r.status !== 0) throw new Refusal('build', `the warden did not build: ${r.stderr.trim().split('\n').slice(-3).join(' | ')}`);
     const caps = makeFiles(capRoot);
     caps.writeBytes('warden/warden.new', makeFiles(stateDir).readBytes(`rust-target/${target}/release/warden`), 0o755);
@@ -155,7 +169,7 @@ export const assemble = (powers = makeNodePowers()) => {
     host: lazy(() => makeHost({ files: makeFiles, run, rootRepo, stateDir, host, clock, shards, capabilities, slots, log: powers.log, build })),
     project: lazy(() => makeProjects({ files: makeFiles, run, home: env.GARDEN_JOB_HOME ?? env.HOME, repositories: env.GARDEN_REPOSITORIES })),
     clients: lazy(() => makeClientWatch({ shards, run, files: makeFiles, stateDir, host, consentFile: env.GARDEN_CLIENT_CONSENT ?? path.join(rootRepo, 'CLIENT-CONSENT.yay'), clock })),
-    mail: lazy(() => makeBoatman({ files: makeFiles, sha256File: powers.sha256File, towerDir: env.GARDEN_TOWER ?? path.resolve(rootRepo, '../tower'), gardenDir: rootRepo, clock })),
+    mail: lazy(() => makeBoatman({ files: makeFiles, sha256File: powers.sha256File, towerDir: env.GARDEN_TOWER ?? path.resolve(rootRepo, '../tower'), gardenDir: stateDir, clock })),
   };
 };
 

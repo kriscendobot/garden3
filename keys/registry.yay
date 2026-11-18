@@ -6,8 +6,8 @@ keys:
     consumer: "steward"
     file: "steward/.config/gh/hosts.yml"
     provider: "gh"
-    purpose: "The bot account's GitHub token. It lives in one place, gh's own store, written by the bot's login (./garden login); the steward reads it from gh at each call. No job ever holds it."
+    purpose: "The bot account's GitHub token. It lives in one place, gh's own store, written when the operator logs the bot in by hand (gh auth login, in ./garden sh); the steward reads it from gh at each call. No job ever holds it."
   github-ssh:
     consumer: "steward"
     file: "steward/.ssh/id_ed25519"
-    purpose: "The bot account's ssh key, for publishing by git. Generated inside the box at the bot's login and never leaves it; its public half is on the bot's GitHub account."
+    purpose: "The bot account's ssh key, for publishing by git. Generated inside the box by gh at the bot's login, and it never leaves the box; its public half is on the bot's GitHub account."

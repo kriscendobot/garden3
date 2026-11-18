@@ -33,8 +33,8 @@ hardened JavaScript with object capabilities. That is the split adopted here.
 ## The line
 
 **Rust: small, privileged, and able to run with nothing installed.** Today
-that is one program, the **warden** (`rust/warden`, about 500 lines, one
-dependency: `libyay`): it kills a slot account's processes, razes, plants and
+that is one program, the **warden** (`rust/warden`, about 800 lines, **no
+dependencies**): it kills a slot account's processes, razes, plants and
 re-owns a slot's home, and runs a job as that account under its deadline
 ([slots.md](slots.md)). It is the only code that runs as root after boot.
 
@@ -99,31 +99,62 @@ timed_out: false
 elapsed_s: 1312
 ```
 
-Rust parses the request with upstream `libyay`'s `shon` module and writes the
-reply with its encoder. JavaScript writes the request with `src/shon.js` and
-parses the reply with the vendored `libyay` parser. The same data model is on
-disk, on the command line and across the seam. Chosen over native bindings
-(which would put root-privileged code inside the service process) and over
-WebAssembly (which cannot change users or kill processes). A request names
-everything it acts on, so the warden's authority is its arguments, bounded by
-one policy file.
+**The warden links nothing.** It first used upstream `libyay` for both
+notations. That brought a procedural macro into the build, and so a C compiler
+and system linker into the base image. So the warden now reads SHON and writes
+YAY with about a hundred lines of its own (`rust/warden/src/wire.rs`), for
+exactly the subset it uses, and a separate crate, `rust/conformance`, holds
+those lines to upstream `libyay`: the same requests must read the same, and
+the warden's replies must parse back equal. JavaScript writes the request with
+`src/shon.js` and parses the reply with the vendored `libyay` parser. The same
+data model is on disk, on the command line and across the seam. Chosen over
+native bindings (which would put root-privileged code inside the service
+process) and over WebAssembly (which cannot change users or kill processes).
+A request names everything it acts on, so the warden's authority is its
+arguments, bounded by one policy file.
 
 ## Getting binaries without a new image
 
-The warden is compiled, so a host needs a binary for its own architecture:
-amd64 on the Linux hosts, and arm64 if the Oros Studio Mac is Apple silicon
-(not recorded in the references; a Mac Studio suggests it). At each
-rejuvenation a host **builds the warden from the shed's `rust/`** with the
-pinned `rust` capability (`garden host build`): `cargo build --release
---locked`, the lockfile pinning every crate by checksum. Hosts are compared
-at verify by shed commit and toolchain pin, not by binary hash, since
-binaries differ by architecture. The alternative, fetching prebuilt binaries
-by hash from a release, would spare each host a toolchain of several hundred
-megabytes and needs a release pipeline and someone to trust for the build.
+The warden is compiled, so a host needs a binary for its own architecture,
+whatever that turns out to be. At first boot, and whenever its source on the
+shed has changed, a host **builds the warden from the shed's `rust/`**
+(`garden host build`) with the `rust` capability: rustc, cargo and the musl
+standard library, nothing else. It is built for the musl target and linked by
+`rust-lld`, the linker inside the toolchain (`rust/.cargo/config.toml`), with
+`--locked --offline`: no C compiler, no system linker, no registry, no
+network. The result is a static binary of about 500 KB.
+
+The alternative, fetching prebuilt binaries by hash from a release, would
+spare each host a 630 MB toolchain and needs a release pipeline and someone to
+trust for the build.
 
 The bootstrap resolver is **not** Rust: fetching node is thirty lines of
-shell over `curl` and `sha256sum`, and a Rust fetcher would need a TLS stack
-compiled in and would itself have to be delivered somehow.
+shell over `curl` and `sha256sum`.
+
+## What running it found
+
+The first real boot, on one host, found these, all fixed:
+
+- `./garden sh` ran a path that did not exist in the box and re-ran the whole
+  root entrypoint; it now enters as the steward through one wrapper the
+  entrypoint writes.
+- The entrypoint's `set --` while reading the node pin overwrote the
+  container's command, so `supervise` became `amd64`.
+- `garden host build` was not a method of the host service; an unknown method
+  crashed instead of being refused.
+- The entrypoint fetched node and then the capability record fetched it
+  again; it now adopts what is already unpacked and verified.
+- The slots directory was root's, so the steward could not build a home in
+  it; and the steward read each slot's record from inside the job's home,
+  which it cannot do once the home is the job's. The directory is now the
+  steward's, the record is in the steward's state, and a new warden operation,
+  `release`, kills the job's processes and gives the home back to the steward
+  for harvest.
+- The warden was not rebuilt when its source changed.
+- A capability's verify pattern anchored with `$` never matched output ending
+  in a newline.
+- The steward's home was the checkout, where gh and ssh-keygen would have
+  written a token and a private key.
 
 ## Style, for the ascent
 
@@ -136,12 +167,14 @@ methods are async and exchange only plain data; expected failures are
 
 ## Status
 
-Compiled and run in this pass: the warden (debug and release, `cargo build
---offline`, with `libyay` 1.1.1 from the local registry cache), its four
-integration tests, `cargo fmt --check` and `cargo clippy -D warnings`; all of
-`src/` under `node --test` (Node 22.22.1). The JavaScript drives the real
-warden binary in the slot and dispatch tests. Not run: `entrypoint.sh`, the
-launcher, `garden host build`, and anything as root.
+Compiled and run: the warden, on this host with its own toolchain (tests,
+`cargo fmt --check`, `cargo clippy -D warnings`), with the pinned toolchain
+and no C compiler on `PATH`, and inside the running box by the entrypoint; the
+conformance crate against `libyay` 1.1.1; all of `src/` under `node --test`.
+In the box, as real accounts: the setuid warden cleared slots, ran a job as a
+slot account under a deadline (stopped at it, status 124), released the home
+and razed it. Not run: `users` mode through a whole dispatch with a real
+harness, and anything on arm64.
 
 ## Open questions
 

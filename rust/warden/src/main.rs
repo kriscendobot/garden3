@@ -35,6 +35,8 @@ use wire::{encode_reply, parse_flat, parse_request, Value};
 extern "C" {
     fn kill(pid: i32, sig: i32) -> i32;
     fn geteuid() -> u32;
+    fn getuid() -> u32;
+    fn getgid() -> u32;
 }
 const SIGTERM: i32 = 15;
 const SIGKILL: i32 = 9;
@@ -218,6 +220,56 @@ fn processes_of(uid: u32) -> Vec<i32> {
     pids
 }
 
+/// Kill every process of a slot's account, until none remain.
+fn stop_account(uid: u32) -> Result<u64, Refusal> {
+    let me = unsafe { geteuid() };
+    if uid == 0 || uid == unsafe { getuid() } {
+        return refuse(
+            "invalid",
+            "refusing to kill the processes of root or of the caller",
+        );
+    }
+    if me != 0 {
+        return refuse("not-root", "killing a slot's processes needs root");
+    }
+    let mut killed = 0u64;
+    for _ in 0..20 {
+        let pids = processes_of(uid);
+        if pids.is_empty() {
+            break;
+        }
+        for pid in pids {
+            if unsafe { kill(pid, SIGKILL) } == 0 {
+                killed += 1;
+            }
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    if !processes_of(uid).is_empty() {
+        return refuse("survivors", format!("uid {uid} still has processes"));
+    }
+    Ok(killed)
+}
+
+/// release: a job has ended. Kill whatever its account still runs, then give
+/// its home back to the caller (the steward), so the steward can carry the
+/// job's work out. The home is never given to anyone else.
+fn release(req: &HashMap<String, Value>) -> Outcome {
+    let home = home_of(req)?;
+    let mut killed = 0;
+    if let Some((uid, _)) = account(req)? {
+        killed = stop_account(uid)?;
+    }
+    if home.exists() {
+        let (uid, gid) = unsafe { (getuid(), getgid()) };
+        chown_tree(&home, uid, gid).map_err(|e| Refusal {
+            code: "io",
+            message: e.to_string(),
+        })?;
+    }
+    Ok(HashMap::from([("killed".into(), Value::Integer(killed))]))
+}
+
 /// clear: no process, no file. Kills every process of `uid` (when given; this
 /// needs root, and is refused for uid 0 and for the caller's own uid), then
 /// razes the home.
@@ -225,31 +277,7 @@ fn clear(req: &HashMap<String, Value>) -> Outcome {
     let home = home_of(req)?;
     let mut killed = 0u64;
     if let Some((uid, _)) = account(req)? {
-        let me = unsafe { geteuid() };
-        if uid == 0 || uid == me {
-            return refuse(
-                "invalid",
-                "refusing to kill the processes of root or of the caller",
-            );
-        }
-        if me != 0 {
-            return refuse("not-root", "killing a slot's processes needs root");
-        }
-        for _ in 0..20 {
-            let pids = processes_of(uid);
-            if pids.is_empty() {
-                break;
-            }
-            for pid in pids {
-                if unsafe { kill(pid, SIGKILL) } == 0 {
-                    killed += 1;
-                }
-            }
-            std::thread::sleep(Duration::from_millis(100));
-        }
-        if !processes_of(uid).is_empty() {
-            return refuse("survivors", format!("uid {uid} still has processes"));
-        }
+        killed = stop_account(uid)?;
     }
     let removed = raze(&home).map_err(|e| Refusal {
         code: "io",
@@ -462,6 +490,7 @@ fn main() {
         "clear" => clear(&request),
         "plant" => plant(&request),
         "own" => own(&request),
+        "release" => release(&request),
         "run" => run(&request),
         "version" => Ok(HashMap::from([(
             "version".into(),
@@ -469,7 +498,7 @@ fn main() {
         )])),
         _ => refuse(
             "invalid",
-            format!("unknown op `{op}` (clear, plant, own, run, version)"),
+            format!("unknown op `{op}` (clear, plant, own, release, run, version)"),
         ),
     };
     match outcome {

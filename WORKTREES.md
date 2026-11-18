@@ -38,7 +38,9 @@ survive that branch's next truncation.
 | `.garden-state/capabilities/`, `harvest/`, `runs/` | the installed record; what jobs left; run logs |
 | `repositories/<org>-<name>.git` | one bare repository per upstream project, fetched by the steward only |
 | `slots/slotNN/` | a running job's home; razed before and after every job |
-| `mail/inbox/`, `mail/outbox/` | mail in transit with the tower |
+| `.garden-state/mail/inbox/`, `outbox/` | mail in transit with the tower: under the state directory, which jobs cannot read |
+| `.garden-state/steward/` | the steward's home in the box: gh's store, the bot's ssh key, pinned host keys, its git identity |
+| `.garden-launcher` | what this host's Docker needs (a build network, a resolver) |
 | `CLIENT-CONSENT.yay` | a client host's owner's consent; never tracked |
 
 A job never gets a worktree of anything above. Its project checkouts are made

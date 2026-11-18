@@ -17,6 +17,9 @@
 /repositories/
 /mail/
 
+# What this host's Docker needs (network, resolver): the launcher reads it.
+/.garden-launcher
+
 # A client host's consent is the owner's, and stays on that machine.
 /CLIENT-CONSENT.yay
 
