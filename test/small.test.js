@@ -105,6 +105,7 @@ test('the hand-off example in the wrap-it-up skill is YAY a worker could write',
   const { parse } = await import('../src/yay.js');
   const text = fs.readFileSync(path.join(import.meta.dirname, '../skills/wrap-it-up/SKILL.md'), 'utf8');
   const example = /```yay\n([\s\S]*?)```/.exec(text)[1].replace(/^ {3}/gm, '');
-  const doc = parse(example);
-  assert.deepEqual(doc.steps.map(s => s.id).sort(), ['fix-a-migrate', 'fix-a-schema']);
+  assert.deepEqual(Object.keys(parse(example)), ['done', 'reason', 'remaining']);
+  assert.match(W.clockNote({ id: 'j', windowS: 2400, deadlineIso: 'x' }), /Do not name a successor/);
+  assert.match(W.clockNote({ id: 'j', windowS: 2400, deadlineIso: 'x', planner: true }), /You are a planner.*all the way to completion/);
 });

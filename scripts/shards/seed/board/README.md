@@ -1,6 +1,6 @@
 # board
 
-The job board, and nothing else. Design: `shed:designs/board.md`.
+The job board, and the two small records that must move with it. Design: `shed:designs/board.md`.
 
 | Path | Holds |
 | --- | --- |
@@ -9,6 +9,7 @@ The job board, and nothing else. Design: `shed:designs/board.md`.
 | `claimed/<host>/<id>.yay` | claimed; the accepted push is the claim |
 | `failed/<id>.yay` | failed terminally; blocks its dependents until a maintainer resolves it |
 | `quiescence.yay` | the fleet's coordinated-restart state |
+| `watch.yay` | the GitHub watcher's cursor, and the issues still to report on |
 | `EPOCH` | this branch's truncation epoch |
 
 Completed jobs leave for the `archive` branch. Clone this branch shallow and

@@ -18,9 +18,15 @@ a Docker Desktop Linux VM with the garden's directory on virtiofs. It has its
 own subscription pool (`claude-oros`, 180M tokens a week), runs Claude workers
 only, has no AWS credential and a narrower GitHub token. Its slow filesystem
 is the stated cause of several of the prior garden's clone and contention
-fixes. The word "donated" appears nowhere in the references, and no terms of
-the loan are recorded: who lends it and on what conditions is the
-maintainer's to state.
+fixes.
+
+The maintainer has since said: Oros Studio is **donated without terms**. The
+donor sets no hours and no load limits, so any limits are the garden's own
+choice. Its operator's interest is in learning to operate a meta-harness and
+in encouraging open-source technologies they can rely on. The consent file's
+limits therefore default to what the garden chooses (two slots, no hours),
+and the mechanism for an owner's limits stays, for this host if that changes
+and for others.
 
 What the prior garden can do to it: send `sysop` operations over the journal
 (set worker counts, drain, restart or stop a unit, deploy a commit), pin jobs
@@ -148,9 +154,11 @@ names with no effect yet); the host's status report; load awareness.
 
 ## Open questions
 
-1. **The terms of the loan.** Who lends Oros Studio, and what they expect
-   (hours, load, which work), is not recorded anywhere read. The consent
-   file's limits should be written from the answer.
+1. **Its architecture.** Not recorded in the references and not yet answered.
+   Nothing in the garden assumes amd64 for a client host: capabilities are
+   per architecture, the warden is built on the host for the host, and the
+   entrypoint picks the node pin by `uname -m`. But node for arm64 has no
+   hash yet, so an arm64 host cannot boot until it is pinned.
 2. **Load on the lender's machine.** The prior garden has an unbuilt design
    for backing off under CPU pressure
    (`designs/cpu-back-pressure-job-dispatch.md`). Hours and a slot limit are

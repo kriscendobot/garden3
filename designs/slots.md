@@ -12,13 +12,17 @@ Code: `src/slots.js`, `src/project.js`, `src/dispatch.js`, `rust/warden`.
 ## The choice
 
 The maintainer asked for an account per plot, and wondered about one per job.
-The garden has **one account per running job, from a fixed pool**:
+Decided: **one account per running job, from a fixed pool**, and not a fresh
+account per job:
 `slot01`..`slotNN`, created by the entrypoint, each alone in its own group.
 Dispatch takes a free slot, builds its home from nothing, runs the job as that
 account, carries the work out, and razes the home. This gives the isolation of
 an account per job (no two jobs ever share a uid at the same time, and a job
 finds nothing of its predecessor) without creating and deleting accounts, and
 it subsumes an account per plot: a plot has no home of its own, only a branch.
+(A uid is reused by later jobs. Clearing kills every process of the account
+and removes what it owns in its home and the temp directories; that is the
+whole of the separation between one job and the next in a slot.)
 
 ## A slot's life
 
@@ -112,19 +116,14 @@ root. Design only: the steward publishing harvested branches and acting on
 
 ## Open questions
 
-1. **Pool against true per-job accounts.** The pool reuses uids across jobs
-   over time. Clearing kills every process and removes every file the uid
-   owns in the home and the temp directories, but a file a job managed to
-   leave elsewhere under that uid would be readable by a later job. Fresh
-   uids per job would close that at the price of account churn.
-2. **`git clone --shared` against linked worktrees.** The checkout breaks if
+1. **`git clone --shared` against linked worktrees.** The checkout breaks if
    the bare repository prunes objects under it (`gc.pruneExpire never` is set
    for that reason). Is the borrowed checkout an acceptable reading of "a
    single worktree for each project"?
-3. **The bare repositories are world-readable** inside the box, since they
+2. **The bare repositories are world-readable** inside the box, since they
    mirror public projects. A private project needs a different arrangement.
-4. **A setuid helper.** The alternative is a root daemon on a socket; the
+3. **A setuid helper.** The alternative is a root daemon on a socket; the
    helper is smaller and has no listener. The policy file is what bounds it.
-5. **Jobs cannot act on GitHub directly** (comment, open a pull request). The
+4. **Jobs cannot act on GitHub directly** (comment, open a pull request). The
    plan is requests in `outbox/` that the steward carries out. Is that
    acceptable latency for review conversations?

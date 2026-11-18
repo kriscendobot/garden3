@@ -14,8 +14,8 @@ archiving its branches. The procedure itself is on the `gate` branch:
 ## The decision
 
 - The existing GitHub repository is renamed (proposed: `garden-prior`; a
-  parameter). It keeps its 65 branches, its issues and pull requests, and
-  everything attached to it.
+  parameter) and then archived, read-only. It keeps its 65 branches, its
+  issues and pull requests, and everything attached to it.
 - A new repository takes the original name. It shares no git history with the
   old one. Its default branch is `main`: a README and the setup wizard.
 - The prior garden is recorded as the immediate ancestor by reference
@@ -45,9 +45,12 @@ variable; and it lists `kriskowal/garden` as an alias, the name the
 repository had before an earlier transfer, whose redirect also resolves
 through the name being reused.
 
-Therefore the order is fixed: **every prior host is stopped, or repointed and
-seen working against the renamed repository, before the fresh repository is
-created.**
+The maintainer has since said the prior garden is **already halted** and will
+be **archived**. So no host is repointed, and the renamed repository is made
+read-only once it is aside. The order still matters, because a host that was
+missed or restarted would meet the reused name: **every known prior host is
+verified halted before the fresh repository is created**, and the runbook
+refuses to go on without that.
 
 ## What knows the old URL
 
@@ -85,10 +88,9 @@ exercised only in its dry-run mode against no network (it prints its plan).
 
 ## Open questions
 
-1. **The name for the moved-aside repository.**
-2. **When the prior garden stops.** Does it keep running, repointed, beside
-   the new one for a time, or is the cutover also its retirement?
-3. **Open work.** Open pull requests and issues stay with the old repository.
+1. **The name for the moved-aside repository.** `garden-prior` is the
+   default; not confirmed.
+2. **Open work.** Open pull requests and issues stay with the old repository.
    Which are re-filed against the new one?
-4. **The tower's view** must be repointed (or pointed at the new layout) by
+3. **The tower's view** must be repointed (or pointed at the new layout) by
    the tower's own maintainer-side change; the garden cannot do it.

@@ -16,17 +16,22 @@ A job is one YAY file whose directory is its state:
 | Path | State |
 | --- | --- |
 | `open/<id>.yay` | posted; claimable when every job in its `after` has left the board |
-| `held/<id>.yay` | waiting: for a maintainer (`hold.reason`), or for the steps of its own hand-off |
+| `held/<id>.yay` | waiting: for a maintainer (`hold.reason`), or, a planner, for the steps it dispatched |
 | `claimed/<host>/<id>.yay` | claimed; the accepted push is the claim |
 | `failed/<id>.yay` | failed terminally; still blocks its dependents |
 
 Fields: `id`, `role`, `title`, `body` (a block string: what the worker reads),
 `arc`, `priority` (0 soonest to 9), `after`, `requires`, `projects`, `plot`,
 `window_s`, `posted_at`, `posted_by`, `source`; then what the board maintains:
-`level`, `steps`, `under`, `abandoned`, `handoffs`, `handoff_log`, `cost`,
+`level`, `steps`, `under`, `abandoned`, `planner`, `replaces`, `plans`,
+`plan_log`, `origin`, `cost`,
 `cost_under`, `attempts`, `generation`, `claim` (a lease: `at`, `generation`,
 `window_s`, `expires_at`), `expiries`, `expired_claims`, `late_runs`, `hold`,
 `go_ahead` ([omega.md](omega.md), [deadlines.md](deadlines.md)).
+
+`watch.yay` beside the jobs is the watcher's cursor and its list of issues
+still to report on ([watcher.md](watcher.md)); `quiescence.yay` is the fleet's
+restart state.
 
 A dependency is satisfied by absence. A finished job goes to the archive; a
 failed one stays in `failed/` and keeps blocking until a maintainer releases or
@@ -41,7 +46,8 @@ withdraws it. A dependency cycle is refused when it would be created.
 | `complete(id, done)` | archive first, then leave the board; only the holding host may |
 | `complete(id, failed)` | moves to `failed/` |
 | `complete(id, withdrawn)` | a maintainer's act, in any state |
-| `handoff` | the planning event ([omega.md](omega.md)) |
+| `handoff` | a job out of time is archived and a planner takes its place: the planning event ([omega.md](omega.md)) |
+| `plan` | a planner dispatches the remaining steps as its children |
 | `release` | back to `open/`: a requeue, or a maintainer's go-ahead on a held or failed job |
 | `abandon` | back-tracks a job and its subtree |
 | `sweep` | deterministic upkeep, on every host: reopen a job whose steps are done, drop a claim the archive already has, expire every claim whose lease has run out ([deadlines.md](deadlines.md)) |
@@ -89,8 +95,8 @@ cost and its report.
 ## Status
 
 Implemented and tested (`test/board.test.js`, `test/boardService.test.js`).
-Design only: turning GitHub comments into posts (the watchers; see
-[hosts.md](hosts.md)).
+Issues and comments on the garden's own repository become posts and verbs
+through the watcher ([watcher.md](watcher.md)).
 
 ## Open questions
 

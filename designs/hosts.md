@@ -57,14 +57,13 @@ From its scripts:
 ## Steering from GitHub
 
 The purpose is unchanged: the same maintainers operate the garden through
-GitHub. What exists here is the receiving end: the board's `post`, `release`
-and `abandon`, the budget's `setThrottle`, each taking the login that asked,
-and `journal:config/maintainers.yay` to check it against. The watchers that
-turn comments, mentions and issues into those calls are **not ported**. In the
-prior garden they are `comment-watcher.sh` (2,400 lines), `mention-watcher.sh`,
-`issue-inbox-watcher.sh`, `triager.sh` and the `gh` wrapper with its identity
-pin and provenance footer. They are the first thing to adopt after this pass,
-as a watcher service that holds the bot's key in the steward.
+GitHub. The first watcher is built: the one on the garden's own repository,
+by which a maintainer opens work with an issue and releases, abandons and
+throttles by comment, and the steward answers there
+([watcher.md](watcher.md)). The watchers on the managed project repositories
+are **not ported**: in the prior garden they are `comment-watcher.sh` (2,600
+lines), `mention-watcher.sh`, `triager.sh`, `ci-watcher.sh` and
+`receipt-watcher.sh`. They are next, on the same client and the same gate.
 
 Dropped on purpose: the GitHub Pages board (`docs/bulletin/`, `bulletin.sh`,
 the pages watcher and shepherd, the journalist), which was also the largest
@@ -76,17 +75,17 @@ skills, its arcs and schedules).
 
 Implemented and tested: the supervisor's tick and its leader gating, claims
 between hosts, per-host usage branches, catch-up of a returning host. Design
-only: status and heartbeat on the host branch; the watchers; noticing a dead
-leader.
+only: status and heartbeat on the host branch; the watchers on managed repositories;
+noticing a dead leader.
 
 ## Open questions
 
 1. **Leader failure.** If the leader dies, claims, dispatch and the deadline
    watch continue on other hosts, but no quiescence advances until a
    maintainer names another leader. The prior garden is the same.
-2. **Which watchers come first**, and whether the comment grammar (the
-   verbs, the address gate, the reaction and reply receipts) is carried over
-   unchanged.
+2. **Which watcher comes next**: comments on managed repositories' pull
+   requests is the one most work arrives by. Whether its verb table (rebase,
+   retcon, shepherd, review, and the rest) is carried over unchanged.
 3. **No per-host orders for maintainer-run hosts.** A maintainer acts on such
    a host at its terminal. Is a remote order needed there too, or is that
    what `clients` is for?

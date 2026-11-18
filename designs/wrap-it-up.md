@@ -61,7 +61,8 @@ commit read.
   (`clockNote`). The hook says nothing if it has no clock and never fails.
 - **The wording and the ways out.** "Wrap up now": land what is proven; then
   finish if the rest fits, or hand off and say what remains; never report an
-  unfinished job as complete.
+  unfinished job as complete. The priors' "post one successor" is gone (see
+  below).
 - **The wall.** The warden stops the whole process group at the window (TERM,
   then KILL after `kill_after_s`). At harvest, uncommitted work is saved to
   `wip/<id>` in the project's repository.
@@ -76,19 +77,20 @@ three things a run can amount to after it:
 | The run left | It is | The board does |
 | --- | --- | --- |
 | `outbox/report.md`, exit 0 | done | archive, leave the board |
-| `outbox/handoff.yay` | a hand-off: the planning event | post the steps, hold the job, recompute levels |
+| `outbox/handoff.yay` | a hand-off: the planning event | archive the job as handed-off, post a planner in its place, recompute levels (a planner's own `handoff.yay` lists the steps it dispatches) |
 | neither, stopped at the wall | an overrun | requeue; no level changes |
 
 A job may also hand off before any note, as soon as it sees the job will not
 fit, as the tower's prompt allows.
 
-**One place the two do not fit.** The prior garden's nudge distinguishes a
-*continuation* ("for one continuous, sequential unit ... post one successor")
-from an *orchestration* of separable stages. In the garden both are a hand-off
-and both are a planning event, so a job that merely needs a second window to
-continue raises its level by one. Wrap-it-up's behaviour is unchanged; the
-consequence is in how omega reads it. The overrun path is the one that carries
-work forward without a planning event, and it is not something a job chooses.
+**Where the two did not fit, and how it was settled.** The prior garden's
+nudge distinguishes a *continuation* ("for one continuous, sequential unit ...
+post one successor") from an *orchestration* of separable stages. The
+maintainer has removed the first: a job that runs out of time names no
+successor. A planner is posted as its parent to plan the remaining steps to
+completion ([omega.md](omega.md)). The note's wording was changed to say so,
+and that is the one change to wrap-it-up as found: the signal, the leads, the
+wall and the wip save are as they were.
 
 ## Quiescence
 
@@ -105,8 +107,6 @@ exercised: a real harness calling the hook.
 
 ## Open questions
 
-1. **Continuations and level** (above): should a single-step hand-off that only
-   continues the same work count as planning?
-2. **Should a quiescence be able to pull deadlines in**, sending the warning
+1. **Should a quiescence be able to pull deadlines in**, sending the warning
    early so that a restart need not wait a whole window? Neither prior does.
-3. **Harnesses without a hook** get only the prompt's clock, as in the tower.
+2. **Harnesses without a hook** get only the prompt's clock, as in the tower.

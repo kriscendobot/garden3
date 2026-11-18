@@ -18,17 +18,17 @@ their cap; hosts with expired claims
 more than a month. Ask whether any throttle should change. Do not change one:
 `setThrottle` takes a maintainer's login.
 
-## Repeated hand-offs
+## Re-planning
 
-When a job hands off for the second time or more, a review job names it. There
-is no limit on hand-offs; the question is which of two things is happening.
-Read the job's record and its `handoff_log`, and weigh:
+When a planner dispatches steps for the second time or more, a review job
+names it. There is no limit on plans; the question is which of two things is
+happening. Read the planner's record and its `plan_log`, and weigh:
 
 - **Is the scope growing?** New steps name ground the earlier ones did not:
   another subsystem, a prerequisite nobody knew of. The level rose because
   the work is larger than it looked. That is information, not failure.
 - **Or is it not ending?** The steps restate the same ground; the reasons
-  repeat; each hand-off costs as much as the last and nothing has landed on
+  repeat; each plan costs as much as the last and nothing has landed on
   any project branch between them.
 - **What has it cost**, in tokens and time, against its arc's share and
   against what finishing would be worth to the maintainer who asked?

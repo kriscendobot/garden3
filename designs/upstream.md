@@ -12,7 +12,7 @@ needs them. "Upstream" is the prior garden and the tower. The record is
 
 ## What is here to begin with
 
-Roles: the common brief; `steward` and `accountant` (the shed's); `builder`,
+Roles: the common brief; `steward`, `accountant` and `planner` (the shed's); `builder`,
 `designer`, `reviewer` and the plot brief (genome). Skills: `job-board`,
 `quiescence`, `upstream-adoption`, `successor-image` (the shed's);
 `project-checkout`, `wrap-it-up` (genome). On the gate: `boatman`, `keys`,
@@ -80,10 +80,10 @@ No tooling beyond the test. Nothing has been adopted by the procedure yet.
 
 ## Open questions
 
-1. **What to adopt first.** In this pass's judgement: the GitHub watchers
-   (the garden cannot yet hear its maintainers), then plot trials and
-   scoring, then the pull-request roles (shepherd, fixer, weaver) and their
-   skills.
+1. **What to adopt next.** The garden's own watcher is built. In this pass's
+   judgement: the watcher on managed repositories' pull requests, then the
+   steward publishing branches and pull requests, then plot trials and
+   scoring, then the pull-request roles (shepherd, fixer, weaver).
 2. **Private provenance.** A port-log entry naming a tower path and commit
    discloses that the path exists. The entries here name only mechanisms'
    files. Say if tower sources should be recorded less precisely.

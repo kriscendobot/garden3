@@ -61,8 +61,10 @@ is placed on a host by its owner.
 Implemented and tested: set, modes, pattern, consumer, refusal of a loose
 mode, status without values, the scrub (`test/dispatch.test.js`). `garden keys set <name>` takes the
 value on standard input and refuses one given as an argument
-(`test/cli.test.js`). Design only: the harness's key helper, and the steward's
-publishing.
+(`test/cli.test.js`). The steward's reads and writes to GitHub take the token
+from its file on each call and give it to curl on standard input
+(`test/watcher.test.js`). Design only: the harness's key helper, and the
+steward publishing branches and pull requests.
 
 ## Open questions
 

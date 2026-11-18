@@ -33,5 +33,7 @@ Skills: [job-board](../../skills/job-board/SKILL.md),
 Done: the maintainers can see, from GitHub, what the garden is doing with
 what they asked.
 
-(The watchers that bring GitHub's comments to the steward are not built yet:
-[designs/hosts.md](../../designs/hosts.md).)
+(Issues and comments on the garden's own repository reach the board through
+the watcher, and acknowledgements and reports go back through
+`src/steward.js`: [designs/watcher.md](../../designs/watcher.md). Publishing
+branches and pull requests is not built yet.)

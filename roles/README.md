@@ -14,7 +14,8 @@ harness does not load them by itself; an agent reads the ones its job names.
 | --- | --- | --- |
 | [COMMON](COMMON.md) | the shed | what every role shares |
 | [steward](steward/AGENT.md) | the shed | hears the maintainers, posts and settles jobs, publishes |
-| [accountant](accountant/AGENT.md) | the shed | the weekly slate; reviews engagements that keep handing off |
+| [accountant](accountant/AGENT.md) | the shed | the weekly slate; reviews engagements that keep re-planning |
+| [planner](planner/AGENT.md) | the shed | stands in for a job that ran out of time: plans the rest and dispatches it |
 | [PLOT](PLOT.md) | each plot | what the working roles on a plot share |
 | [builder](builder/AGENT.md) | each plot | makes the change |
 | [designer](designer/AGENT.md) | each plot | writes the design a change needs first |
