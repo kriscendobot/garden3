@@ -1,0 +1,10 @@
+# The one tool fetched before any of the garden's own code can run: the
+# JavaScript runtime. entrypoint.sh reads this file because it cannot read
+# YAY; test/bootstrap.test.js checks that it agrees with
+# capabilities/node/capability.yay, which stays the source of truth. Fields:
+#   <arch> <version> <sha256> <url>
+# A sha256 of "unpinned" is refused. Fill both files with
+#   garden capabilities pin node
+# and copy the hashes here.
+amd64 22.11.0 unpinned https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz
+arm64 22.11.0 unpinned https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-arm64.tar.xz

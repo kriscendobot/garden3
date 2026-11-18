@@ -1,0 +1,84 @@
+#!/bin/sh
+# garden — the launcher. Runs on a host, outside the box, as the maintainer.
+#
+# Usage: ./garden [up | sh | stop | status | build | check | adopt <archive> | promote <digest12> | reset]
+#
+# Shell, because it runs before any runtime exists and only arranges for one
+# (designs/services.md). The box is one container: this checkout mounted at
+# its own path, a volume for capabilities, no key in its environment (designs/keys.md).
+#
+# Ported in shape from the tower's `tower` launcher: the instance name, the
+# build contract label, and adopt/promote for a successor image built inside
+# the box. Unlike the tower's, the build contract is the Dockerfile alone,
+# because the image copies nothing in.
+set -eu
+HERE="$(cd "$(dirname "$0")" && pwd -P)"
+id8="$(printf '%s' "$HERE" | sha256sum | cut -c1-8)"
+NAME="$(hostname -s)-$(basename "$HERE")-$id8"
+IMAGE="garden-base"
+LABEL="garden.build-contract-sha"
+contract() { sha256sum "$HERE/Dockerfile" | cut -d' ' -f1; }
+label_of() { docker image inspect --format "{{ index .Config.Labels \"$LABEL\" }}" "$1" 2>/dev/null || true; }
+die() { echo "garden: $*" >&2; exit 1; }
+
+build() { docker build --label "$LABEL=$(contract)" -t "$IMAGE" -f "$HERE/Dockerfile" "$HERE"; }
+create() {
+  docker image inspect "$IMAGE" >/dev/null 2>&1 || build
+  # The checkout is mounted at its own path, as the tower does, so that a
+  # worktree's pointer to its repository resolves inside the box too. When the
+  # checkout is a worktree of a bare repository beside it (the wizard's
+  # layout), that repository is mounted as well.
+  common="$(git -C "$HERE" rev-parse --path-format=absolute --git-common-dir)"
+  case "$common" in "$HERE"/*) common_mount="" ;; *) common_mount="-v $common:$common" ;; esac
+  # No -e for any key. --init gives the box a reaping PID 1 without baking one in.
+  docker run -d --name "$NAME" --hostname "$NAME" --init \
+    --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER --cap-add KILL \
+    --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges=false \
+    --tmpfs /tmp --tmpfs /run \
+    -e GARDEN_ROOT="$HERE" -e GARDEN_HOST="$NAME" -e GARDEN_SLOT_COUNT="${GARDEN_SLOT_COUNT:-4}" \
+    -v "$HERE:$HERE" $common_mount -v "garden-cap-$id8:/opt/garden/cap" \
+    "$IMAGE" supervise
+}
+check() {
+  have="$(label_of "$IMAGE")"; want="$(contract)"
+  [ "$have" = "$want" ] && echo "image matches the Dockerfile ($want)" || { echo "image is stale: built from ${have:-nothing}, the Dockerfile is $want"; return 1; }
+}
+
+case "${1:-up}" in
+  up) docker container inspect "$NAME" >/dev/null 2>&1 && docker start "$NAME" >/dev/null || create ;;
+  sh) docker exec -it "$NAME" /garden/entrypoint.sh sh ;;
+  stop) docker stop "$NAME" ;;
+  status) docker ps --filter "name=$NAME" --format '{{.Names}} {{.Status}}'; check || true ;;
+  build) build ;;
+  check) check ;;
+  reset) docker rm -f "$NAME" >/dev/null 2>&1 || true; create ;;
+  adopt)
+    # Take a successor image built inside the box: <digest12>.docker.tar with
+    # <digest12>.yay beside it. Every check must pass before it is loaded.
+    tarball="${2:?usage: garden adopt <archive.docker.tar>}"; manifest="${tarball%.docker.tar}.yay"
+    [ -f "$tarball" ] && [ -f "$manifest" ] || die "need the archive and its manifest"
+    field() { sed -n "s/^$1: \"\\(.*\\)\"\$/\\1/p" "$manifest"; }
+    want="$(contract)"
+    [ "$(field contract)" = "$want" ] || die "the archive was built from another Dockerfile than this checkout's"
+    [ "$(field archive_sha256)" = "$(sha256sum "$tarball" | cut -d' ' -f1)" ] || die "the archive does not match its manifest"
+    d12="$(printf '%s' "$want" | cut -c1-12)"
+    tar -xOf "$tarball" manifest.json | grep -q "\"RepoTags\":\\[\"garden-successor:$d12\"\\]" || die "the archive's tag is not garden-successor:$d12"
+    docker load -i "$tarball" >/dev/null
+    [ "$(label_of "garden-successor:$d12")" = "$want" ] || { docker image rm "garden-successor:$d12" >/dev/null; die "the loaded image's label is wrong"; }
+    # Smoke: no network, no key, a throwaway root. The base system must offer what the entrypoint needs.
+    docker run --rm --network none --entrypoint /bin/sh "garden-successor:$d12" -c \
+      'command -v git curl xz sha256sum tar useradd setpriv >/dev/null && test -u /usr/bin/newuidmap && git --version' >/dev/null \
+      || { docker image rm "garden-successor:$d12" >/dev/null; die "the successor failed its smoke test"; }
+    docker tag "garden-successor:$d12" "garden-adopted:$d12"
+    echo "adopted garden-adopted:$d12; promote it during a quiescence with: ./garden promote $d12"
+    ;;
+  promote)
+    d12="${2:?usage: garden promote <digest12>}"
+    docker image inspect "garden-adopted:$d12" >/dev/null 2>&1 || die "no adopted image $d12"
+    [ "$(label_of "garden-adopted:$d12")" = "$(contract)" ] || die "the adopted image no longer matches this checkout's Dockerfile"
+    docker image inspect "$IMAGE" >/dev/null 2>&1 && docker tag "$IMAGE" "$IMAGE-previous"
+    docker tag "garden-adopted:$d12" "$IMAGE"
+    echo "promoted. ./garden reset recreates the box on it; roll back with: docker tag $IMAGE-previous $IMAGE && ./garden reset"
+    ;;
+  *) die "usage: ./garden [up|sh|stop|status|build|check|adopt <archive>|promote <digest12>|reset]" ;;
+esac

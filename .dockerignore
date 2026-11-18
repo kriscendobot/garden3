@@ -1,0 +1,4 @@
+# The build context is empty on purpose: the Dockerfile copies nothing in.
+# The garden's root is also where private state lives (.garden-state/, slots/,
+# mail/), none of which may enter a build context, cache or layer.
+*
