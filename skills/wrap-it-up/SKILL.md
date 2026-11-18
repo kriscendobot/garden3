@@ -15,20 +15,15 @@ job will not fit.
 3. **Otherwise hand off.** Write `outbox/handoff.yay`:
 
    ```yay
-   reason: "the migration needs the schema change first"
-   steps:
-     - body: "Say what to do and what it starts from: the branch, the commit, what is already proven."
-       id: "fix-a-schema"
-       title: "Change the schema"
-     - after:
-         - "fix-a-schema"
-       id: "fix-a-migrate"
-       title: "Run the migration"
+   done: "the schema change is committed and its tests pass"
+   reason: "the migration needs more than this run"
+   remaining: "run the migration; update the two callers"
    ```
 
-   Each step is a job someone else will pick up cold: say what it starts from.
-   Then say in `outbox/report.md` what is done and what remains. Your job
-   waits on those steps and closes when they are done.
+   Then say the same in `outbox/report.md`. **Do not name a successor.** A
+   planner is posted in your place: it reads what you wrote and your branch,
+   and plans every remaining step to completion. Tell it what it starts from.
+   (If you are the planner, your brief says what to write instead.)
 4. **At the final note, commit at once**, whatever state it is in, on your
    branch, with a message that says it is unfinished.
 
