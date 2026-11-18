@@ -90,7 +90,20 @@ export const reconcile = ({ desired, consent, current, host, now }) => {
     if (desired[key] === undefined) continue;
     if (!Array.isArray(desired[key]) || !desired[key].every(isName)) refused.push(`${key} is not a list of names`);
     else if (key === 'capabilities' && allow.capabilities !== true) refused.push('the owner does not allow capabilities to be installed remotely');
-    else actions.push({ do: action, [key]: [...desired[key]].sort() });
+    else if (key === 'capabilities') {
+      // An order pins capabilities onto a host; the owner may forbid some
+      // (the heavy ones) whatever is ordered.
+      const forbidden = desired.capabilities.filter(c => (consent.limits.forbid_capabilities ?? []).includes(c));
+      for (const c of forbidden) refused.push(`the owner forbids the capability ${c} on this host`);
+      const wanted = desired.capabilities.filter(c => !forbidden.includes(c)).sort();
+      if (wanted.length) actions.push({ do: action, capabilities: wanted });
+    } else actions.push({ do: action, [key]: [...desired[key]].sort() });
+  }
+  if (desired.forbid_capabilities !== undefined) {
+    // The maintainers may also exclude capabilities from a host: it will not
+    // install them on demand and will not claim jobs that need them.
+    if (!Array.isArray(desired.forbid_capabilities) || !desired.forbid_capabilities.every(isName)) refused.push('forbid_capabilities is not a list of names');
+    else actions.push({ do: 'forbid-capabilities', capabilities: [...new Set([...desired.forbid_capabilities, ...(consent.limits.forbid_capabilities ?? [])])].sort() });
   }
   for (const order of desired.orders ?? []) {
     if (!order || !isName(order.id ?? '')) refused.push('an order has no id');
@@ -99,7 +112,7 @@ export const reconcile = ({ desired, consent, current, host, now }) => {
     else if (!(current.done_orders ?? []).includes(order.id)) actions.push({ do: order.op, id: order.id });
   }
   for (const key of Object.keys(desired)) {
-    if (!['host', 'serial', 'issued_at', 'expires_at', 'issued_by', 'shed', 'slots', 'plots', 'capabilities', 'arcs', 'orders', 'note'].includes(key)) refused.push(`'${key}' is not something an order can say`);
+    if (!['host', 'serial', 'issued_at', 'expires_at', 'issued_by', 'shed', 'slots', 'plots', 'capabilities', 'forbid_capabilities', 'arcs', 'orders', 'note'].includes(key)) refused.push(`'${key}' is not something an order can say`);
   }
   return harden({ serial: desired.serial, actions, refused, notes });
 };

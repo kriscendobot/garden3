@@ -113,10 +113,10 @@ export const decide = ({ events, state = {}, board, bot, repo }) => {
 };
 
 /** A few lines on the state of the board, for `status`. */
-export const summary = board => {
+export const summary = (board, unplaceable = []) => {
   const count = where => Object.values(board.jobs).filter(e => e.where === where).length;
   const held = Object.values(board.jobs).filter(e => e.where === 'held' || e.where === 'failed').map(e => `\`${e.job.id}\` (${e.where === 'failed' ? 'failed' : e.job.hold?.reason ?? 'held'})`);
-  return [`Open ${count('open')}, claimed ${count('claimed')}, held ${count('held')}, failed ${count('failed')}.`, ...(held.length ? [`Waiting on something: ${held.slice(0, 20).join(', ')}.`] : []), `Quiescence: ${board.quiescence?.phase ?? 'idle'}.`].join('\n');
+  return [`Open ${count('open')}, claimed ${count('claimed')}, held ${count('held')}, failed ${count('failed')}.`, ...(held.length ? [`Waiting on something: ${held.slice(0, 20).join(', ')}.`] : []), ...(unplaceable.length ? [`No live host can run: ${unplaceable.slice(0, 20).map(u => `\`${u.id}\` (${u.reason})`).join(', ')}.`] : []), `Quiescence: ${board.quiescence?.phase ?? 'idle'}.`].join('\n');
 };
 
 const WATCH = 'watch.yay';
@@ -125,7 +125,7 @@ export const readWatch = tree => {
   return text ? parse(text, WATCH) : { repos: {}, strangers: [], reports: [] };
 };
 
-export const makeWatcher = ({ github, board, budget, steward, journal, shards, clock, bot, overlapSeconds = 120, log = () => {} }) => {
+export const makeWatcher = ({ github, board, budget, steward, journal, hostinfo, shards, clock, bot, overlapSeconds = 120, log = () => {} }) => {
   const { repo } = github;
   const maintainers = () => {
     const s = shards.shard('watcher', 'journal');
@@ -193,7 +193,7 @@ export const makeWatcher = ({ github, board, budget, steward, journal, shards, c
     for (const a of landed.actions) {
       try {
         if (a.do === 'throttle') await budget.setThrottle({ by: a.by, arc: a.arc, throttle: a.throttle, retire: a.retire });
-        if (a.do === 'status') await steward.reply(a.event.number, `comment:${a.event.id}`, summary(await board.read()));
+        if (a.do === 'status') await steward.reply(a.event.number, `comment:${a.event.id}`, summary(await board.read(), hostinfo ? await board.unplaceable(await hostinfo.fleet()) : []));
         else if (a.do === 'reply') await steward.reply(a.event.number, a.key, a.text);
         else await steward.ack(a.event);
         did.push(`${a.do} ${a.spec?.id ?? a.id ?? a.arc ?? ''}`.trim());

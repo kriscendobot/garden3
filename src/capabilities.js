@@ -30,7 +30,10 @@ export const manifestProblem = (m, name, arch) => {
   return null;
 };
 
-export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, root, manifestsDir, stateDir, log = () => {}, env = {} }) => {
+/** The policy a host is under when it has written none: install what jobs need, forget what it has not used in a month. */
+export const DEFAULT_POLICY = Object.freeze({ install_on_demand: true, forbid: [], unused_days: 30, retry_failed_after_seconds: 3600 });
+
+export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, root, manifestsDir, stateDir, base = [], log = () => {}, env = {} }) => {
   const caps = files(root);
   const manifests = files(manifestsDir);
   const state = files(stateDir);
@@ -132,14 +135,19 @@ export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, 
    * repaired: drift is only reported (the verify phase of a quiescence).
    * Returns {ok, drift: [..], digest, pins}.
    */
-  const sync = async ({ verifyOnly = false, names = [] } = {}) => {
+  const sync = async ({ verifyOnly = false, names: asked = [] } = {}) => {
     const wantedText = state.readIf('capabilities/wanted.yay');
     const wanted = wantedText ? parse(wantedText).wanted : [];
-    const all = [...new Set([...Object.keys(record()), ...wanted, ...names])].sort();
+    // This host's own set: what it has, what it has declared, the base every
+    // host needs, and anything asked for now. Never the fleet's.
+    const all = [...new Set([...Object.keys(record()), ...wanted, ...base, ...asked])].sort();
     const drift = [];
     for (const name of all) {
       const m = manifest(name);
       let rec = record();
+      // An install that failed and was never completed is not something this
+      // host has; `provide` retries it when a job next needs it.
+      if (rec[name]?.failed_at && !rec[name].installed_at && !asked.includes(name)) continue;
       if (!m) {
         if (verifyOnly) drift.push(`${name}: installed, but no longer on the shed`);
         else {
@@ -178,9 +186,100 @@ export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, 
     });
   };
 
+  const policy = () => {
+    const text = state.readIf('capabilities/policy.yay');
+    return { ...DEFAULT_POLICY, ...(text ? parse(text) : {}) };
+  };
+  const names = () => manifests.list('.').filter(n => manifests.exists(`${n}/capability.yay`));
+  const seconds = iso => Math.floor(Date.parse(iso) / 1000);
+
+  /**
+   * What this host could install, on its own architecture, under its own
+   * policy: {name: 'installed' | 'available' | <the reason it is not>}. A
+   * capability with no pinned artefact for this architecture is not
+   * available here, whatever other hosts can do; one whose install failed
+   * recently is not offered again until the retry time has passed.
+   */
+  const availability = () => {
+    const pol = policy();
+    const rec = record();
+    const now = seconds(clock.now());
+    return Object.fromEntries(names().map(name => {
+      if (rec[name]?.verified) return [name, 'installed'];
+      if (pol.forbid.includes(name)) return [name, "forbidden by this host's policy"];
+      if (!pol.install_on_demand && !base.includes(name)) return [name, 'this host installs nothing on demand'];
+      const problem = manifestProblem(manifest(name), name, arch);
+      if (problem) return [name, problem];
+      const failed = rec[name]?.failed_at;
+      if (failed && now - seconds(failed) < pol.retry_failed_after_seconds) return [name, `its install failed at ${failed}`];
+      return [name, 'available'];
+    }));
+  };
+
   return harden({
     install,
     sync,
+    policy: async () => harden(policy()),
+    availability: async () => harden(availability()),
+    /** Names this host has verified, and names it could install now. */
+    offer: async () => {
+      const a = availability();
+      return harden({ installed: Object.keys(a).filter(n => a[n] === 'installed').sort(), available: Object.keys(a).filter(n => a[n] === 'available').sort() });
+    },
+    /**
+     * Install what a job needs, before the job is claimed. Returns
+     * {ok, installed: [...], failed?: {name, reason}}. A failure is recorded
+     * (so the host stops offering that capability for a while) and is the
+     * host's, not the job's: nothing was claimed, so nothing is released.
+     */
+    provide: async needed => {
+      const installed = [];
+      for (const name of needed) {
+        const a = availability()[name];
+        if (a === 'installed') continue;
+        if (a !== 'available') return harden({ ok: false, installed, failed: { name, reason: a ?? 'there is no such capability' } });
+        try {
+          await install(name);
+          installed.push(name);
+        } catch (err) {
+          const rec = record();
+          writeRecord({ ...rec, [name]: { ...(rec[name] ?? { version: manifest(name).version, manifest_sha256: manifestSha(name), verified: false }), verified: false, failed_at: clock.now() } });
+          return harden({ ok: false, installed, failed: { name, reason: err.message } });
+        }
+      }
+      return harden({ ok: true, installed });
+    },
+    /** Note that a job used these capabilities now (for `prune`). */
+    used: async list => {
+      const rec = record();
+      const now = clock.now();
+      let changed = false;
+      for (const name of list) if (rec[name]) { rec[name] = { ...rec[name], used_at: now }; changed = true; }
+      if (changed) writeRecord(rec);
+    },
+    /**
+     * Drop what this host has not used within its policy's `unused_days`.
+     * Never the base set (what every host needs to take part), never the
+     * host's standing set. Returns the names dropped.
+     */
+    prune: async () => {
+      const pol = policy();
+      const wantedText = state.readIf('capabilities/wanted.yay');
+      const keep = new Set([...base, ...(wantedText ? parse(wantedText).wanted : [])]);
+      const rec = record();
+      const cutoff = seconds(clock.now()) - pol.unused_days * 86400;
+      const dropped = [];
+      for (const [name, r] of Object.entries(rec)) {
+        if (keep.has(name) || seconds(r.used_at ?? r.installed_at ?? clock.now()) >= cutoff) continue;
+        // Something still installed may require it.
+        if (Object.keys(rec).some(o => o !== name && !dropped.includes(o) && (manifest(o)?.requires ?? []).includes(name))) continue;
+        caps.remove(name);
+        delete rec[name];
+        dropped.push(name);
+      }
+      if (dropped.length) writeRecord(rec);
+      return harden(dropped);
+    },
     /** The capabilities this host has installed and verified. */
     verifiedSet: async () => new Set(Object.entries(record()).filter(([, r]) => r.verified).map(([n]) => n)),
     record: async () => harden(record()),

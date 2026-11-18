@@ -5,6 +5,10 @@ board:
 budget:
   planning_ceiling: 0.9
   reservation_tokens: 2000000
+capabilities:
+  base:
+    - "node"
+    - "rust"
 github:
   bot: "kriscendobot"
   overlap_seconds: 120

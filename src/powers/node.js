@@ -97,6 +97,17 @@ export const makeNodePowers = ({ env = process.env } = {}) =>
     clock: { now: () => (env.GARDEN_NOW ? env.GARDEN_NOW : new Date().toISOString().replace(/\.\d+Z$/, 'Z')) },
     hostname: () => env.GARDEN_HOST ?? os.hostname().split('.')[0],
     arch: () => ({ x64: 'amd64', arm64: 'arm64' })[os.arch()] ?? os.arch(),
+    /**
+     * What this machine is, as cheaply as it can be told: nothing here runs a
+     * program or loads a driver. A GPU is "present" if its device node is.
+     */
+    probe: () => ({
+      arch: ({ x64: 'amd64', arm64: 'arm64' })[os.arch()] ?? os.arch(),
+      os: os.platform(),
+      cores: os.cpus().length,
+      memory_bytes: os.totalmem(),
+      devices: ['/dev/nvidia0', '/dev/kfd', '/dev/dri/renderD128'].filter(d => fs.existsSync(d)),
+    }),
     sha256: text => crypto.createHash('sha256').update(text).digest('hex'),
     sha256File: file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),
     tmpdir: prefix => fs.mkdtempSync(path.join(os.tmpdir(), prefix)),

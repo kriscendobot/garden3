@@ -29,6 +29,7 @@ import { makeClientWatch } from './clients.js';
 import { makeGitHub, curlTransport } from './github.js';
 import { makeWatcher } from './watcher.js';
 import { makeSteward } from './steward.js';
+import { makeHostInfo } from './hostinfo.js';
 import * as wrapup from './wrapup.js';
 import { parse, stringify } from './yay.js';
 import { fromArgs } from './shon.js';
@@ -64,7 +65,7 @@ export const assemble = (powers = makeNodePowers()) => {
     return s.sync() ? s.tree.readIf(file) : null;
   };
   const capRoot = env.GARDEN_CAP_ROOT ?? '/opt/garden/cap';
-  const capabilities = lazy(() => makeCapabilities({ files: makeFiles, run, sha256File: powers.sha256File, sha256: powers.sha256, clock, arch: powers.arch(), root: capRoot, manifestsDir: path.join(rootRepo, 'capabilities'), stateDir, env, log: powers.log }));
+  const capabilities = lazy(() => makeCapabilities({ files: makeFiles, run, sha256File: powers.sha256File, sha256: powers.sha256, clock, arch: powers.arch(), root: capRoot, manifestsDir: path.join(rootRepo, 'capabilities'), stateDir, base: config.capabilities?.base ?? [], env, log: powers.log }));
   const budget = lazy(() => makeBudgetService({ shards, host, clock, config }));
   const board = lazy(() => makeBoardService({ shards, host, clock, config, capabilities, budget: env.GARDEN_BUDGET === 'off' ? undefined : budget }));
   const slots = lazy(() => makeSlots({ files: makeFiles, run, warden: env.GARDEN_WARDEN ?? path.join(capRoot, 'bin/warden'), rootRepo, slotsRoot: env.GARDEN_SLOTS ?? path.join(rootRepo, 'slots'), repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), stateDir, clock, count: config.slots.count, uidBase: config.slots.uid_base, mode: env.GARDEN_SLOT_MODE ?? 'users', log: powers.log }));
@@ -89,19 +90,21 @@ export const assemble = (powers = makeNodePowers()) => {
   const github = lazy(() => makeGitHub({ repo: config.github.repo, request: curlTransport({ run, token: () => keys.read('github-bot', 'steward').catch(() => null) }) }));
   const journal = lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock }));
   const steward = lazy(() => makeSteward({ github, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
-  const watcher = lazy(() => makeWatcher({ github: { repo: config.github.repo, events: (...a) => github.events(...a) }, board, budget, steward, journal, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, log: powers.log }));
+  const watcher = lazy(() => makeWatcher({ github: { repo: config.github.repo, events: (...a) => github.events(...a) }, board, budget, steward, journal, hostinfo, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, log: powers.log }));
+  const hostinfo = lazy(() => makeHostInfo({ shards, host, clock, probe: powers.probe, capabilities, slots: config.slots.count, shed: () => run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), client: () => root.exists('CLIENT-CONSENT.yay') }));
   return {
+    hostinfo,
     watcher,
     steward,
     supervisor: lazy(() => {
       const services = assemble(powers);
       const dispatcher = makeDispatcher({
-        board, slots, budget, plots: services.plots, journal: services.journal, files: makeFiles, clock, config, log: powers.log,
+        board, slots, budget, plots: services.plots, journal: services.journal, capabilities, hostinfo, files: makeFiles, clock, config, log: powers.log,
         // The worker command is the harness capability's; until it is pinned a host names its own.
         worker: { argv: (env.GARDEN_WORKER ?? 'claude -p --settings .claude-worker.json').split(' '), env: { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` }, repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), logFile: id => path.join(stateDir, 'runs', `${id}.log`), killAfterS: config.worker.kill_after_seconds },
       });
       const isLeader = async () => parse((await shardRead('journal', 'config/hosts.yay')) ?? 'leader: null\n').leader === host;
-      const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, watcher, steward, clock, log: powers.log });
+      const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, hostinfo, watcher, steward, clock, log: powers.log });
       return { tick: sup.tick, run: () => sup.run({ sleep: ms => new Promise(r => setTimeout(r, ms)) }) };
     }),
     board,

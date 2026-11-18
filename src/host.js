@@ -7,7 +7,8 @@
 //   1. the shed: the host's root checkout is fast-forwarded to the commit the
 //      quiescence names (never merged, never reset: a checkout that cannot
 //      fast-forward is a drift to report, not to paper over);
-//   2. capabilities: re-resolved to the pins on the new shed;
+//   2. capabilities: this host's own set re-resolved to the pins on the new
+//      shed, and what it has not used within its policy dropped;
 //   3. binaries: the warden is rebuilt from the new shed's source with the
 //      pinned Rust toolchain capability, for this host's own architecture;
 //   4. scratch: every slot razed, every shard clone dropped (they are
@@ -41,7 +42,10 @@ export const makeHost = ({ files, run, rootRepo, stateDir, host, clock, shards, 
     /** The whole of a host's rejuvenation. Returns what to acknowledge with. */
     rejuvenate: async ({ shed, applyTruncation = true } = {}) => {
       const at = await refreshShed(shed);
+      // Only this host's own set is refreshed: what it has installed, what it
+      // has declared, and the base. Then what it has not used in a while goes.
       const caps = capabilities ? await capabilities.sync() : { ok: true, drift: [] };
+      const pruned = capabilities ? await capabilities.prune() : [];
       const built = build ? await build() : null;
       const cleared = slots ? await slots.clearAll() : [];
       state.remove('clones');
@@ -56,7 +60,7 @@ export const makeHost = ({ files, run, rootRepo, stateDir, host, clock, shards, 
         truncate({ shards, clock }, `host/${host}`, { apply: applyTruncation });
       }
       log(`rejuvenated to ${at.slice(0, 12)}: ${cleared.length} slots cleared, ${dropped.length} usage files dropped`);
-      return harden({ shed: at, capabilities_ok: caps.ok, drift: caps.drift, built, cleared, dropped });
+      return harden({ shed: at, capabilities_ok: caps.ok, drift: caps.drift, pruned, built, cleared, dropped });
     },
     /** The verify phase: nothing is repaired, only reported. */
     verify: async () => {

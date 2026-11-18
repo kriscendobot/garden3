@@ -25,7 +25,14 @@ the build context is empty (`.dockerignore` is `*`).
 Not in the image: any JavaScript runtime, any toolchain, any agent CLI, the
 GitHub CLI, an init system. The prior garden's image is 14.6 GB (measured by
 `docker image ls` on this host) with systemd, three language toolchains, four
-agent CLIs and Ollama baked in.
+agent CLIs and Ollama with its ROCm runtime baked in for every host.
+
+**Size and rebuild cost.** Not measured: no image was built in this pass.
+Estimated at 150 to 200 MB, most of it the Debian base and git with its
+dependencies. A rebuild is one `apt-get` layer over the base: tens of
+megabytes, and it downloads nothing that is a capability, because the
+`Dockerfile` names none. Software for a host arrives on that host, when it
+needs it ([capabilities.md](capabilities.md)).
 
 ## Where everything else comes from
 

@@ -9,8 +9,10 @@
 
 import { harden } from './harden.js';
 
-export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board, budget, dispatcher, journal, capabilities, watcher, steward, clock, log = () => {} }) => {
+export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board, budget, dispatcher, journal, capabilities, hostinfo, watcher, steward, clock, log = () => {} }) => {
   let lastPress = '';
+  let described = false;
+  const shownUnplaceable = new Set();
   /** One tick. Returns what it did, as a short list of words. */
   const tick = async () => {
     const did = [];
@@ -29,6 +31,7 @@ export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board,
       const q = await quiescence.status();
       const r = await hostService.rejuvenate({ shed: q.shed });
       await quiescence.ack({ shed: r.shed });
+      described = false;
       did.push(`rejuvenated to ${r.shed.slice(0, 12)}`);
     } else if (duty === 'verify') {
       const v = await hostService.verify();
@@ -78,10 +81,20 @@ export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board,
       }
     }
     await budget.refresh();
-    if (capabilities && (await isLeader())) {
-      // Demand is only reported here; installing is a host's own policy.
-      const need = await capabilities.demand(await board.read());
-      for (const n of need) log(`open jobs require ${n.name} (${n.state}), which this host lacks`);
+    // Say what this host is, once per start and whenever a rejuvenation or an
+    // install changed it (publish writes only on a change).
+    if (hostinfo && !described) {
+      await hostinfo.publish();
+      described = true;
+    }
+    // A job no live host can run is shown, once, rather than left to sit.
+    if (hostinfo && (await isLeader())) {
+      for (const u of await board.unplaceable(await hostinfo.fleet())) {
+        if (shownUnplaceable.has(u.id)) continue;
+        shownUnplaceable.add(u.id);
+        did.push(`unplaceable ${u.id}`);
+        if (journal) await journal.note('supervisor', `\`${u.id}\` cannot be placed: ${u.reason}.`);
+      }
     }
     for (;;) {
       const r = await dispatcher.once({ workerId: `${host}-w` });

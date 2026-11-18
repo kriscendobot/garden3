@@ -37,7 +37,12 @@ be stopped and resumed at any point: `./wizard status <dir>`.
    first (`WIZARD_DRY_RUN=1` to only say it). Expect `<dir>/garden.git` (the
    one clone, bare), `<dir>/garden` (the shed), and views of the other
    branches inside it. The board, archive and journal are fetched at depth 1.
-   Safe to run again.
+   Safe to run again. It ends by saying what this machine is and which
+   capabilities have **no pinned artefact for its architecture**
+   (`./wizard pins <dir>` repeats it). `CANNOT BOOT` names something every
+   host needs: stop and tell the maintainers, rather than finding out at
+   first start. `unavailable` is only a limit on which jobs this host will
+   take.
 4. **Consent, on a client host only.** `./wizard consent <dir>`, run **by the
    operator, in their own terminal**. It shows what remote control means and
    writes `CLIENT-CONSENT.yay` only if the operator types the machine's name.
@@ -53,8 +58,9 @@ be stopped and resumed at any point: `./wizard status <dir>`.
    Debian image and `./garden check` to print `image matches the Dockerfile`.
 7. **Start.** `./garden up`, then `./garden status`. The first boot fetches
    the garden's runtime and builds its helper; it needs the network and takes
-   a few minutes. If it stops saying a pin is missing, that pin has not been
-   filled in on the shed yet: stop and tell the maintainers.
+   a few minutes. The host installs nothing else until a job needs it. At
+   each start it records what it is (architecture, size, what it has
+   installed) on its own `host/<name>` branch.
 8. **Identity.** Inside (`./garden sh`): the bot's git name and email for this
    host, and GitHub authentication for the bot account, placed as the
    `github-bot` key. A client host needs only what lets it push its claims.

@@ -48,6 +48,14 @@ From its scripts:
   another to record something about itself. This is the main difference in
   kind from the prior garden, where heartbeats alone were 8,620 commits a
   month on the shared branch and one host's health reports 1,540.
+- **Nothing assumes what a host is.** At every start, and after each
+  rejuvenation or install, a host looks at itself and writes `host.yay` on
+  its branch (`src/hostinfo.js`): architecture, operating system, cores,
+  memory, whether a GPU device node is present, whether it is a client host,
+  its slot count, its shed commit, and the capabilities it has installed or
+  could install ([capabilities.md](capabilities.md)). It is written only when
+  it changes. This is where an architecture is learned: from the host, when
+  it goes live.
 - **Orders to hosts**: fleet-wide through the quiescence document; to a
   client host through the `clients` branch. There is no per-host message
   topic and no `sysop`.
@@ -74,8 +82,8 @@ skills, its arcs and schedules).
 ## Status
 
 Implemented and tested: the supervisor's tick and its leader gating, claims
-between hosts, per-host usage branches, catch-up of a returning host. Design
-only: status and heartbeat on the host branch; the watchers on managed repositories;
+between hosts, per-host usage branches, a host's self-description, catch-up
+of a returning host. Design only: a heartbeat on the host branch; the watchers on managed repositories;
 noticing a dead leader.
 
 ## Open questions

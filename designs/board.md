@@ -55,7 +55,9 @@ withdraws it. A dependency cycle is refused when it would be created.
 Claim order is the arc's rank on the slate, then lowest level, then priority,
 then age. A job is skipped when it requires a capability the host has not
 verified, is pinned to another host (`host=<name>`) or plot, or its arc cannot
-admit it ([budget.md](budget.md)).
+admit it ([budget.md](budget.md)). A host installs what the next job needs
+*before* claiming it, and a job no host can run is shown as unplaceable
+([capabilities.md](capabilities.md)).
 
 ## Between hosts
 

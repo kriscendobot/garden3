@@ -29,8 +29,8 @@ the whole story in one fetch.
 | `idle` | | normal work | the leader (or a maintainer) calls a quiescence, naming its id, the expected hosts and the shed commit to rejuvenate to |
 | `quiesce` | every host | claims nothing; lets its running jobs end; presses its journal; acknowledges | every expected host has acknowledged and no job is claimed |
 | `truncate` | the leader | consolidates, then truncates `archive`, `journal`, `board` | the leader records the new epochs |
-| `rejuvenate` | every host | fast-forwards its shed, syncs capabilities, rebuilds the warden, razes slots, drops its clones, truncates its own host branch; acknowledges with the shed commit it reached | every host acknowledged, at the named commit |
-| `verify` | every host | verifies capabilities without repairing; acknowledges with `ok` and its pins | all ok, and no two hosts hold different pins of one capability |
+| `rejuvenate` | every host | fast-forwards its shed, refreshes **its own** capabilities and drops those it has not used, rebuilds the warden, razes slots, drops its clones, truncates its own host branch, republishes what it is; acknowledges with the shed commit it reached | every host acknowledged, at the named commit |
+| `verify` | every host | verifies what it has against its own set, without repairing; acknowledges with `ok` and its pins | every host ok by its own set; and, the one cross-host check, no two hosts hold different pins of a capability both have. Hosts holding different capabilities is normal |
 | back to `idle` | | `last` records the id, shed and epochs | |
 
 Claims stop the moment the phase is not `idle` (the claim reads the document

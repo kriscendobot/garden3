@@ -215,8 +215,11 @@ export const post = (board, spec, now) => {
  * (lowest level, as the prior garden's promoter ordered), then priority (lower
  * is sooner), then age.
  */
-export const order = (board, arcRank = {}) => {
-  const key = j => [arcRank[j.arc ?? 'unallocated'] ?? 9999, j.level ?? 0, j.priority ?? 5, j.posted_at ?? '', j.id];
+export const order = (board, arcRank = {}, needsInstall = () => false) => {
+  // Capability fit is a filter (see `claim`), not a ranking. The one
+  // tie-break: among jobs equal in arc, level and priority, one this host can
+  // run now comes before one it would first have to install something for.
+  const key = j => [arcRank[j.arc ?? 'unallocated'] ?? 9999, j.level ?? 0, j.priority ?? 5, needsInstall(j) ? 1 : 0, j.posted_at ?? '', j.id];
   const cmp = (a, b) => {
     const [ka, kb] = [key(a), key(b)];
     for (let i = 0; i < ka.length; i += 1) if (ka[i] !== kb[i]) return ka[i] < kb[i] ? -1 : 1;
@@ -234,10 +237,54 @@ export const order = (board, arcRank = {}) => {
  * satisfies a requirement; `admit(job, board)` is the budget's verdict.
  * Returns the id, or null when there is nothing this host may take.
  */
+/** The capabilities a job requires (its `requires` without host pins). */
+export const needs = job => (job.requires ?? []).filter(t => !t.startsWith('host='));
+const pinnedElsewhere = (job, host) => (job.requires ?? []).some(t => t.startsWith('host=') && t.slice(5) !== host);
+
+/**
+ * Before claiming: which job would this host take next if it could install
+ * what is missing, and what is missing? `has` is what it has verified, `can`
+ * what it could install now. Returns {id, missing: [...]} (missing may be
+ * empty) or null. Nothing is claimed; the install happens before any lease
+ * begins, so a download never burns a job's clock.
+ */
+export const nextNeeds = (board, { host, plot, has, can, admit, arcRank }) => {
+  const lacks = job => needs(job).filter(t => !has(t));
+  for (const id of order(board, arcRank, job => lacks(job).length > 0)) {
+    const { job } = board.jobs[id];
+    if (pinnedElsewhere(job, host)) continue;
+    if (plot && job.plot && job.plot !== plot) continue;
+    const missing = lacks(job);
+    if (!missing.every(can)) continue;
+    if (admit && !admit(job, board)) continue;
+    return { id, missing };
+  }
+  return null;
+};
+
+/**
+ * Open jobs no live host could run: each with the reason. `hosts` is the
+ * self-descriptions from the host branches: [{host, capabilities: {installed,
+ * available}}]. A job nobody can place is shown, not left to sit.
+ */
+export const unplaceable = (board, hosts) => {
+  const out = [];
+  for (const e of entries(board)) {
+    if (e.where !== 'open') continue;
+    const { job } = e;
+    const able = hosts.filter(h => !pinnedElsewhere(job, h.host) && needs(job).every(t => (h.capabilities?.installed ?? []).includes(t) || (h.capabilities?.available ?? []).includes(t)));
+    if (able.length) continue;
+    const pin = (job.requires ?? []).find(t => t.startsWith('host='));
+    const nobody = needs(job).filter(t => !hosts.some(h => (h.capabilities?.installed ?? []).includes(t) || (h.capabilities?.available ?? []).includes(t)));
+    out.push({ id: job.id, requires: job.requires ?? [], reason: nobody.length ? `no live host can provide ${nobody.join(', ')}` : pin ? `${pin.slice(5)} cannot provide what it requires, or is not live` : 'no single live host can provide everything it requires' });
+  }
+  return out.sort((a, b) => (a.id < b.id ? -1 : 1));
+};
+
 export const LEASE = Object.freeze({ windowS: 2400, killAfterS: 30, graceS: 600 });
 
 export const claim = (board, { host, worker, plot, has, admit, arcRank, skip = [], lease = LEASE }, now) => {
-  for (const id of order(board, arcRank)) {
+  for (const id of order(board, arcRank, job => !needs(job).every(has))) {
     if (skip.includes(id)) continue;
     const e = board.jobs[id];
     const { job } = e;

@@ -1,7 +1,7 @@
 #!/bin/sh
 # wizard — set up a host for the garden, from outside, before anything exists.
 #
-# Usage: ./wizard [describe | check | fetch <url> <dir> | consent <dir> | status <dir>]
+# Usage: ./wizard [describe | check | fetch <url> <dir> | pins <dir> | consent <dir> | status <dir>]
 #
 # This is shell because it runs on a bare host: it may assume a POSIX shell and
 # nothing else until `check` has passed. It holds no garden logic. It does the
@@ -21,20 +21,66 @@ mark() { done_step "$1" || printf '%s\n' "$1" >>"$DIR/.wizard-state"; }
 WHOLE="main shed library clients gate"
 SHALLOW="board archive journal"
 VIEWS="board archive journal library clients gate"
+# What every host needs before it can take part at all. Everything else a host
+# installs for itself, when a job first needs it (shed:designs/capabilities.md).
+BASE="node rust"
+
+arch() {
+  [ -n "${WIZARD_ARCH:-}" ] && { printf '%s\n' "$WIZARD_ARCH"; return; }
+  case "$(uname -m)" in x86_64) echo amd64 ;; aarch64 | arm64) echo arm64 ;; *) uname -m ;; esac
+}
+
+# pin_state <manifest> <arch> — pinned | "draft" | "no artefact" | "not pinned".
+# Reads the canonical YAY the garden writes; the shed's tests hold this to the
+# same answers as the garden's own reader.
+pin_state() {
+  awk -v arch="$2" '
+    /^status: "draft"/ { draft = 1 }
+    /^[a-z_]+:/ { insrc = ($0 ~ /^sources:/) ; inarch = 0 }
+    insrc && /^  [A-Za-z0-9_-]+:/ { inarch = ($0 ~ ("^  " arch ":")); if (inarch) found = 1 }
+    insrc && inarch && /sha256: null/ { unpinned = 1 }
+    END {
+      if (draft) print "draft"
+      else if (!found) print "no artefact"
+      else if (unpinned) print "not pinned"
+      else print "pinned"
+    }' "$1"
+}
+
+# pins <dir> — which capabilities have no pinned artefact for this host?
+pins() {
+  DIR="${1:?usage: wizard pins <dir>}"
+  a="$(arch)"; rc=0
+  [ -d "$DIR/garden/capabilities" ] || die "fetch the garden into $DIR first"
+  say "this host is $a ($(uname -s 2>/dev/null || echo unknown))."
+  for m in "$DIR"/garden/capabilities/*/capability.yay; do
+    name="$(basename "$(dirname "$m")")"; state="$(pin_state "$m" "$a")"
+    [ "$state" = pinned ] && continue
+    case " $BASE " in
+      *" $name "*) say "CANNOT BOOT  $name: $state for $a. Every host needs it; the box will stop at first start until the shed pins it."; rc=1 ;;
+      *) say "unavailable  $name: $state for $a. Jobs that require it will not be claimed here." ;;
+    esac
+  done
+  [ "$rc" = 0 ] && say "everything this host needs to start is pinned for $a" || say "tell the maintainers what is missing before step 7; nothing has been changed"
+  return "$rc"
+}
 
 describe() {
   cat <<'EOT'
 The wizard sets up one host in these steps. Nothing is changed by reading this.
 
   1. check     look for what the host needs: git, curl, sha256sum, tar, a
-               container runtime this shell can reach. Changes nothing.
+               container runtime this shell can reach; and say what this
+               machine is (its architecture). Changes nothing.
   2. decide    you and the operator choose: where the garden lives on this
                host, and whether this is a maintainer-run host or a client
                host on lent capacity (SETUP.md).
   3. fetch     clone the garden once, as a bare repository, and add worktrees:
                <dir>/garden.git, <dir>/garden (the shed), and views of the
                other branches inside it. The high-churn branches are fetched
-               at depth 1. Makes <dir>; touches nothing outside it.
+               at depth 1. Makes <dir>; touches nothing outside it. Then it
+               says which capabilities have no pinned artefact for this
+               machine's architecture, before anything is started.
   4. consent   client hosts only: the operator writes CLIENT-CONSENT.yay by
                typing the host's name. Without it nothing on this host is
                ever controlled remotely.
@@ -78,6 +124,7 @@ check() {
     *-unreachable) say "OPERATOR ${runtime%-unreachable} is installed but this shell cannot reach it: the operator runs steps 6 and 7 in their own terminal" ;;
     *) say "ok       $runtime is reachable from this shell" ;;
   esac
+  say "this     machine is $(arch); no architecture is assumed, and after fetch the wizard says what is not pinned for it"
   [ "$(id -u)" != 0 ] && say "ok       not running as root" || { say "ROOT     run the wizard as the account that will own the garden, not root"; rc=1; }
   [ "$rc" = 0 ] && say "check passed" || say "check found something to fix"
   return "$rc"
@@ -109,7 +156,9 @@ fetch() {
   [ -e "$DIR/garden/.git" ] || g worktree add --quiet "$DIR/garden" shed
   for b in $VIEWS; do [ -e "$DIR/garden/$b/.git" ] || g worktree add --quiet "$DIR/garden/$b" "$b"; done
   mark worktrees
-  say "fetched. The garden is at $DIR/garden. Next: SETUP.md, step 4 or 5."
+  say "fetched. The garden is at $DIR/garden."
+  [ -d "$DIR/garden/capabilities" ] && { pins "$DIR" || true; }
+  say "Next: SETUP.md, step 4 or 5."
 }
 
 consent() {
@@ -172,7 +221,8 @@ case "${1:-describe}" in
   describe) describe ;;
   check) check ;;
   fetch) shift; fetch "$@" ;;
+  pins) shift; pins "$@" ;;
   consent) shift; consent "$@" ;;
   status) shift; status "$@" ;;
-  *) die "usage: ./wizard [describe | check | fetch <url> <dir> | consent <dir> | status <dir>]" ;;
+  *) die "usage: ./wizard [describe | check | fetch <url> <dir> | pins <dir> | consent <dir> | status <dir>]" ;;
 esac

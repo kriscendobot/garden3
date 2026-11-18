@@ -16,7 +16,7 @@ import { clockNote, outcome as classify } from './wrapup.js';
 import { scrub } from './keys.js';
 import { harden } from './harden.js';
 
-export const makeDispatcher = ({ board, slots, budget, plots, journal, files, clock, config = {}, worker, log = () => {} }) => {
+export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilities, hostinfo, files, clock, config = {}, worker, log = () => {} }) => {
   const defaultWindow = config.worker?.window_seconds ?? 2400;
   const pickPlot = job => job.plot || (config.plots ?? ['alder'])[Math.abs([...job.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7)) % (config.plots ?? ['alder']).length];
 
@@ -27,8 +27,23 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, files, cl
   const once = async ({ workerId = 'w1' } = {}) => {
     const slot = await slots.free();
     if (!slot) return null;
+    // Install before claiming. If the next job this host would take needs a
+    // capability it lacks and could install, install it now, while no lease
+    // is running. A failed install is the host's failure, not the job's:
+    // nothing was claimed, the job stays open with no attempt counted, and
+    // this host stops offering that capability for a while.
+    if (capabilities && board.nextNeeds) {
+      const next = await board.nextNeeds({});
+      if (next && next.missing.length) {
+        const got = await capabilities.provide(next.missing);
+        if (!got.ok) log(`could not install ${got.failed.name} for ${next.id}: ${got.failed.reason}; the job stays open`);
+        else log(`installed ${got.installed.join(', ')} for ${next.id}`);
+        if (hostinfo) await hostinfo.publish().catch(() => {});
+      }
+    }
     const job = await board.claim({ worker: workerId });
     if (!job) return null;
+    if (capabilities) await capabilities.used((job.requires ?? []).filter(t => !t.startsWith('host=')));
     const plot = pickPlot(job);
     const { generation } = job.claim;
     const windowS = job.window_s ?? defaultWindow;

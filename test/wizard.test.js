@@ -17,7 +17,7 @@ test('main is a README and a wizard, small enough to read', () => {
   assert.deepEqual(fs.readdirSync(MAIN).sort(), ['AGENTS.md', 'CLAUDE.md', 'README.md', 'SETUP.md', 'wizard']);
   for (const f of ['README.md', 'AGENTS.md', 'CLAUDE.md', 'SETUP.md']) parseYaydown(fs.readFileSync(path.join(MAIN, f), 'utf8'), f);
   const lines = fs.readdirSync(MAIN).reduce((n, f) => n + fs.readFileSync(path.join(MAIN, f), 'utf8').split('\n').length, 0);
-  assert.ok(lines < 400, `${lines} lines`);
+  assert.ok(lines < 450, `${lines} lines`);
   if (fs.existsSync(path.join(SHED, 'main/wizard'))) {
     for (const f of fs.readdirSync(MAIN)) assert.equal(fs.readFileSync(path.join(SHED, 'main', f), 'utf8'), fs.readFileSync(path.join(MAIN, f), 'utf8'), `the main worktree's ${f} matches its seed on the shed`);
   }
@@ -105,4 +105,32 @@ test('fetch: a bare repository and worktrees, shallow where it churns, resumable
   assert.match(wizard(['consent', home], { env, input: 'oros-studio\n' }).stdout, /already consented/);
   assert.match(wizard(['status', home]).stdout, /done {5}consented\nthis is a client host/);
   assert.equal(git(path.join(home, 'garden'), 'status', '--porcelain', '--', 'CLIENT-CONSENT.yay').startsWith('??'), true);
+});
+
+test('the wizard names what is not pinned for this host\'s architecture, as the garden itself reads it', async () => {
+  const { manifestProblem } = await import('../src/capabilities.js');
+  const { parse } = await import('../src/yay.js');
+  const home = fs.mkdtempSync(path.join(SHED, 'test/.tmp-'));
+  try {
+    fs.mkdirSync(path.join(home, 'garden'));
+    fs.cpSync(path.join(SHED, 'capabilities'), path.join(home, 'garden/capabilities'), { recursive: true });
+    const names = fs.readdirSync(path.join(SHED, 'capabilities')).filter(n => fs.existsSync(path.join(SHED, 'capabilities', n, 'capability.yay')));
+    for (const arch of ['amd64', 'arm64', 'riscv64']) {
+      const r = wizard(['pins', home], { env: { WIZARD_ARCH: arch } });
+      assert.match(r.stdout, new RegExp(`^this host is ${arch} `));
+      for (const n of names) {
+        const problem = manifestProblem(parse(fs.readFileSync(path.join(SHED, 'capabilities', n, 'capability.yay'), 'utf8')), n, arch);
+        const named = new RegExp(`^(CANNOT BOOT|unavailable) +${n}: `, 'm').test(r.stdout);
+        assert.equal(named, problem !== null, `${n} on ${arch}: the wizard and the garden agree (${problem ?? 'pinned'})`);
+      }
+      const base = parse(fs.readFileSync(path.join(SHED, 'config/garden.yay'), 'utf8')).capabilities.base;
+      const blocking = base.filter(n => manifestProblem(parse(fs.readFileSync(path.join(SHED, 'capabilities', n, 'capability.yay'), 'utf8')), n, arch));
+      assert.equal(r.status, blocking.length ? 1 : 0);
+      for (const n of blocking) assert.match(r.stdout, new RegExp(`CANNOT BOOT +${n}: `), `${n} is needed by every host`);
+    }
+    assert.match(wizard(['pins', home], { env: { WIZARD_ARCH: 'riscv64' } }).stdout, /CANNOT BOOT {2}node: no artefact for riscv64/, 'an architecture nobody planned for is told so plainly');
+    assert.match(wizard(['check']).stdout, /this {5}machine is (amd64|arm64|\S+); no architecture is assumed/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
 });

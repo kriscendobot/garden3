@@ -28,6 +28,13 @@ limits therefore default to what the garden chooses (two slots, no hours),
 and the mechanism for an owner's limits stays, for this host if that changes
 and for others.
 
+**What Oros Studio is will be learned when it goes live.** Its architecture is
+not known in advance and nothing assumes one: the host reports what it is on
+its own branch at every start ([hosts.md](hosts.md)), capabilities are per
+architecture, the warden is built on the host for the host, and the wizard
+says before first start which capabilities have no pinned artefact for the
+machine it is run on.
+
 What the prior garden can do to it: send `sysop` operations over the journal
 (set worker counts, drain, restart or stop a unit, deploy a commit), pin jobs
 to it, release it a deploy, zero its worker cap if it goes offline. What it
@@ -48,7 +55,8 @@ shed: "<40-hex commit>"     # the shed revision to run
 slots: 2                    # how many jobs at once; 0 drains it
 plots: ["alder"]            # which plots it runs
 arcs: ["endo"]              # which arcs it draws from
-capabilities: ["node", "rust"]
+capabilities: ["node", "rust"]        # installed here whatever jobs ask
+forbid_capabilities: ["browser"]      # never installed here
 orders:                     # standing orders, each done once, by id
   - id: "q-2026-11-17"
     op: "quiesce"           # quiesce | drain | resume | restart | clear-scratch
@@ -87,6 +95,7 @@ host: "oros-studio"
 limits:
   max_slots: 2
   hours_utc: {from: 6, to: 22}    # optional: outside these the garden drains
+  forbid_capabilities: ["ollama"]  # optional: never installed here, whatever is ordered
 allow:
   shed: true                      # may the shed revision be changed remotely
   capabilities: true              # may capabilities be installed remotely
@@ -109,7 +118,8 @@ then records its serial and order ids, so nothing is done twice.
 | --- | --- |
 | `shed` differs from the running one | `rejuvenate` to it ([quiescence.md](quiescence.md)) |
 | `slots` | `set-slots`, clamped to the owner's `max_slots` (and noted) |
-| `plots`, `arcs`, `capabilities` | `set-plots`, `set-arcs`, `set-capabilities` |
+| `plots`, `arcs`, `capabilities` | `set-plots`, `set-arcs`, `set-capabilities` (minus what the owner forbids) |
+| `forbid_capabilities` | `forbid-capabilities`, joined with the owner's own list |
 | an order not yet done | `quiesce`, `drain`, `resume`, `restart`, `clear-scratch` |
 
 What a host will not do whatever the branch says, as a matter of containment
@@ -154,18 +164,13 @@ names with no effect yet); the host's status report; load awareness.
 
 ## Open questions
 
-1. **Its architecture.** Not recorded in the references and not yet answered.
-   Nothing in the garden assumes amd64 for a client host: capabilities are
-   per architecture, the warden is built on the host for the host, and the
-   entrypoint picks the node pin by `uname -m`. But node for arm64 has no
-   hash yet, so an arm64 host cannot boot until it is pinned.
-2. **Load on the lender's machine.** The prior garden has an unbuilt design
+1. **Load on the lender's machine.** The prior garden has an unbuilt design
    for backing off under CPU pressure
    (`designs/cpu-back-pressure-job-dispatch.md`). Hours and a slot limit are
    the only protections here.
-3. **Docker Desktop on a Mac.** Slots need real accounts and a setuid helper
+2. **Docker Desktop on a Mac.** Slots need real accounts and a setuid helper
    inside the VM's container; virtiofs made git slow enough to shape the prior
    garden. Whether the box's state should live in a volume rather than on the
    Mac's filesystem is for whoever first runs it there.
-4. **Recreating the container remotely** (for a new base image) is not in the
+3. **Recreating the container remotely** (for a new base image) is not in the
    vocabulary: it needs the lender's Docker, outside the box.

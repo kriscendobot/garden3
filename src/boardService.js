@@ -149,6 +149,26 @@ export const makeBoardService = ({ shards, host, clock, config = {}, owner = 'bo
 
     release: async (id, { by = host, cost, generation } = {}) => (await change(`release(${id}) by ${by}`, b => rules.release(b, id, { by, cost, host, generation }, clock.now()))).result,
 
+    /**
+     * What would this host claim next if it installed what is missing? Reads
+     * only; claims nothing. {id, missing} or null.
+     */
+    nextNeeds: async ({ plot } = {}) => {
+      if (!board.sync()) return null;
+      const b = loadBoard(board.tree);
+      if (b.quiescence.phase !== 'idle') return null;
+      const has = capabilities ? await capabilities.verifiedSet() : new Set();
+      const offer = capabilities ? await capabilities.offer() : { available: [] };
+      const slate = budget ? await budget.snapshot() : null;
+      if (budget && !slate) return null;
+      return rules.nextNeeds(b, { host, plot, has: t => has.has(t), can: t => offer.available.includes(t), arcRank: slate?.ranks, admit: slate ? (job, bd) => budget.admits(slate, job, bd).admit : null });
+    },
+    /** Open jobs that no host in `hosts` (their self-descriptions) could run. */
+    unplaceable: async hosts => {
+      if (!board.sync()) return [];
+      return rules.unplaceable(loadBoard(board.tree), hosts);
+    },
+
     /** A superseded run reports what it spent; its result is not accepted. */
     late: async (id, { cost, generation } = {}) => (await change(`late(${id}) generation ${generation}`, b => rules.late(b, id, { host, generation, cost }))).result,
 
