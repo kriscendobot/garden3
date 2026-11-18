@@ -17,7 +17,7 @@ test('main is a README and a wizard, small enough to read', () => {
   assert.deepEqual(fs.readdirSync(MAIN).sort(), ['AGENTS.md', 'CLAUDE.md', 'README.md', 'SETUP.md', 'wizard']);
   for (const f of ['README.md', 'AGENTS.md', 'CLAUDE.md', 'SETUP.md']) parseYaydown(fs.readFileSync(path.join(MAIN, f), 'utf8'), f);
   const lines = fs.readdirSync(MAIN).reduce((n, f) => n + fs.readFileSync(path.join(MAIN, f), 'utf8').split('\n').length, 0);
-  assert.ok(lines < 450, `${lines} lines`);
+  assert.ok(lines < 500, `${lines} lines`);
   if (fs.existsSync(path.join(SHED, 'main/wizard'))) {
     for (const f of fs.readdirSync(MAIN)) assert.equal(fs.readFileSync(path.join(SHED, 'main', f), 'utf8'), fs.readFileSync(path.join(MAIN, f), 'utf8'), `the main worktree's ${f} matches its seed on the shed`);
   }
@@ -29,7 +29,7 @@ test('describe and check change nothing; check finds what is missing', t => {
   const d = wizard([], { cwd: dir });
   assert.equal(d.status, 0);
   assert.match(d.stdout, /Nothing is changed by reading this/);
-  for (const step of ['check', 'fetch', 'consent', 'keys', 'image', 'start', 'identity', 'move in', 'joined']) assert.match(d.stdout, new RegExp(`\\d+\\. ${step}`), step);
+  for (const step of ['check', 'fetch', 'consent', 'keys', 'image', 'start', 'login', 'move in', 'joined']) assert.match(d.stdout, new RegExp(`\\d+\\. ${step}`), step);
   assert.deepEqual(fs.readdirSync(dir), []);
   // A host with a shell and little else: tools are named, with the reason.
   const bin = path.join(dir, 'bin');

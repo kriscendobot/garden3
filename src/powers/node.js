@@ -88,9 +88,6 @@ export const run = (cmd, args, { cwd, env, input, timeoutMs } = {}) => {
   return { status: r.status ?? 124, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
 };
 
-/** Run a program attached to this terminal, for a person to talk to. Returns its exit status. */
-export const interactive = (cmd, args, { env } = {}) => spawnSync(cmd, args, { env, stdio: 'inherit' }).status ?? 1;
-
 export const makeNodePowers = ({ env = process.env } = {}) =>
   // Frozen at the top only: the process environment cannot be deep-frozen.
   Object.freeze({

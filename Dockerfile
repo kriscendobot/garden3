@@ -1,6 +1,6 @@
 # The garden's base image. It is deliberately almost empty.
 #
-# It holds an operating system and the five packages below, and nothing of the
+# It holds an operating system and the six packages below, and nothing of the
 # garden: no script, no role, no runtime, no toolchain, no agent CLI. All of
 # that lives on the shed (bind-mounted at run time) or is a capability
 # (installed into a volume, pinned by the shed). So the image changes only when
@@ -14,6 +14,12 @@
 #   uidmap                  newuidmap and newgidmap must be root-owned setuid
 #                           binaries on the system path; a capability volume
 #                           is mounted nosuid
+#   openssh-client          every host pushes to the garden's repository (a
+#                           claim is a push), and the bot's login generates an
+#                           ssh key. OpenSSH publishes source, not binaries, so
+#                           there is no artefact to pin as a capability, and
+#                           building it would need a C compiler the box does
+#                           not have
 # Everything else the garden uses at boot is already in the base system:
 # a shell, coreutils (sha256sum), tar, and useradd.
 #
@@ -23,9 +29,10 @@
 FROM debian:trixie-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl git xz-utils uidmap \
+    && apt-get install -y --no-install-recommends ca-certificates curl git xz-utils uidmap openssh-client \
     && rm -rf /var/lib/apt/lists/* \
-    && test -u /usr/bin/newuidmap && test -u /usr/bin/newgidmap
+    && test -u /usr/bin/newuidmap && test -u /usr/bin/newgidmap \
+    && command -v ssh ssh-keygen >/dev/null
 
 # The entrypoint is the shed's, read from the mount, so that it too is
 # refreshed without a rebuild. The launcher mounts the checkout at its own

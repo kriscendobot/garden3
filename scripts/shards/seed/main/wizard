@@ -86,10 +86,12 @@ The wizard sets up one host in these steps. Nothing is changed by reading this.
                ever controlled remotely.
   5. keys      the operator places keys as files (garden keys set), never in
                an environment (SETUP.md).
-  6. image     build the base image (./garden build): a small Debian with five
+  6. image     build the base image (./garden build): a small Debian with six
                packages. Needs the operator's container runtime.
   7. start     ./garden up: creates the box; first boot fetches the runtime.
-  8. identity  the bot's git identity and GitHub authentication.
+  8. login     on a host that publishes: the operator logs the bot in to
+               GitHub by hand, inside ./garden sh (gh auth login, with ssh);
+               the wizard does not do it (SETUP.md).
   9. move in   hand over to the agent inside (./garden sh).
  10. joined    the host is registered, watching, and able to claim.
 

@@ -28,7 +28,8 @@ test('the shell that remains parses, and passes no key into the box', () => {
   const launcher = read('garden');
   const passed = [...launcher.matchAll(/-e ([A-Z_]+)=/g)].map(m => m[1]);
   assert.match(launcher, /-v "\$HERE:\$HERE"/, 'the checkout is mounted at its own path');
-  assert.deepEqual(passed, ['GARDEN_ROOT', 'GARDEN_HOST', 'GARDEN_SLOT_COUNT'], 'the box is created with no key in its environment');
+  assert.deepEqual(passed, ['GARDEN_ROOT', 'GARDEN_HOST', 'GARDEN_SLOT_COUNT', 'TERM'], 'the box is created, and entered, with no key in its environment');
+  assert.ok(!/garden login|gh auth/.test(launcher), 'the launcher does not drive the login: the operator does it by hand in ./garden sh');
   assert.ok(!/API_KEY|TOKEN/.test(launcher.replace(/#.*$/gm, '')));
   assert.match(read('Dockerfile'), /^FROM debian:/m);
   assert.ok(!/^(COPY|ADD) /m.test(read('Dockerfile')), 'the image copies nothing of the garden in');

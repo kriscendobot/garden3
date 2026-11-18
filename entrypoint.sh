@@ -53,6 +53,10 @@ export HOME="$STATE/steward"
 export PATH="$CAP/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 export GARDEN_ROOT="$ROOT" GARDEN_CAP_ROOT="$CAP" GARDEN_SLOTS="$SLOTS" GARDEN_HOST="${GARDEN_HOST:-$(hostname)}"
 export GARDEN_WARDEN=/usr/local/libexec/garden-warden
+# Not secrets: where gh keeps its store, so that a plain \`gh auth login\` in
+# this shell writes under the steward's home and nowhere in the checkout.
+export GH_CONFIG_DIR="$STATE/steward/.config/gh"
+export GIT_SSH_COMMAND="ssh -F $STATE/steward/.ssh/config"
 cd "$ROOT"
 exec "\$@"
 EOT
@@ -82,6 +86,11 @@ for b in node npm npx; do ln -sfn "$CAP/node/$version/bin/$b" "$CAP/bin/$b"; don
 ln -sfn "$ROOT/bin/garden.js" "$CAP/bin/garden"
 # The capability record should know the node the entrypoint installed.
 as_steward garden capabilities adopt node >/dev/null || die "the node capability does not verify"
+
+# The steward's home is made ready for the bot's login, which the operator
+# does by hand in `./garden sh`: github.com's pinned host keys, an ssh config
+# that uses them strictly, and the identity the steward commits as in the box.
+as_steward garden bot prepare >/dev/null || die "the steward's home could not be prepared"
 
 # 3. The warden. It is rebuilt at each rejuvenation; install whatever is built.
 if [ ! -x "$CAP/warden/warden" ]; then

@@ -1,27 +1,27 @@
-// login.js — the bot's GitHub login on a host that publishes.
+// login.js — the ground the bot's GitHub login stands on, and a check of it.
 //
-// The operator runs `./garden login` in their own terminal. It enters the box
-// as the steward and runs gh's own interactive login for github.com, with ssh
-// as the git protocol, so that gh generates a new ssh key inside the box and
-// uploads its public half to the account that logs in. Then it checks, and
-// prints, who that was. Design: designs/keys.md.
+// The login itself is the operator's, by hand, inside `./garden sh`:
+// `gh auth login` with ssh as the git protocol, which generates a new ssh key
+// in the box and uploads its public half to the account that logs in
+// (main:SETUP.md, step 8). Nothing here performs it.
 //
-// Where things land, all under the steward's home in the state directory
-// (0700, the steward's alone, ignored by git, never part of a job's home):
+// What this module does is make sure that a plain `gh auth login` lands in the
+// right places, and report afterwards who is logged in. Everything is under
+// the steward's home in the state directory (0700, the steward's alone,
+// ignored by git, never part of a job's home), which is $HOME in the box:
 //   .config/gh/hosts.yml   gh's store: the one home of the bot's token
 //   .ssh/id_ed25519        the bot's ssh key (and .pub)
 //   .ssh/known_hosts       github.com's host keys, pinned from the shed
+//   .ssh/config            github.com: that key, those host keys, strictly
 //   .gitconfig             the identity the steward commits as, in the box
 //
-// Nothing here prints the token, puts it in an argument or an environment
-// variable, or copies it anywhere. Safe to run again: a host already logged in
-// as the bot is only checked.
+// Design: designs/keys.md.
 
 import { harden } from './harden.js';
 
-export const makeLogin = ({ run, interactive, files, home, knownHostsText, bot, identity, say = () => {} }) => {
+export const makeLogin = ({ run, files, home, knownHostsText, bot, identity }) => {
   const tree = files(home);
-  const env = { HOME: home, PATH: process.env.PATH ?? '/usr/bin:/bin', TERM: process.env.TERM ?? 'dumb' };
+  const env = { HOME: home, GH_CONFIG_DIR: tree.path('.config/gh'), PATH: process.env.PATH ?? '/usr/bin:/bin' };
   const gh = args => run('gh', args, { env });
   const whoami = () => {
     const r = gh(['api', 'user', '--jq', '.login']);
@@ -65,48 +65,12 @@ export const makeLogin = ({ run, interactive, files, home, knownHostsText, bot, 
   };
 
   return harden({
-    prepare,
-    verify,
-    /**
-     * The whole of `./garden login`. Returns true when the host ends logged in
-     * as the bot, false otherwise (having said why).
-     */
-    login: async () => {
+    /** Run by the entrypoint at every boot. Idempotent; touches no credential. */
+    prepare: async () => {
       prepare();
-      const before = whoami();
-      if (isBot(before)) say(`Already logged in to github.com as ${before}; checking.`);
-      else {
-        if (before) {
-          say(`gh is logged in as ${before}, which is not ${bot}. Logging that account out of this box first.`);
-          gh(['auth', 'logout', '--hostname', 'github.com', '--user', before]);
-        }
-        say(`Log in as ${bot}. gh will show a one-time code and a URL: open the URL in a browser where you are signed in to GitHub AS ${bot}, and enter the code.`);
-        say('When gh asks, let it generate a new SSH key (no passphrase: the steward uses it unattended) and upload it.');
-        const status = interactive('gh', ['auth', 'login', '--hostname', 'github.com', '--git-protocol', 'ssh', '--web', '--scopes', 'admin:public_key'], { env });
-        if (status !== 0) {
-          say('gh did not complete the login. Nothing else was changed; run ./garden login again.');
-          return false;
-        }
-      }
-      const after = whoami();
-      if (!isBot(after)) {
-        // The wrong account must not stay logged in: the steward would act as it.
-        if (after) gh(['auth', 'logout', '--hostname', 'github.com', '--user', after]);
-        say('');
-        say(`REFUSED: that login was ${after ?? 'nobody'}, not ${bot}.`);
-        say(`It has been logged out of this box. If gh uploaded an ssh key, it is on ${after ?? 'that'} account: remove it there (Settings, SSH and GPG keys).`);
-        say(`Sign in to GitHub as ${bot} in the browser and run ./garden login again.`);
-        return false;
-      }
-      const v = verify();
-      say('');
-      say(`github.com account:  ${v.login}`);
-      say(`ssh greets:          ${v.ssh ?? '(nobody)'}`);
-      say(`ssh key fingerprint: ${v.fingerprint ?? '(none)'}`);
-      say(`commits in the box:  ${identity.name} <${identity.email}>`);
-      for (const p of v.problems) say(`PROBLEM: ${p}`);
-      say(v.ok ? `Logged in as ${bot}. The token is in gh's store and the key in ~/.ssh, both under the steward's home in the state directory.` : 'The login is not complete; see above.');
-      return v.ok;
+      return harden({ home, known_hosts: tree.path('.ssh/known_hosts'), identity });
     },
+    /** Read-only: who is logged in, what ssh says, and whether modes and places are right. */
+    status: async () => verify(),
   });
 };

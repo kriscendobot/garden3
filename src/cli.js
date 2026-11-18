@@ -10,7 +10,7 @@
 // not be read.
 
 import path from 'node:path';
-import { makeNodePowers, makeFiles, run, interactive } from './powers/node.js';
+import { makeNodePowers, makeFiles, run } from './powers/node.js';
 import { makeShards } from './shard.js';
 import { makeBoardService } from './boardService.js';
 import { makeBudgetService } from './budget.js';
@@ -93,16 +93,16 @@ export const assemble = (powers = makeNodePowers()) => {
   // The steward's own home: gh's store, the ssh key, its git identity. Under
   // the state directory, never in the checkout (designs/keys.md).
   const stewardHome = path.join(stateDir, 'steward');
-  const stewardEnv = { HOME: stewardHome, PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` };
+  const stewardEnv = { HOME: stewardHome, GH_CONFIG_DIR: path.join(stewardHome, '.config/gh'), PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` };
   const keys = lazy(() => makeKeys({ files: makeFiles, stateDir, registryText: root.read('keys/registry.yay'), run, env: stewardEnv }));
-  const login = lazy(() => makeLogin({ run, interactive, files: makeFiles, home: stewardHome, knownHostsText: root.read('config/github-known-hosts'), bot: config.github.bot, identity: config.github.identity, say: line => process.stdout.write(`${line}\n`) }));
+  const login = lazy(() => makeLogin({ run, files: makeFiles, home: stewardHome, knownHostsText: root.read('config/github-known-hosts'), bot: config.github.bot, identity: config.github.identity }));
   const github = lazy(() => makeGitHub({ repo: config.github.repo, request: curlTransport({ run, token: () => keys.read('github-bot', 'steward').catch(() => null) }) }));
   const journal = lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock }));
   const steward = lazy(() => makeSteward({ github, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
   const watcher = lazy(() => makeWatcher({ github: { repo: config.github.repo, events: (...a) => github.events(...a) }, board, budget, steward, journal, hostinfo, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, log: powers.log }));
   const hostinfo = lazy(() => makeHostInfo({ shards, host, clock, probe: powers.probe, capabilities, slots: config.slots.count, shed: () => run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), client: () => root.exists('CLIENT-CONSENT.yay') }));
   return {
-    login,
+    bot: login,
     hostinfo,
     watcher,
     steward,
@@ -184,12 +184,6 @@ export const main = async argv => {
   const powers = makeNodePowers();
   const [service, method, ...rest] = argv;
   if (service === 'hook') return hook(powers);
-  if (service === 'login' && (method === undefined || method === 'bot')) {
-    // A conversation with a person, not a method call: plain text, and the
-    // exit status says whether the host ended logged in as the bot.
-    const ok = await assemble(powers).login.login();
-    return process.exit(ok ? 0 : 1);
-  }
   let services;
   let args;
   try {
