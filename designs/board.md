@@ -24,8 +24,9 @@ Fields: `id`, `role`, `title`, `body` (a block string: what the worker reads),
 `arc`, `priority` (0 soonest to 9), `after`, `requires`, `projects`, `plot`,
 `window_s`, `posted_at`, `posted_by`, `source`; then what the board maintains:
 `level`, `steps`, `under`, `abandoned`, `handoffs`, `handoff_log`, `cost`,
-`cost_under`, `attempts`, `claim`, `hold`, `go_ahead`, `reaped`
-([omega.md](omega.md)).
+`cost_under`, `attempts`, `generation`, `claim` (a lease: `at`, `generation`,
+`window_s`, `expires_at`), `expiries`, `expired_claims`, `late_runs`, `hold`,
+`go_ahead` ([omega.md](omega.md), [deadlines.md](deadlines.md)).
 
 A dependency is satisfied by absence. A finished job goes to the archive; a
 failed one stays in `failed/` and keeps blocking until a maintainer releases or
@@ -43,7 +44,7 @@ withdraws it. A dependency cycle is refused when it would be created.
 | `handoff` | the planning event ([omega.md](omega.md)) |
 | `release` | back to `open/`: a requeue, or a maintainer's go-ahead on a held or failed job |
 | `abandon` | back-tracks a job and its subtree |
-| `sweep` | deterministic upkeep: reopen a job whose steps are done, drop a claim the archive already has, requeue a claim older than the TTL |
+| `sweep` | deterministic upkeep, on every host: reopen a job whose steps are done, drop a claim the archive already has, expire every claim whose lease has run out ([deadlines.md](deadlines.md)) |
 
 Claim order is the arc's rank on the slate, then lowest level, then priority,
 then age. A job is skipped when it requires a capability the host has not
@@ -54,11 +55,12 @@ admit it ([budget.md](budget.md)).
 
 Any host may post and claim. Contention is settled by the push
 ([shards.md](shards.md)); two hosts racing for one job is tested. A host's
-claims live under its own directory, so a host that vanishes is visible, and
-the leader's sweep requeues what it held once the TTL passes, or at once when a
-quiescence marks it absent ([quiescence.md](quiescence.md)). A result from a
-host that no longer holds the claim is refused (`not-held`): its work is in its
-`wip/` branch, not on the board.
+claims live under its own directory, so a host that vanishes is visible. Every
+claim is a lease that any host expires once it has run out, without waiting
+to learn that the run stopped ([deadlines.md](deadlines.md)); a quiescence
+that marks a host absent releases its claims at once
+([quiescence.md](quiescence.md)). A result from a run that no longer holds
+its claim is refused (`superseded`, `not-held`) and set aside.
 
 The archive is `done/<YYYY>/<MM>/<id>.yay`: the record as it left, with
 `outcome` (`done`, `withdrawn`, `abandoned`), `completed_at`, its level, its

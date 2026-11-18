@@ -51,7 +51,8 @@ not start.
 
 A job gets a project with `garden project add <org>/<name> [<ref>]`: one
 checkout per project, under `worktrees/<org>/<name>/`, on a new branch
-`job/<id>`. A second `add` for the same project is refused.
+`job/<id>/<generation>`, the generation being that of the job's claim
+([deadlines.md](deadlines.md)). A second `add` for the same project is refused.
 
 The garden's bare repositories are kept as in the tower,
 `repositories/<org>-<name>.git`, one per upstream, fetched only by the steward.
@@ -63,9 +64,9 @@ one's objects read-only (`git clone --shared`, an alternates file) and keeps
 everything the job writes in its home. It has no remote: the job holds no
 credential and pushes nothing.
 
-At harvest the steward saves uncommitted work as one commit on `wip/<id>`,
-then fetches exactly `job/<id>` and `wip/<id>` from the checkout into the bare
-repository, with hooks disabled and no submodule recursion. A job therefore
+At harvest the steward saves uncommitted work as one commit on
+`wip/<id>/<generation>`, then fetches exactly that and `job/<id>/<generation>`
+from the checkout into the bare repository, with hooks disabled and no submodule recursion. A job therefore
 cannot write another job's branch or the project's own. Publishing those
 branches to GitHub is the steward's, with the bot's key ([keys.md](keys.md)).
 

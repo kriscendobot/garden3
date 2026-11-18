@@ -14,7 +14,8 @@ be cloned in full to be used.
 
 | Branch | Root worktree | Holds | Written by | Churn |
 | --- | --- | --- | --- | --- |
-| `shed` (default) | the root | designs, roles, skills, `src/`, `rust/`, capabilities, config | maintainers, by pull request | low |
+| `main` (default) | `main/` | a README and the setup wizard | maintainers | very low |
+| `shed` | the root | designs, roles, skills, `src/`, `rust/`, capabilities, config | maintainers, by pull request | low |
 | `board` | `board/` | the job board, and the quiescence document | every host, by compare-and-swap | high |
 | `archive` | `archive/` | jobs that have left the board | every host | high, append-only |
 | `journal` | `journal/` | daily digests, steering config, weekly budget statements | every host, rarely | low |
@@ -24,7 +25,8 @@ be cloned in full to be used.
 | `clients` | `clients/` | signed orders for client hosts | maintainers, signed | low |
 | `gate` | `gate/` | the maintainer's out-of-box root: boatman, keys, cutover | maintainers | low |
 
-`shed` and the orphan branches share no history. The root worktrees are views
+`main` is what a visitor and a new host see first; the garden itself is the
+`shed`. No two of these branches share history. The root worktrees are views
 for people; services never commit in them ([WORKTREES.md](../WORKTREES.md)).
 
 ## How a write lands

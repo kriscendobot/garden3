@@ -40,8 +40,9 @@ From its scripts:
   journal once a day. The prior garden's sixty-odd systemd units become
   branches of one loop.
 - **Leader**: `journal:config/hosts.yay` names it, set by a maintainer. Still
-  no election. Leader-only: the sweep, advancing and truncating a quiescence,
-  and (design only) the GitHub watchers.
+  no election. Leader-only: advancing and truncating a quiescence, and (design
+  only) the GitHub watchers. The sweep, with its deadline watch, runs on every
+  host ([deadlines.md](deadlines.md)).
 - **Per-host records live on the host's own branch**, `host/<name>`: usage
   rows now; status and a heartbeat when written. A host never contends with
   another to record something about itself. This is the main difference in
@@ -80,8 +81,8 @@ leader.
 
 ## Open questions
 
-1. **Leader failure.** If the leader dies, claims and dispatch continue on
-   other hosts, but nothing sweeps and no quiescence advances until a
+1. **Leader failure.** If the leader dies, claims, dispatch and the deadline
+   watch continue on other hosts, but no quiescence advances until a
    maintainer names another leader. The prior garden is the same.
 2. **Which watchers come first**, and whether the comment grammar (the
    verbs, the address gate, the reaction and reply receipts) is carried over

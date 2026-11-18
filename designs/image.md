@@ -29,8 +29,9 @@ agent CLIs and Ollama baked in.
 
 ## Where everything else comes from
 
-- **The shed** is bind-mounted at `/garden`. The image's entrypoint is one
-  line that runs `/garden/entrypoint.sh`, so even the entrypoint is the shed's.
+- **The shed** is bind-mounted at its own path (with the bare repository
+  beside it, in the wizard's layout). The image's entrypoint is one line that
+  runs the shed's `entrypoint.sh`, so even the entrypoint is the shed's.
 - **Capabilities** live in a volume at `/opt/garden/cap`
   ([capabilities.md](capabilities.md)).
 - **The first capability, node,** is fetched by the entrypoint from

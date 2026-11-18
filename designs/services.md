@@ -33,12 +33,12 @@ hardened JavaScript with object capabilities. That is the split adopted here.
 ## The line
 
 **Rust: small, privileged, and able to run with nothing installed.** Today
-that is one program, the **warden** (`rust/warden`, about 400 lines, one
+that is one program, the **warden** (`rust/warden`, about 500 lines, one
 dependency: `libyay`): it kills a slot account's processes, razes, plants and
 re-owns a slot's home, and runs a job as that account under its deadline
 ([slots.md](slots.md)). It is the only code that runs as root after boot.
 
-**JavaScript: everything that coordinates.** `src/`, about 2,600 lines:
+**JavaScript: everything that coordinates.** `src/`, about 3,200 lines:
 
 | Module | Is |
 | --- | --- |
@@ -54,8 +54,9 @@ re-owns a slot's home, and runs a job as that account under its deadline
 **Shell: only what must run before a runtime exists**, and none of it holds
 garden logic: `entrypoint.sh` (accounts, fetch node, install the warden, hand
 over), `garden` (the launcher, on the host), `scripts/shards/bootstrap.sh`
-(first creation of the branches), `scripts/lint.sh`, and on the gate
-`cutover/cutover.sh`. About 330 lines in all.
+(first creation of the branches), `scripts/lint.sh`, the `wizard` on `main`
+(a new host has nothing else), and on the gate `cutover/cutover.sh`. About
+620 lines in all.
 
 **No Python.**
 
