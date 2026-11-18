@@ -50,10 +50,10 @@ be stopped and resumed at any point: `./wizard status <dir>`.
    in that file to what they are lending. Skip this step on a
    maintainer-run host.
 5. **Keys.** Keys are files, set by the operator, never pasted to an agent
-   and never put in an environment: from `<dir>/garden`,
-   `bin/garden.js keys status` lists what this kind of host needs, and
-   `bin/garden.js keys set <name>` reads one from standard input. (This needs
-   the runtime, so on a new host it is done inside the box after step 7.)
+   and never put in an environment. Inside the box (`./garden sh`, after step
+   7), `garden keys status` lists what this kind of host needs, and
+   `garden keys set <name>` reads one from standard input. The bot's GitHub
+   token and ssh key are not set this way: they come from its login, step 8.
 6. **The image.** From `<dir>/garden`: `./garden build`. Expect a small
    Debian image and `./garden check` to print `image matches the Dockerfile`.
 7. **Start.** `./garden up`, then `./garden status`. The first boot fetches
@@ -61,16 +61,50 @@ be stopped and resumed at any point: `./wizard status <dir>`.
    a few minutes. The host installs nothing else until a job needs it. At
    each start it records what it is (architecture, size, what it has
    installed) on its own `host/<name>` branch.
-8. **Identity.** Inside (`./garden sh`): the bot's git name and email for this
-   host, and GitHub authentication for the bot account, placed as the
-   `github-bot` key. A client host needs only what lets it push its claims.
-9. **Move in.** `./garden sh`, start the agent there, and have it read
+8. **The bot's login**, on a host that publishes. The operator does this by
+   hand, in their own terminal; an agent does not. `./garden sh` opens a shell
+   in the box as the steward, already set up so that everything below lands
+   under the steward's home in the state directory and nowhere in the
+   checkout.
+
+   ```sh
+   ./garden sh
+   garden capabilities install gh        # once; this host installs its own gh
+   gh auth login --hostname github.com --git-protocol ssh --web --scopes admin:public_key
+   ```
+
+   gh asks whether to generate a new SSH key: **yes**, with **no passphrase**
+   (the steward uses it unattended), and accept the title it offers. It then
+   shows a one-time code and a URL. Open the URL in a browser that is signed
+   in to GitHub **as the bot**, enter the code, and authorize. Then check:
+
+   | Type | Expect |
+   | --- | --- |
+   | `gh auth status` | `Logged in to github.com account kriscendobot`; git protocol `ssh`; scopes include `admin:public_key`. The token is shown masked |
+   | `ssh -T git@github.com` | `Hi kriscendobot! You've successfully authenticated, but GitHub does not provide shell access.` |
+   | `ssh-keygen -lf ~/.ssh/id_ed25519.pub` | one line: `256 SHA256:… (ED25519)`, the same fingerprint GitHub lists under the bot's SSH keys |
+   | `garden bot status` | `ok: true`, `login` and `ssh` both `kriscendobot`, `problems: []` |
+   | `garden keys status` | `github-bot` and `github-ssh`: `present: true`, `mode_ok: true`. No values are shown |
+
+   If `gh auth status` or `ssh -T` names **any other account**, stop: run
+   `gh auth logout`, remove the key gh uploaded from that account on GitHub,
+   and log in again with the browser signed in as the bot. The first
+   connection is checked against GitHub's published host keys, which the box
+   pinned at boot; if ssh reports a host key problem, stop and tell the
+   maintainers.
+
+   Commits the steward makes in the box are the bot's
+   (`Kriscendo Bot`), set in the steward's own git configuration in the
+   state directory. Nothing changes the identity you commit with outside the
+   box. A client host needs only what lets it push its claims: the same login,
+   as whichever account the maintainers give it.
+9. **Move in.** In `./garden sh`, start the agent, and have it read
    `CLAUDE.md` in the shed. From here the garden's own roles take over.
 10. **Joined.** A maintainer adds the host to `journal:config/hosts.yay`.
-    Then, inside: `bin/garden.js quiescence status` answers, a `host/<name>`
-    branch exists for this host, and `bin/garden.js board claim` returns a
-    job or `null` rather than an error. On a client host,
-    `bin/garden.js clients read` says `watching: true`.
+    Then, inside: `garden quiescence status` answers, a `host/<name>` branch
+    exists for this host, and `garden board claim` returns a job or `null`
+    rather than an error. On a client host, `garden clients read` says
+    `watching: true`.
 
 If a step cannot be done, finish what does not depend on it and leave the
 operator one precise action and how to resume.
