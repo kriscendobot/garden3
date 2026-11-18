@@ -1,0 +1,178 @@
+#!/bin/sh
+# wizard — set up a host for the garden, from outside, before anything exists.
+#
+# Usage: ./wizard [describe | check | fetch <url> <dir> | consent <dir> | status <dir>]
+#
+# This is shell because it runs on a bare host: it may assume a POSIX shell and
+# nothing else until `check` has passed. It holds no garden logic. It does the
+# few mechanical steps and SETUP.md guides an agent and the operator through
+# the rest. Every step says what it will do before it does it, is safe to run
+# again, and records itself in <dir>/.wizard-state so a run can be resumed.
+# `describe` (the default) changes nothing.
+set -eu
+
+say() { printf '%s\n' "$*"; }
+die() { printf 'wizard: %s\n' "$*" >&2; exit 1; }
+done_step() { grep -qx "$1" "$DIR/.wizard-state" 2>/dev/null; }
+mark() { done_step "$1" || printf '%s\n' "$1" >>"$DIR/.wizard-state"; }
+
+# Branches cloned whole, and branches cloned shallow because they churn and
+# are rewritten to a fresh root at each quiescence (shed:designs/shards.md).
+WHOLE="main shed library clients gate"
+SHALLOW="board archive journal"
+VIEWS="board archive journal library clients gate"
+
+describe() {
+  cat <<'EOT'
+The wizard sets up one host in these steps. Nothing is changed by reading this.
+
+  1. check     look for what the host needs: git, curl, sha256sum, tar, a
+               container runtime this shell can reach. Changes nothing.
+  2. decide    you and the operator choose: where the garden lives on this
+               host, and whether this is a maintainer-run host or a client
+               host on lent capacity (SETUP.md).
+  3. fetch     clone the garden once, as a bare repository, and add worktrees:
+               <dir>/garden.git, <dir>/garden (the shed), and views of the
+               other branches inside it. The high-churn branches are fetched
+               at depth 1. Makes <dir>; touches nothing outside it.
+  4. consent   client hosts only: the operator writes CLIENT-CONSENT.yay by
+               typing the host's name. Without it nothing on this host is
+               ever controlled remotely.
+  5. keys      the operator places keys as files (garden keys set), never in
+               an environment (SETUP.md).
+  6. image     build the base image (./garden build): a small Debian with five
+               packages. Needs the operator's container runtime.
+  7. start     ./garden up: creates the box; first boot fetches the runtime.
+  8. identity  the bot's git identity and GitHub authentication.
+  9. move in   hand over to the agent inside (./garden sh).
+ 10. joined    the host is registered, watching, and able to claim.
+
+Run `./wizard check` next.
+EOT
+}
+
+check() {
+  rc=0
+  need() { # need <program> <why>
+    if command -v "$1" >/dev/null 2>&1; then say "ok       $1"; else say "MISSING  $1: $2"; rc=1; fi
+  }
+  need git "the garden is a git repository"
+  need curl "the box fetches its runtime with it; the wizard does not"
+  need sha256sum "pins are checked with it"
+  need tar "capabilities are unpacked with it"
+  if command -v git >/dev/null 2>&1; then
+    v="$(git --version | sed 's/[^0-9.]*//' | cut -d. -f1,2)"
+    major="${v%%.*}"; minor="${v#*.}"
+    if [ "$major" -gt 2 ] || { [ "$major" -eq 2 ] && [ "$minor" -ge 30 ]; }; then say "ok       git $v"; else say "OLD      git $v: 2.30 or newer is needed"; rc=1; fi
+  fi
+  # The host-access boundary: can this shell reach a container runtime, or
+  # only the files? If not, the operator runs the image and start steps.
+  runtime=none
+  for r in docker podman; do
+    if command -v "$r" >/dev/null 2>&1; then
+      if "$r" info >/dev/null 2>&1; then runtime="$r"; break; else runtime="$r-unreachable"; fi
+    fi
+  done
+  case "$runtime" in
+    none) say "OPERATOR no container runtime found: install Docker or Podman, then run check again"; rc=1 ;;
+    *-unreachable) say "OPERATOR ${runtime%-unreachable} is installed but this shell cannot reach it: the operator runs steps 6 and 7 in their own terminal" ;;
+    *) say "ok       $runtime is reachable from this shell" ;;
+  esac
+  [ "$(id -u)" != 0 ] && say "ok       not running as root" || { say "ROOT     run the wizard as the account that will own the garden, not root"; rc=1; }
+  [ "$rc" = 0 ] && say "check passed" || say "check found something to fix"
+  return "$rc"
+}
+
+fetch() {
+  URL="${1:?usage: wizard fetch <url> <dir>}"; DIR="${2:?usage: wizard fetch <url> <dir>}"
+  say "fetch will: make $DIR; clone $URL once as $DIR/garden.git (bare);"
+  say "  fetch whole: $WHOLE, and every plot; at depth 1: $SHALLOW;"
+  say "  add worktrees: $DIR/garden (shed) and inside it: $VIEWS."
+  [ "${WIZARD_DRY_RUN:-0}" = 1 ] && { say "dry run: nothing was done"; return 0; }
+  mkdir -p "$DIR"
+  bare="$DIR/garden.git"
+  if [ ! -d "$bare" ]; then
+    git init --quiet --bare "$bare"
+    git -C "$bare" remote add origin "$URL"
+    git -C "$bare" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+  fi
+  [ "$(git -C "$bare" remote get-url origin)" = "$URL" ] || die "$bare already tracks $(git -C "$bare" remote get-url origin), not $URL"
+  g() { git -C "$bare" -c protocol.file.allow=always "$@"; }
+  for b in $WHOLE; do g fetch --quiet --no-tags origin "+refs/heads/$b:refs/remotes/origin/$b" || die "cannot fetch $b from $URL"; done
+  g fetch --quiet --no-tags origin '+refs/heads/plot/*:refs/remotes/origin/plot/*' || true
+  for b in $SHALLOW; do g fetch --quiet --no-tags --depth 1 origin "+refs/heads/$b:refs/remotes/origin/$b" || die "cannot fetch $b from $URL"; done
+  for b in $WHOLE $SHALLOW; do g show-ref --verify --quiet "refs/heads/$b" || g branch --quiet "$b" "origin/$b"; done
+  for ref in $(g for-each-ref --format='%(refname:short)' 'refs/remotes/origin/plot/*'); do
+    b="${ref#origin/}"; g show-ref --verify --quiet "refs/heads/$b" || g branch --quiet "$b" "$ref"
+  done
+  mark fetched
+  [ -e "$DIR/garden/.git" ] || g worktree add --quiet "$DIR/garden" shed
+  for b in $VIEWS; do [ -e "$DIR/garden/$b/.git" ] || g worktree add --quiet "$DIR/garden/$b" "$b"; done
+  mark worktrees
+  say "fetched. The garden is at $DIR/garden. Next: SETUP.md, step 4 or 5."
+}
+
+consent() {
+  DIR="${1:?usage: wizard consent <dir>}"
+  file="$DIR/garden/CLIENT-CONSENT.yay"
+  [ -d "$DIR/garden" ] || die "fetch the garden into $DIR first"
+  [ ! -e "$file" ] || { say "this host has already consented: $file"; say "to revoke, delete that file or set watch: false in it"; return 0; }
+  host="${GARDEN_HOST:-$(hostname -s)}"
+  cat <<EOT
+
+  CONSENT TO REMOTE CONTROL OF THE GARDEN ON THIS MACHINE
+
+  You are about to make this machine a CLIENT HOST of the garden.
+
+  From then on, whoever can push to the 'clients' branch of the garden's
+  repository decides what the garden on this machine does: which revision of
+  the garden's code it runs, how many jobs it runs at once, when it stops and
+  restarts, and what software it installs inside its container.
+
+  They cannot run commands on this machine outside the garden's container,
+  and the limits written below bound them: at most ${WIZARD_MAX_SLOTS:-2} jobs at once.
+
+  You can withdraw at any time by deleting
+    $file
+  and the garden stops listening at its next tick.
+
+  To consent, type this machine's name exactly:  $host
+EOT
+  printf '  > '
+  read -r answer || answer=""
+  [ "$answer" = "$host" ] || die "that is not '$host'. Nothing was written; this host is not a client host."
+  cat >"$file" <<EOT
+allow:
+  capabilities: true
+  orders:
+    - "quiesce"
+    - "drain"
+    - "resume"
+    - "restart"
+    - "clear-scratch"
+  shed: true
+host: "$host"
+limits:
+  max_slots: ${WIZARD_MAX_SLOTS:-2}
+watch: true
+EOT
+  mark consented
+  say "written: $file. Edit its limits (max_slots, hours_utc) to what you are lending."
+}
+
+status() {
+  DIR="${1:?usage: wizard status <dir>}"
+  for step in fetched worktrees consented; do
+    if done_step "$step"; then say "done     $step"; else say "pending  $step"; fi
+  done
+  [ -e "$DIR/garden/CLIENT-CONSENT.yay" ] && say "this is a client host (CLIENT-CONSENT.yay is present)" || say "this is not a client host"
+}
+
+case "${1:-describe}" in
+  describe) describe ;;
+  check) check ;;
+  fetch) shift; fetch "$@" ;;
+  consent) shift; consent "$@" ;;
+  status) shift; status "$@" ;;
+  *) die "usage: ./wizard [describe | check | fetch <url> <dir> | consent <dir> | status <dir>]" ;;
+esac

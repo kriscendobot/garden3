@@ -1,0 +1,6 @@
+arcs:
+  - arc: "unallocated"
+    status: "active"
+    summary: "work posted without an arc"
+    throttle: 1
+week_start: "2026-11-14T17:00:00Z"
