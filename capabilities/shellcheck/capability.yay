@@ -1,0 +1,22 @@
+bin:
+  - "bin/shellcheck"
+name: "shellcheck"
+requires: []
+sources:
+  amd64:
+    - into: "bin"
+      sha256: null
+      strip: 1
+      url: "https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.x86_64.tar.xz"
+  arm64:
+    - into: "bin"
+      sha256: null
+      strip: 1
+      url: "https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.aarch64.tar.xz"
+summary: "Static analysis for the garden's shell scripts; tests/lint.sh uses it when present."
+verify:
+  - expect: "version: 0\\.10\\.0"
+    run:
+      - "shellcheck"
+      - "--version"
+version: "0.10.0"

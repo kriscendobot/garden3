@@ -1,0 +1,28 @@
+bin:
+  - "node_modules/.bin/claude"
+install:
+  - files:
+      - "package.json"
+      - "package-lock.json"
+    run:
+      - "npm"
+      - "ci"
+      - "--prefix"
+      - "{prefix}"
+      - "--ignore-scripts"
+      - "--no-audit"
+      - "--no-fund"
+name: "claude-code"
+requires:
+  - "node"
+sources:
+  amd64: []
+  arm64: []
+status: "draft"
+summary: "The Claude Code CLI, the harness the garden's workers run in. Installed with npm ci from a committed lockfile, so every host resolves the same package tree."
+verify:
+  - expect: "2\\.1\\.220"
+    run:
+      - "claude"
+      - "--version"
+version: "2.1.220"

@@ -1,0 +1,35 @@
+bin:
+  - "toolchain/bin/cargo"
+  - "toolchain/bin/rustc"
+install:
+  - files: []
+    run:
+      - "sh"
+      - "{prefix}/installer/install.sh"
+      - "--prefix={prefix}/toolchain"
+      - "--disable-ldconfig"
+      - "--components=rustc,cargo,rust-std-x86_64-unknown-linux-gnu,rust-std-aarch64-unknown-linux-gnu"
+name: "rust"
+requires: []
+sources:
+  amd64:
+    - into: "installer"
+      sha256: null
+      strip: 1
+      url: "https://static.rust-lang.org/dist/rust-1.91.1-x86_64-unknown-linux-gnu.tar.xz"
+  arm64:
+    - into: "installer"
+      sha256: null
+      strip: 1
+      url: "https://static.rust-lang.org/dist/rust-1.91.1-aarch64-unknown-linux-gnu.tar.xz"
+summary: "The Rust toolchain (rustc and cargo), for building the warden from the shed at each rejuvenation and for the Rust projects the garden works on."
+verify:
+  - expect: "^cargo 1\\.91\\.1 "
+    run:
+      - "cargo"
+      - "--version"
+  - expect: "^rustc 1\\.91\\.1 "
+    run:
+      - "rustc"
+      - "--version"
+version: "1.91.1"

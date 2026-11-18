@@ -1,0 +1,25 @@
+bin: []
+name: "buildkit"
+requires: []
+skill: "skills/successor-image/SKILL.md"
+sources:
+  amd64:
+    - sha256: "a59539daf547fe0958efe2d07e41c0a6944e1112a66d7e519ec1cf5b673ef15b"
+      url: "https://github.com/moby/buildkit/releases/download/v0.34.1/buildkit-v0.34.1.linux-amd64.tar.gz"
+    - into: "bin"
+      sha256: "0e757c8f80510d764df8c9a5f169805580b48d02329f0a200900e261ecec27ed"
+      url: "https://github.com/rootless-containers/rootlesskit/releases/download/v3.3.0/rootlesskit-x86_64.tar.gz"
+summary: "Rootless BuildKit and RootlessKit, for building a successor base image from inside the box."
+verify:
+  - expect: "v0\\.34\\.1"
+    run:
+      - "{prefix}/bin/buildkitd"
+      - "--version"
+  - run:
+      - "{prefix}/bin/buildctl"
+      - "--version"
+  - expect: "3\\.3\\.0"
+    run:
+      - "{prefix}/bin/rootlesskit"
+      - "--version"
+version: "0.34.1"

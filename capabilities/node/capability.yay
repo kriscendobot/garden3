@@ -1,0 +1,26 @@
+bin:
+  - "bin/node"
+  - "bin/npm"
+  - "bin/npx"
+  - "bin/corepack"
+name: "node"
+requires: []
+sources:
+  amd64:
+    - sha256: null
+      strip: 1
+      url: "https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz"
+  arm64:
+    - sha256: null
+      strip: 1
+      url: "https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-arm64.tar.xz"
+summary: "Node.js and npm, for the JavaScript projects the garden works on and for agent harnesses distributed through npm."
+verify:
+  - expect: "^v22\\.11\\.0$"
+    run:
+      - "node"
+      - "--version"
+  - run:
+      - "npm"
+      - "--version"
+version: "22.11.0"
