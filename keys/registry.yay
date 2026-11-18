@@ -4,5 +4,10 @@ keys:
     purpose: "The model credential a worker's harness uses. Given to the harness through its key helper, never its environment."
   github-bot:
     consumer: "steward"
-    pattern: "^(gh[a-z]_|github_pat_)[A-Za-z0-9_]+$"
-    purpose: "The bot account's GitHub token. Only the steward's publishing and watching code reads it; no job ever holds it."
+    file: "steward/.config/gh/hosts.yml"
+    provider: "gh"
+    purpose: "The bot account's GitHub token. It lives in one place, gh's own store, written by the bot's login (./garden login); the steward reads it from gh at each call. No job ever holds it."
+  github-ssh:
+    consumer: "steward"
+    file: "steward/.ssh/id_ed25519"
+    purpose: "The bot account's ssh key, for publishing by git. Generated inside the box at the bot's login and never leaves it; its public half is on the bot's GitHub account."

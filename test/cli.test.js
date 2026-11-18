@@ -30,11 +30,13 @@ test('garden <service> <method> [ value ]', t => {
   assert.equal(garden('nosuch', 'x').status, 2);
   assert.equal(garden('board', 'post', '[', '--id').status, 2, 'malformed SHON is a usage error');
   assert.deepEqual(garden('keys', 'status').reply.result['github-bot'].present, false);
-  assert.equal(garden('keys', 'set', 'github-bot', 'ghp_inArgv').status, 2, 'a key is never taken from argv');
-  const set = spawnSync(process.execPath, [path.join(SHED, 'bin/garden.js'), 'keys', 'set', 'github-bot'], { env, input: 'ghp_fromStdin1\n', encoding: 'utf8' });
+  assert.equal(garden('keys', 'set', 'anthropic-worker', 'sk-inArgv').status, 2, 'a key is never taken from argv');
+  const set = spawnSync(process.execPath, [path.join(SHED, 'bin/garden.js'), 'keys', 'set', 'anthropic-worker'], { env, input: 'sk-fromStdin1\n', encoding: 'utf8' });
   assert.equal(set.status, 0, set.stdout);
-  assert.equal(fs.readFileSync(path.join(state, 'secrets/github-bot'), 'utf8'), 'ghp_fromStdin1\n');
-  assert.ok(!set.stdout.includes('ghp_'));
+  assert.equal(fs.readFileSync(path.join(state, 'secrets/anthropic-worker'), 'utf8'), 'sk-fromStdin1\n');
+  assert.ok(!set.stdout.includes('sk-'));
+  const byHand = spawnSync(process.execPath, [path.join(SHED, 'bin/garden.js'), 'keys', 'set', 'github-bot'], { env, input: 'ghp_x\n', encoding: 'utf8' });
+  assert.deepEqual([byHand.status, parse(byHand.stdout).code], [1, 'not-settable'], "the bot's token is written only by its login");
 
   // The deadline hook speaks the harness's protocol and never fails.
   const hookEnv = { ...env, GARDEN_HOOK_STATE: path.join(g.root, 'hook'), GARDEN_JOB_ID: 'fix-a', GARDEN_WINDOW_S: '2400', GARDEN_DEADLINE_EPOCH: String(Math.floor(Date.now() / 1000) + 300) };

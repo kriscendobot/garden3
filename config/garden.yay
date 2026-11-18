@@ -11,6 +11,9 @@ capabilities:
     - "rust"
 github:
   bot: "kriscendobot"
+  identity:
+    email: "279080640+kriscendobot@users.noreply.github.com"
+    name: "Kriscendo Bot"
   overlap_seconds: 120
   poll_seconds: 90
   repo: "kriscendobot/garden"

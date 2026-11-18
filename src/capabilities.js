@@ -219,6 +219,23 @@ export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, 
   return harden({
     install,
     sync,
+    /**
+     * Record a capability that is already unpacked at its pinned version and
+     * verifies, without fetching it again. For the one capability that must
+     * exist before this code can run: the entrypoint fetches node itself,
+     * against the same pin, and then tells the record so.
+     */
+    adopt: async name => {
+      const m = manifest(name) ?? refuse('not-installable', `there is no manifest for ${name}`);
+      const problem = manifestProblem(m, name, arch);
+      if (problem) refuse('not-installable', `${name}: ${problem}`);
+      if (!verifies(name, m)) refuse('unverified', `${name} ${m.version} is not unpacked here, or does not verify`);
+      for (const b of m.bin ?? []) caps.link(caps.path(`${name}/${m.version}/${b}`), `bin/${b.split('/').pop()}`);
+      const now = clock.now();
+      const rec = record();
+      writeRecord({ ...rec, [name]: { installed_at: now, ...(rec[name] ?? {}), version: m.version, manifest_sha256: manifestSha(name), verified: true, verified_at: now } });
+      return harden({ name, version: m.version });
+    },
     policy: async () => harden(policy()),
     availability: async () => harden(availability()),
     /** Names this host has verified, and names it could install now. */

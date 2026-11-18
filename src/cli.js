@@ -10,7 +10,7 @@
 // not be read.
 
 import path from 'node:path';
-import { makeNodePowers, makeFiles, run } from './powers/node.js';
+import { makeNodePowers, makeFiles, run, interactive } from './powers/node.js';
 import { makeShards } from './shard.js';
 import { makeBoardService } from './boardService.js';
 import { makeBudgetService } from './budget.js';
@@ -30,6 +30,7 @@ import { makeGitHub, curlTransport } from './github.js';
 import { makeWatcher } from './watcher.js';
 import { makeSteward } from './steward.js';
 import { makeHostInfo } from './hostinfo.js';
+import { makeLogin } from './login.js';
 import * as wrapup from './wrapup.js';
 import { parse, stringify } from './yay.js';
 import { fromArgs } from './shon.js';
@@ -89,13 +90,19 @@ export const assemble = (powers = makeNodePowers()) => {
   // GitHub is reached only from here, the steward's side, with the bot's key
   // read from its file at the moment of each call. With no key, reads are
   // anonymous and writes fail, which the watcher reports as unacknowledged.
-  const keys = lazy(() => makeKeys({ files: makeFiles, stateDir, registryText: root.read('keys/registry.yay') }));
+  // The steward's own home: gh's store, the ssh key, its git identity. Under
+  // the state directory, never in the checkout (designs/keys.md).
+  const stewardHome = path.join(stateDir, 'steward');
+  const stewardEnv = { HOME: stewardHome, PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` };
+  const keys = lazy(() => makeKeys({ files: makeFiles, stateDir, registryText: root.read('keys/registry.yay'), run, env: stewardEnv }));
+  const login = lazy(() => makeLogin({ run, interactive, files: makeFiles, home: stewardHome, knownHostsText: root.read('config/github-known-hosts'), bot: config.github.bot, identity: config.github.identity, say: line => process.stdout.write(`${line}\n`) }));
   const github = lazy(() => makeGitHub({ repo: config.github.repo, request: curlTransport({ run, token: () => keys.read('github-bot', 'steward').catch(() => null) }) }));
   const journal = lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock }));
   const steward = lazy(() => makeSteward({ github, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
   const watcher = lazy(() => makeWatcher({ github: { repo: config.github.repo, events: (...a) => github.events(...a) }, board, budget, steward, journal, hostinfo, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, log: powers.log }));
   const hostinfo = lazy(() => makeHostInfo({ shards, host, clock, probe: powers.probe, capabilities, slots: config.slots.count, shed: () => run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), client: () => root.exists('CLIENT-CONSENT.yay') }));
   return {
+    login,
     hostinfo,
     watcher,
     steward,
@@ -108,7 +115,34 @@ export const assemble = (powers = makeNodePowers()) => {
       });
       const isLeader = async () => parse((await shardRead('journal', 'config/hosts.yay')) ?? 'leader: null\n').leader === host;
       const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, hostinfo, watcher, steward, clock, log: powers.log });
-      return { tick: sup.tick, run: () => sup.run({ sleep: ms => new Promise(r => setTimeout(r, ms)) }) };
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      /**
+       * Tick forever. A host that cannot take part yet (no repository to talk
+       * to) idles and says so once, rather than failing every minute; the
+       * same failure repeated is logged once until it changes.
+       */
+      const runForever = async ({ intervalMs = 60000 } = {}) => {
+        let last = '';
+        const note = line => {
+          if (line !== last) powers.log(line);
+          last = line;
+        };
+        for (;;) {
+          const remote = env.GARDEN_REMOTE ?? run('git', ['-C', rootRepo, 'remote', 'get-url', 'origin']).stdout.trim();
+          if (!remote) note('idle: this checkout has no origin yet, so there is no board to work from. Waiting.');
+          else {
+            try {
+              const did = await sup.tick();
+              if (did.length) powers.log(did.join('; '));
+              last = '';
+            } catch (err) {
+              note(`waiting: ${err.code ?? 'error'}: ${err.message}`);
+            }
+          }
+          await sleep(intervalMs);
+        }
+      };
+      return { tick: sup.tick, run: runForever };
     }),
     board,
     budget,
@@ -150,6 +184,12 @@ export const main = async argv => {
   const powers = makeNodePowers();
   const [service, method, ...rest] = argv;
   if (service === 'hook') return hook(powers);
+  if (service === 'login' && (method === undefined || method === 'bot')) {
+    // A conversation with a person, not a method call: plain text, and the
+    // exit status says whether the host ended logged in as the bot.
+    const ok = await assemble(powers).login.login();
+    return process.exit(ok ? 0 : 1);
+  }
   let services;
   let args;
   try {

@@ -28,7 +28,7 @@ RUN apt-get update \
     && test -u /usr/bin/newuidmap && test -u /usr/bin/newgidmap
 
 # The entrypoint is the shed's, read from the mount, so that it too is
-# refreshed without a rebuild. The launcher says where the mount is.
-ENV GARDEN_ROOT=/garden
-ENTRYPOINT ["/bin/sh", "-c", "exec \"$GARDEN_ROOT/entrypoint.sh\" \"$@\"", "garden-entrypoint"]
+# refreshed without a rebuild. The launcher mounts the checkout at its own
+# path and names it in GARDEN_ROOT; the image knows no path of its own.
+ENTRYPOINT ["/bin/sh", "-c", "exec \"${GARDEN_ROOT:?the launcher sets GARDEN_ROOT to the mounted checkout}/entrypoint.sh\" \"$@\"", "garden-entrypoint"]
 CMD ["supervise"]

@@ -23,10 +23,14 @@ export const KEY_VARIABLES = harden([
 /** An environment with every key variable removed. */
 export const scrub = env => Object.fromEntries(Object.entries(env).filter(([k]) => !KEY_VARIABLES.includes(k) && !/_(API_KEY|TOKEN|SECRET)$/.test(k)));
 
-export const makeKeys = ({ files, stateDir, registryText }) => {
+export const makeKeys = ({ files, stateDir, registryText, run, env = {} }) => {
   const state = files(stateDir);
   const registry = registryText ? parse(registryText).keys : {};
-  const fileOf = name => `secrets/${name}`;
+  // A key is a file under secrets/ unless the registry says where else it
+  // lives (`file`, relative to the state directory). A key with a `provider`
+  // has exactly one home, that provider's own store, and is read through it:
+  // there is no second copy to drift.
+  const fileOf = name => registry[name]?.file ?? `secrets/${name}`;
   const known = name => {
     if (!isName(name)) refuse('invalid', 'bad key name');
     return registry[name] ?? refuse('unknown-key', `${name} is not in the key registry (keys/registry.yay)`);
@@ -35,6 +39,7 @@ export const makeKeys = ({ files, stateDir, registryText }) => {
     /** Store a key. The value must be one line with no whitespace, and match the registry's pattern. */
     set: async (name, value) => {
       const spec = known(name);
+      if (spec.provider || spec.file) refuse('not-settable', `${name} is not set by hand: ${spec.provider === 'gh' ? "it is written by the bot's login (./garden login)" : 'it is made where it lives'}`);
       const v = String(value).replace(/\n$/, '');
       if (!v || /\s/.test(v)) refuse('invalid', 'a key is one line with no whitespace');
       if (spec.pattern && !new RegExp(spec.pattern).test(v)) refuse('invalid', `that does not look like a ${name} key`);
@@ -44,7 +49,11 @@ export const makeKeys = ({ files, stateDir, registryText }) => {
       state.chmod(`${fileOf(name)}.new`, 0o600);
       state.rename(`${fileOf(name)}.new`, fileOf(name));
     },
-    remove: async name => state.remove(fileOf(known(name) && name)),
+    remove: async name => {
+      const spec = known(name);
+      if (spec.provider || spec.file) refuse('not-settable', `${name} is not removed here; log the bot out instead`);
+      state.remove(fileOf(name));
+    },
     /** {name: {present, mode_ok, purpose}} for every registered key. Never a value. */
     status: async () =>
       harden(Object.fromEntries(Object.entries(registry).map(([name, spec]) => {
@@ -61,6 +70,13 @@ export const makeKeys = ({ files, stateDir, registryText }) => {
       if (spec.consumer !== consumer) refuse('wrong-consumer', `${name} is for ${spec.consumer}, not ${consumer}`);
       if (!state.exists(fileOf(name))) refuse('no-key', `no ${name} key on this host`);
       if (state.mode(fileOf(name)) !== 0o600) refuse('bad-mode', `${name} is readable by others; treat it as leaked and replace it`);
+      if (spec.provider === 'gh') {
+        // The token stays in gh's store; gh prints it to a pipe only we read.
+        const r = run('gh', ['auth', 'token', '--hostname', 'github.com'], { env });
+        const token = r.stdout.trim();
+        if (r.status !== 0 || !token) refuse('no-key', `gh has no token for github.com on this host`);
+        return token;
+      }
       return state.read(fileOf(name)).replace(/\n$/, '');
     },
   });
