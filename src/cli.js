@@ -26,6 +26,9 @@ import { makeHost } from './host.js';
 import { makeDispatcher } from './dispatch.js';
 import { makeSupervisor } from './supervisor.js';
 import { makeClientWatch } from './clients.js';
+import { makeGitHub, curlTransport } from './github.js';
+import { makeWatcher } from './watcher.js';
+import { makeSteward } from './steward.js';
 import * as wrapup from './wrapup.js';
 import { parse, stringify } from './yay.js';
 import { fromArgs } from './shon.js';
@@ -79,7 +82,17 @@ export const assemble = (powers = makeNodePowers()) => {
     caps.rename('warden/warden.new', 'warden/warden');
     return { warden: powers.sha256File(caps.path('warden/warden')), arch: powers.arch() };
   };
+  // GitHub is reached only from here, the steward's side, with the bot's key
+  // read from its file at the moment of each call. With no key, reads are
+  // anonymous and writes fail, which the watcher reports as unacknowledged.
+  const keys = lazy(() => makeKeys({ files: makeFiles, stateDir, registryText: root.read('keys/registry.yay') }));
+  const github = lazy(() => makeGitHub({ repo: config.github.repo, request: curlTransport({ run, token: () => keys.read('github-bot', 'steward').catch(() => null) }) }));
+  const journal = lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock }));
+  const steward = lazy(() => makeSteward({ github, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
+  const watcher = lazy(() => makeWatcher({ github: { repo: config.github.repo, events: (...a) => github.events(...a) }, board, budget, steward, journal, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, log: powers.log }));
   return {
+    watcher,
+    steward,
     supervisor: lazy(() => {
       const services = assemble(powers);
       const dispatcher = makeDispatcher({
@@ -88,7 +101,7 @@ export const assemble = (powers = makeNodePowers()) => {
         worker: { argv: (env.GARDEN_WORKER ?? 'claude -p --settings .claude-worker.json').split(' '), env: { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` }, repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), logFile: id => path.join(stateDir, 'runs', `${id}.log`), killAfterS: config.worker.kill_after_seconds },
       });
       const isLeader = async () => parse((await shardRead('journal', 'config/hosts.yay')) ?? 'leader: null\n').leader === host;
-      const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, clock, log: powers.log });
+      const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, watcher, steward, clock, log: powers.log });
       return { tick: sup.tick, run: () => sup.run({ sleep: ms => new Promise(r => setTimeout(r, ms)) }) };
     }),
     board,
@@ -96,9 +109,9 @@ export const assemble = (powers = makeNodePowers()) => {
     capabilities,
     slots,
     quiescence: lazy(() => makeQuiescenceService({ shards, host, clock, config })),
-    journal: lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock })),
+    journal,
     plots: lazy(() => makePlots({ files: makeFiles, run, rootRepo, shards, stateDir, clock })),
-    keys: lazy(() => makeKeys({ files: makeFiles, stateDir, registryText: root.read('keys/registry.yay') })),
+    keys,
     host: lazy(() => makeHost({ files: makeFiles, run, rootRepo, stateDir, host, clock, shards, capabilities, slots, log: powers.log, build })),
     project: lazy(() => makeProjects({ files: makeFiles, run, home: env.GARDEN_JOB_HOME ?? env.HOME, repositories: env.GARDEN_REPOSITORIES })),
     clients: lazy(() => makeClientWatch({ shards, run, files: makeFiles, stateDir, host, consentFile: env.GARDEN_CLIENT_CONSENT ?? path.join(rootRepo, 'CLIENT-CONSENT.yay'), clock })),

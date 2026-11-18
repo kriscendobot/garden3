@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeSupervisor } from '../src/supervisor.js';
 
-const mk = ({ duty, phase = 'idle', leader = false, claimed = 0, jobs = [], swept = [], zombies = [] }) => {
+const mk = ({ duty, phase = 'idle', leader = false, claimed = 0, jobs = [], swept = [], zombies = [], heard = null }) => {
   const calls = [];
   const rec = name => async (...a) => (calls.push([name, ...a]), undefined);
   const queue = [...jobs];
@@ -15,6 +15,7 @@ const mk = ({ duty, phase = 'idle', leader = false, claimed = 0, jobs = [], swep
     budget: { refresh: rec('refresh') },
     dispatcher: { once: async () => queue.shift() ?? null, reap: async () => zombies },
     journal: { press: async o => (calls.push(['press', o]), []) },
+    ...(heard ? { watcher: { tick: async () => (calls.push(['watch']), heard) }, steward: { report: async () => (calls.push(['report']), ['done issue-1']) } } : {}),
   });
   return { sup, calls, names: () => calls.map(c => c[0]) };
 };
@@ -55,4 +56,14 @@ test('the leader advances and truncates; every host watches deadlines and reaps 
   assert.deepEqual(await follower.sup.tick(), ['swept 1', 'reaped slot01 (a, generation 1)'], 'a host that is not the leader watches every claim too');
   const quiescing = mk({ duty: 'wait', phase: 'verify', swept: ['x'] });
   assert.deepEqual(await quiescing.sup.tick(), ['swept 1'], 'and the watch does not stop for a quiescence');
+});
+
+test('only the leader listens to GitHub and answers, and only while running', async () => {
+  const leader = mk({ duty: 'run', leader: true, heard: ['post issue-1'] });
+  assert.deepEqual(await leader.sup.tick(), ['heard: post issue-1', 'reported: done issue-1']);
+  assert.deepEqual(leader.names().slice(0, 3), ['sweep', 'watch', 'report']);
+  assert.ok(!mk({ duty: 'run', leader: false, heard: ['x'] }).names().includes('watch'));
+  const quiescing = mk({ duty: 'wait', phase: 'verify', leader: true, heard: ['x'] });
+  await quiescing.sup.tick();
+  assert.ok(!quiescing.names().includes('watch'), 'not during a quiescence');
 });

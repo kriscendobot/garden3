@@ -179,6 +179,28 @@ export const makeBoardService = ({ shards, host, clock, config = {}, owner = 'bo
       return r.result || [];
     },
 
+    /**
+     * One landed change to the board made by another service that must move
+     * its own record with it (the watcher's cursor moves in the same commit
+     * as the jobs an event produced). `rule(board, tree)` returns a falsy
+     * value to change nothing.
+     */
+    transact: async (message, rule) =>
+      (await board.land(message, tree => {
+        const b = loadBoard(tree);
+        const result = rule(b, tree);
+        if (!result) return { skip: true, result };
+        saveBoard(tree, b);
+        return { result };
+      })).result,
+    /** Write archive records, idempotently by id. */
+    archive: async records => writeArchive(records),
+    /** The board's files at the remote tip, for a record that lives beside the jobs. */
+    tree: async () => {
+      if (!board.sync()) throw Object.assign(new Error('board offline'), { code: 'offline' });
+      return board.tree;
+    },
+
     /** A read-only snapshot of the board at the remote tip. */
     read: async () => {
       board.sync();

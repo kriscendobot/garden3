@@ -9,7 +9,7 @@
 
 import { harden } from './harden.js';
 
-export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board, budget, dispatcher, journal, capabilities, clock, log = () => {} }) => {
+export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board, budget, dispatcher, journal, capabilities, watcher, steward, clock, log = () => {} }) => {
   let lastPress = '';
   /** One tick. Returns what it did, as a short list of words. */
   const tick = async () => {
@@ -66,6 +66,17 @@ export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board,
       if (reaped.length) did.push(`reaped ${reaped.join(', ')}`);
     }
     if (duty !== 'run') return harden(did);
+    // Hearing the maintainers and answering them is the leader's: one host
+    // polls GitHub and one host writes there. (Were two to poll, the board's
+    // compare-and-swap would still let only one act on each event.)
+    if (watcher && (await isLeader())) {
+      try {
+        for (const x of await watcher.tick()) did.push(`heard: ${x}`);
+        for (const x of await steward.report()) did.push(`reported: ${x}`);
+      } catch (err) {
+        log(`GitHub: ${err.code ?? ''} ${err.message}; the cursor holds and the next tick tries again`);
+      }
+    }
     await budget.refresh();
     if (capabilities && (await isLeader())) {
       // Demand is only reported here; installing is a host's own policy.
