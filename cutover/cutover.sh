@@ -5,8 +5,9 @@
 # Usage: cutover.sh [--apply] <step>
 #   plan       print every step and command; contacts nothing (the default)
 #   preflight  check this checkout and the tools; read-only
-#   quiet      check the prior garden has gone quiet; read-only, uses the network
+#   quiet      check the prior garden is quiet; read-only, uses the network
 #   rename     rename the existing repository aside
+#   archive    make the renamed repository read-only on GitHub
 #   create     create the fresh repository under the old name
 #   push       add the remote and push the branch layout; set the default branch
 #   verify     confirm what is there
@@ -20,7 +21,8 @@
 #   ASIDE    the name it is moved aside to      (default garden-prior)
 #   ROOT     the new garden's root checkout     (default: this script's ../..)
 #   QUIET_MINUTES  how long journal2 must have been still (default 30)
-#   HOSTS_CONFIRMED  space-separated "<host>=stopped|repointed", one per known host
+#   HOSTS_CONFIRMED  space-separated "<host>=halted", one per known host, set by
+#                    the person who checked each one (RUNBOOK.md, step 2)
 set -eu
 
 APPLY=0
@@ -59,8 +61,8 @@ preflight() {
 hosts_confirmed() {
   for h in $KNOWN_HOSTS; do
     case " ${HOSTS_CONFIRMED:-} " in
-      *" $h=stopped "* | *" $h=repointed "*) say "  confirmed: $h" ;;
-      *) die "host $h is not confirmed stopped or repointed. Set HOSTS_CONFIRMED (RUNBOOK.md, step 2)." ;;
+      *" $h=halted "*) say "  confirmed halted: $h" ;;
+      *) die "host $h is not confirmed halted. The prior garden is said to be halted; check each host and set HOSTS_CONFIRMED (RUNBOOK.md, step 2)." ;;
     esac
   done
 }
@@ -76,7 +78,7 @@ quiet() {
   git -C "$tmp" fetch --quiet --depth 1 "https://github.com/$OLD.git" journal2 || die "cannot read journal2 of $OLD"
   last="$(git -C "$tmp" log -1 --format=%ct FETCH_HEAD)"; rm -rf "${tmp:?}"
   age=$(( ($(date +%s) - last) / 60 ))
-  [ "$age" -ge "$QUIET_MINUTES" ] || die "journal2 was written $age minutes ago: a prior host is still running. Stop it, wait, and check again."
+  [ "$age" -ge "$QUIET_MINUTES" ] || die "journal2 was written $age minutes ago: a prior host is running. Find it and halt it, wait, and check again."
   say "  ok: journal2 has been still for $age minutes"
 }
 
@@ -90,17 +92,17 @@ case "$STEP" in
     say "  its default branch becomes: main"
     say ""
     say "  1. preflight   ./cutover.sh preflight"
-    say "  2. stop or repoint every prior host: $KNOWN_HOSTS"
-    say "       (and this machine's prior checkout, and the tower's read-only view)"
+    say "  2. verify every prior host is halted: $KNOWN_HOSTS"
+    say "       (and note this machine's prior checkout, and the tower's read-only view)"
     say "  3. quiet       ./cutover.sh --apply quiet"
     say "  4. rename      HOSTS_CONFIRMED='...' ./cutover.sh --apply rename"
-    say "  5. repointed hosts are checked working against $OWNER/$ASIDE; quiet again"
+    say "  5. archive     ./cutover.sh --apply archive     ($OWNER/$ASIDE becomes read-only)"
     say "  6. create      HOSTS_CONFIRMED='...' ./cutover.sh --apply create"
     say "  7. access      set who may push, and branch protection, on the fresh repository"
     say "  8. push        ./cutover.sh --apply push"
     say "  9. verify      ./cutover.sh --apply verify"
     say ""
-    say "Until step 6 everything is undone by renaming the repository back."
+    say "Until step 6 everything is undone by unarchiving and renaming the repository back."
     ;;
   preflight) preflight ;;
   quiet) quiet ;;
@@ -112,13 +114,16 @@ case "$STEP" in
     run gh repo rename "$ASIDE" --repo "$OLD" --yes
     say "The old URL now redirects to $OWNER/$ASIDE. That redirect ENDS at step 6."
     ;;
+  archive)
+    say "archive $OWNER/$ASIDE: read-only on GitHub. A prior host that was missed can then"
+    say "no longer push to it, which is one more way to notice it."
+    run gh repo archive "$OWNER/$ASIDE" --yes
+    ;;
   create)
     preflight
     hosts_confirmed
     say "create a fresh $OLD. From this moment the old URL is this new repository:"
-    say "any prior host not stopped or repointed will fetch from it and fail."
-    quiet_target="$OWNER/$ASIDE"
-    say "  (check first that $quiet_target's journal2 shows only the hosts you repointed)"
+    say "any prior host that was missed or restarted will fetch from it and fail."
     run gh repo create "$OLD" --public --description "The garden: a fleet of coding agents steered through GitHub."
     ;;
   push)
@@ -135,6 +140,6 @@ case "$STEP" in
     run git ls-remote --heads "https://github.com/$OLD.git"
     run git ls-remote --heads "https://github.com/$OWNER/$ASIDE.git" main2 journal2
     ;;
-  *) die "usage: cutover.sh [--apply] plan|preflight|quiet|rename|create|push|verify" ;;
+  *) die "usage: cutover.sh [--apply] plan|preflight|quiet|rename|archive|create|push|verify" ;;
 esac
 [ "$APPLY" = 1 ] || say "(dry run: nothing was done. Pass --apply to do this one step.)"
