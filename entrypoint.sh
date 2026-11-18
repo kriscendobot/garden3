@@ -64,6 +64,7 @@ garden() { setpriv --reuid steward --regid steward --init-groups env HOME="$ROOT
 # 3. The warden. It is rebuilt at each rejuvenation; install whatever is built.
 if [ ! -x "$CAP/warden/warden" ]; then
   say "building the warden (first boot)"
+  garden capabilities install rust >/dev/null || die "the rust capability did not install (is it pinned? capabilities/README.md)"
   garden host build >/dev/null || die "the warden did not build; see designs/services.md"
 fi
 mkdir -p /usr/local/libexec /etc/garden
