@@ -73,11 +73,13 @@ can expressly depend on. Code: `src/capabilities.js`. Manifests:
 Implemented and tested with local archives: pinned install, refusal of a wrong
 or missing hash, dependencies, the record and digest, drift detected and
 repaired, a moved pin followed, removal, demand (`test/capabilities.test.js`).
-**Not run:** any real download. Of the shed's manifests only `buildkit` (amd64)
-carries hashes; `node`, `rust`, `shellcheck` and `gh` have none and
-`claude-code` is a draft, because this pass had no network. They cannot be
-installed until `garden capabilities pin <name>` fills them and the diff is
-reviewed.
+The `node` manifest was installed and verified from the real 22.22.1 archive
+found in this machine's nvm cache (which is where its amd64 hash comes from;
+compare it with nodejs.org's published checksum before trusting it).
+**Not run:** any download. Still without a hash: `node` for arm64; `rust`,
+`shellcheck` and `gh` for both architectures; `buildkit` has no arm64 source;
+`claude-code` is a draft awaiting a lockfile. They cannot be installed until
+`garden capabilities pin <name>` fills them and the diff is reviewed.
 
 ## Open questions
 

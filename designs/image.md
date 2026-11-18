@@ -95,8 +95,10 @@ Written, parsed (`sh -n`) and checked for shape by `test/bootstrap.test.js`.
 **Not run:** no image was built and no container started in this pass, so the
 `Dockerfile`, `entrypoint.sh`, the launcher including `adopt` and `promote`,
 and the in-box BuildKit build are untested. `debian:trixie-slim` is named by
-tag, not pinned by digest. The node and rust pins have no sha256 yet, so a
-first boot would stop with a clear message until they are filled.
+tag, not pinned by digest. Node is pinned for amd64 (and that capability was
+installed and verified from the real archive, offline); node for arm64 and
+the `rust` capability have no sha256 yet, so a first boot stops with a clear
+message at the warden build until they are filled.
 
 ## Open questions
 

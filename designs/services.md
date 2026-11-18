@@ -46,6 +46,7 @@ re-owns a slot's home, and runs a job as that account under its deadline
 | `budget.js`, `quiescence.js`, `clients.js`, `plots.js`, `wrapup.js` | each a set of pure rules plus a service that lands them |
 | `shard.js` | compare-and-swap on a branch |
 | `boardService.js`, `capabilities.js`, `slots.js`, `journal.js`, `mail.js`, `keys.js`, `host.js` | services |
+| `github.js`, `watcher.js`, `steward.js` | the garden's view of GitHub; hearing maintainers; answering them |
 | `dispatch.js`, `supervisor.js` | the composition, and the one loop |
 | `yay.js`, `shon.js` | the data model on disk and on the command line |
 | `powers/node.js` | the only module that imports Node's builtins |
@@ -75,6 +76,7 @@ What still shells out, and where it is isolated:
 | `git` | `shard.js`, `slots.js`, `project.js`, `plots.js`, `host.js` | everything about repositories; there is no library, by choice: git's own behaviour is the specification |
 | `warden` | `slots.js` only | what needs root |
 | `curl`, `tar` | `capabilities.js` only | fetching and unpacking |
+| `curl` | `github.js` only | the GitHub API, with the token on standard input |
 | `cargo` | `cli.js` (`host build`) only | building the warden |
 | a capability's verify and install steps | `capabilities.js` | as argument vectors, never through a shell |
 | the worker's harness | the warden, for dispatch | the agent itself |
