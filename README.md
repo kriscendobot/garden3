@@ -47,6 +47,6 @@ an update to the garden book, which is not yet planned.
 ## Lineage
 
 This repository begins without history. Its immediate ancestor is the prior
-garden, kept whole in the repository it was moved aside to; mechanisms were
+garden, kept whole at `kriscendobot/gardens-of-yore`; mechanisms were
 carried from it and from the tower that grew out of it, and history is
 borrowed only where it is needed. The record is `ANCESTRY.md` on `shed`.
