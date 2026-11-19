@@ -3,6 +3,7 @@ capabilities:
   available:
     - "buildkit"
   installed:
+    - "claude-code"
     - "gh"
     - "node"
     - "rust"
@@ -15,4 +16,4 @@ memory_gb: 125.1
 os: "linux"
 shed: "c3f1dd5b44cbf6b871b82f82b07b562a63141d05"
 slots: 4
-updated_at: "2026-11-18T18:22:46Z"
+updated_at: "2026-11-19T16:19:27Z"
