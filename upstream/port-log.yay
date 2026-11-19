@@ -156,6 +156,6 @@ entries:
     source: "garden"
     source_path: "scripts/jobs/handlers/comment-reply-gh.sh"
 sources:
-  garden: "the prior garden, github.com/kriscendobot/gardens-of-yore (see ANCESTRY.md)"
+  garden: "the prior garden, github.com/kriscendobot/garden (see ANCESTRY.md)"
   tower: "the tower, private"
   yay: "github.com/kriskowal/yay"

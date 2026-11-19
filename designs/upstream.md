@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-19"
 ---
 
 # Adopting from upstream
@@ -51,8 +51,7 @@ copied. The ones here were written for this garden's mechanisms.
 This repository shares no git history with its ancestors. By default nothing
 but content crosses, and provenance is the port log's `source`, `source_path`
 and `commit`: enough to find the original and everything that led to it, in
-`kriscendobot/gardens-of-yore`, the repository the prior garden was moved
-aside to.
+`kriscendobot/garden`, the prior garden's repository, which kept its name.
 
 Real commits are carried only when the history itself is the thing wanted:
 a file whose authorship or licence trail must stay attached, or a long
@@ -88,6 +87,6 @@ No tooling beyond the test. Nothing has been adopted by the procedure yet.
 2. **Private provenance.** A port-log entry naming a tower path and commit
    discloses that the path exists. The entries here name only mechanisms'
    files. Say if tower sources should be recorded less precisely.
-3. **Nothing flows back.** The prior garden is halted and its repository,
-   `kriscendobot/gardens-of-yore`, is to be archived read-only. It is a
-   source only.
+3. **Nothing flows back.** The prior garden's repository,
+   `kriscendobot/garden`, is a source only. It is not archived, and a prior
+   host still pushes to it ([lineage.md](lineage.md)).

@@ -33,4 +33,4 @@ not a manual; the fuller explanation is for the garden book.
 | [data-model.md](data-model.md) | YAY on disk, on the command line and across the seam |
 | [upstream.md](upstream.md) | adopting roles and skills; borrowing history |
 | [ascent.md](ascent.md) | toward minion.town, torrent.nexus and ocap.site |
-| [lineage.md](lineage.md) | the fresh repository and the cutover |
+| [lineage.md](lineage.md) | the fresh repository (`garden3`) and the cutover |
