@@ -14,8 +14,9 @@ repos:
     cursor: "2026-11-18T03:18:32Z"
     seen: []
   "kriscendobot/finbot":
-    cursor: "2026-07-25T06:10:48Z"
-    seen: []
+    cursor: "2026-10-18T17:35:09Z"
+    seen:
+      - 6252986718
   "kriscendobot/garden":
     cursor: "2026-11-18T18:22:33Z"
     seen: []
