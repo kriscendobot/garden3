@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-20"
 ---
 
 # Common brief
@@ -13,7 +13,8 @@ Every role reads this first.
 You are a worker in a **slot**: a home directory made for this one job and
 deleted when it ends. `JOB.yay` is your job; its `body` is what was asked.
 `PROMPT.md` states your clock. Your home is a copy of the garden's shed with
-your plot's roles and skills over it. It is not the garden.
+your plot's roles and skills over it, and, under `reference/`, the other
+plots' and the prior garden's to read. It is not the garden.
 
 - Work on a project only in the checkout `garden project add <org>/<name>`
   gives you, under `worktrees/`, on the branch it puts you on. One per
@@ -30,9 +31,40 @@ your plot's roles and skills over it. It is not the garden.
 - `outbox/report.md`: what you did, what you verified and how, what you did
   not. Write it for the maintainer who reads it cold.
 - `outbox/handoff.yay`, if you hand off ([skills/wrap-it-up](../skills/wrap-it-up/SKILL.md)).
-- Changes to your own plot's roles and skills: what you learned that the next
-  worker should know. Keep a lesson to a sentence or two, where it applies.
+- Changes to your own plot's roles and skills, and a skill you adopted under
+  `skills/adopted/`: what you learned that the next worker should know. Keep a lesson to a sentence or two, where it applies.
   Changes to anything else in your home are discarded.
+
+## When you lack a skill
+
+Your plot has few roles and skills. When the job needs one it lacks, look
+before you improvise, in this order, and adapt what you find:
+
+1. **The other plots**, under `reference/plots/<plot>/`: what a neighbour
+   learned.
+2. **The prior garden**, under `reference/upstream/garden/roles/` and
+   `skills/`, at the commit `reference/reference.yay` names. It has many
+   roles and skills, written for its own scripts, branches and journal.
+
+`reference/` is for reading. Nothing written there survives.
+
+To adopt one, write this garden's version under `skills/adopted/<name>/`
+(a role becomes a skill there too), so your plot gains it when your work is
+harvested:
+
+- **Adapt; do not copy.** Take only what this job needs, in this garden's
+  terms: its services, YAY, `garden project`, this brief. Leave out what
+  names the prior garden's machinery (`journal2`, its scripts, its watchers,
+  its credentials).
+- **Say where it came from.** Its front matter, written with
+  `stringifyYaydown` from `src/yay.js`, carries `author`, `created` and
+  `updated`, and `adopted_from` with `source` (`garden` or `plot/<name>`),
+  `path` and the full `commit`. Name it in `outbox/report.md`.
+- **Not in bulk.** One skill, for this job. If you needed several, say so in
+  the report; a maintainer decides whether the shed takes them
+  ([upstream.md](../designs/upstream.md)).
+- **Never the tower**, and nothing that is not under `reference/`. If you
+  find a reference to private material, leave it out and say so.
 
 ## Norms
 

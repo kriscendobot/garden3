@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-20"
 ---
 
 # Plots and the shed
@@ -30,13 +30,17 @@ something a job can talk its way into changing.
   some commit, plus `plot.yay`, becomes `plot/<name>`. Plots share no history
   with the shed or each other.
 - **A job's view**: its slot's home is the shed with the plot's genome laid
-  over it ([slots.md](slots.md)), which is what the tower's overlay of
+  over it ([slots.md](slots.md)), and the other plots' genomes and the prior
+  garden's roles and skills under `reference/`, to read
+  ([upstream.md](upstream.md) § A job that lacks a skill), which is what the tower's overlay of
   symlinks achieves for one shared user. The plot is chosen at dispatch: the
   job's `plot` if it names one, else by a hash of its id over the configured
   plots.
 - **Confinement** (`land`, `wall`): at harvest, only files under the plot's
   genome paths are collected; a change a job made to anything of the shed's
-  is not carried out at all. The collected files become one commit on the
+  is not carried out at all. New files under a genome prefix are collected
+  too (`skills/adopted/`, where a job puts a skill it adopted); a file
+  reached through a symbolic link never is. The collected files become one commit on the
   plot's branch if they pass the wall: inside the genome; no symbolic link; no
   `CLAUDE.md` or `AGENTS.md` (a harness would auto-load it); nothing
   executable outside `scripts/`; `plot.yay` only alone, in a commit titled
@@ -90,6 +94,7 @@ outside the genome, the other plot untouched (`test/plots.test.js`,
 2. **How many plots, and who cuts a new one.** Two are cut (`alder`,
    `birch`). The tower has four.
 3. **Server-side enforcement** of the wall (above): worth a required check?
-4. **Which paths are genome.** Three working roles and two skills to start.
+4. **Which paths are genome.** Three working roles, two skills, and
+   `skills/adopted/` for skills a plot adopts on its own.
    The steward and accountant are the shed's, as the tower keeps its liaison,
    foreman and accountant in the vestibule.

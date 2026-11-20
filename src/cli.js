@@ -78,7 +78,7 @@ export const assemble = (powers = makeNodePowers()) => {
   const capabilities = lazy(() => makeCapabilities({ files: makeFiles, run, sha256File: powers.sha256File, sha256: powers.sha256, clock, arch: powers.arch(), root: capRoot, manifestsDir: path.join(rootRepo, 'capabilities'), stateDir, base: config.capabilities?.base ?? [], env, log: powers.log }));
   const budget = lazy(() => makeBudgetService({ shards, host, clock, config }));
   const board = lazy(() => makeBoardService({ shards, host, clock, config, capabilities, budget: env.GARDEN_BUDGET === 'off' ? undefined : budget }));
-  const slots = lazy(() => makeSlots({ files: makeFiles, run, warden: env.GARDEN_WARDEN ?? path.join(capRoot, 'bin/warden'), rootRepo, slotsRoot: env.GARDEN_SLOTS ?? path.join(rootRepo, 'slots'), repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), stateDir, clock, count: config.slots.count, uidBase: config.slots.uid_base, mode: env.GARDEN_SLOT_MODE ?? 'users', log: powers.log }));
+  const slots = lazy(() => makeSlots({ files: makeFiles, run, warden: env.GARDEN_WARDEN ?? path.join(capRoot, 'bin/warden'), rootRepo, slotsRoot: env.GARDEN_SLOTS ?? path.join(rootRepo, 'slots'), repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), stateDir, upstream: path.join(stateDir, 'upstream/garden.git'), clock, count: config.slots.count, uidBase: config.slots.uid_base, mode: env.GARDEN_SLOT_MODE ?? 'users', log: powers.log }));
   /**
    * Build the warden from this shed's source, for this host's architecture,
    * with the pinned Rust toolchain capability, and put it where the
@@ -177,7 +177,7 @@ export const assemble = (powers = makeNodePowers()) => {
     slots,
     quiescence: lazy(() => makeQuiescenceService({ shards, host, clock, config })),
     journal,
-    plots: lazy(() => makePlots({ files: makeFiles, run, rootRepo, shards, stateDir, clock })),
+    plots: lazy(() => makePlots({ files: makeFiles, run, rootRepo, shards, stateDir, upstream: config.upstream ?? {}, clock })),
     keys,
     host: lazy(() => makeHost({ files: makeFiles, run, rootRepo, stateDir, host, clock, shards, capabilities, slots, log: powers.log, build })),
     project: lazy(() => makeProjects({ files: makeFiles, run, home: env.GARDEN_JOB_HOME ?? env.HOME, repositories: env.GARDEN_REPOSITORIES })),

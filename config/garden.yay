@@ -68,6 +68,11 @@ quiescence:
 slots:
   count: 4
   uid_base: 2000
+upstream:
+  garden:
+    commit: "0dda301cbeb484d69447f7c60214788924464f8c"
+    ref: "main2"
+    url: "https://github.com/kriscendobot/garden.git"
 worker:
   kill_after_seconds: 30
   window_seconds: 2400

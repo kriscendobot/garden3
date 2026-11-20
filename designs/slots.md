@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-20"
 ---
 
 # Slots: an account and a home per job
@@ -33,6 +33,11 @@ whole of the separation between one job and the next in a slot.)
    garden's object store through its home.
 3. **Lay the plot over it**: the tracked files of `plot/<name>` replace the
    shed's copy of each genome path outright ([plots.md](plots.md)).
+   **References**, to read: each other plot's tree under
+   `reference/plots/<name>/`, and the prior garden's `roles/` and `skills/`
+   at its pinned commit under `reference/upstream/garden/`, if the steward
+   holds it; `reference/reference.yay` names the commits
+   ([upstream.md](upstream.md)). Not genome, so not harvested.
 4. **Tombstones** (`warden plant`): at `repositories`, `board`, `archive`,
    `journal`, `library`, `gate`, `plots`, `slots`, `.garden-state` and `.git`
    the home holds a read-only **regular file**. A `mkdir`, `git clone` or
@@ -79,8 +84,12 @@ from the checkout into the bare repository, with hooks disabled and no submodule
 cannot write another job's branch or the project's own. Publishing those
 branches to GitHub is the steward's, with the bot's key ([keys.md](keys.md)).
 
-Also harvested: genome files the job changed (to its plot's landing), and
-plain files left in `outbox/` (its report, its hand-off).
+Also harvested: genome files the job changed or added under a genome prefix
+(to its plot's landing), and plain files left in `outbox/` (its report, its
+hand-off). The home is the job's, so a genome path reached through a
+symbolic link is never read: it is reported as changed and not carried, and
+its landing drops it. (Before 2026-11-20 harvest followed such a link, and a
+job could have had the steward copy a file of its own onto a plot branch.)
 
 ## The warden
 

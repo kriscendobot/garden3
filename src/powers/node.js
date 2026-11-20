@@ -24,6 +24,13 @@ export const makeFiles = root => {
     path: at,
     exists: rel => fs.existsSync(at(rel)),
     isDir: rel => fs.existsSync(at(rel)) && fs.lstatSync(at(rel)).isDirectory(),
+    isLink: rel => {
+      try {
+        return fs.lstatSync(at(rel)).isSymbolicLink();
+      } catch {
+        return false;
+      }
+    },
     read: rel => fs.readFileSync(at(rel), 'utf8'),
     readIf: rel => (fs.existsSync(at(rel)) ? fs.readFileSync(at(rel), 'utf8') : null),
     write: (rel, text) => {

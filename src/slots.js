@@ -14,6 +14,7 @@
 // steps run unprivileged, which is how the tests and a rootless host run.
 
 import { parse, stringify } from './yay.js';
+import { genomeEntries } from './plots.js';
 import { toArgs } from './shon.js';
 import { harden, refuse, Refusal, isName } from './harden.js';
 
@@ -21,10 +22,19 @@ import { harden, refuse, Refusal, isName } from './harden.js';
 // file, so mkdir, git clone and git worktree add at that path fail at once.
 export const TOMBSTONES = ['repositories', 'board', 'archive', 'journal', 'library', 'gate', 'plots', 'slots', '.garden-state', '.git'];
 const WORKDIRS = ['worktrees', 'scratch', 'outbox'];
+// What a job may read and not change: the other plots' genomes and the
+// upstream garden's roles and skills, at the commits the steward holds. It
+// is not genome, so nothing written there is carried out.
+export const REFERENCE = 'reference';
+const UPSTREAM_PATHS = ['roles', 'skills'];
 const slotName = i => `slot${String(i).padStart(2, '0')}`;
 const isSlot = s => /^slot[0-9]{2}$/.test(s);
 
-export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositories, stateDir, clock, count = 4, uidBase = 2000, mode = 'users', log = () => {} }) => {
+/**
+ * `upstream` is the bare repository holding the prior garden at the commit
+ * the steward pinned (`plots.fetchUpstream`), as refs/upstream/garden.
+ */
+export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositories, stateDir, upstream = null, clock, count = 4, uidBase = 2000, mode = 'users', log = () => {} }) => {
   const slots = files(slotsRoot);
   const state = files(stateDir);
   const git = (args, opts = {}) => {
@@ -54,11 +64,14 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
     return r;
   };
 
-  /** Unpack one commit's tree into a directory: files only, no .git. */
-  const exportTree = (commit, dir) => {
+  /**
+   * Unpack one commit's tree into a directory: files only, no .git. With
+   * `prefix`, under that path; with `paths`, only those.
+   */
+  const exportTree = (commit, dir, { repo = rootRepo, prefix, paths = [] } = {}) => {
     const tar = state.path(`tmp/export-${commit.slice(0, 12)}.tar`);
     state.mkdir('tmp');
-    git(['-C', rootRepo, 'archive', '--format=tar', '-o', tar, commit]);
+    git(['-C', repo, 'archive', '--format=tar', '-o', tar, ...(prefix ? [`--prefix=${prefix}`] : []), commit, ...paths]);
     const r = run('tar', ['-xf', tar, '-C', dir]);
     state.remove(`tmp/export-${commit.slice(0, 12)}.tar`);
     if (r.status !== 0) throw new Error(`cannot unpack ${commit}: ${r.stderr}`);
@@ -101,6 +114,20 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
       const genome = git(['-C', rootRepo, 'ls-tree', '-r', '--name-only', plotCommit]).split('\n').filter(f => f && f !== 'plot.yay');
       for (const top of new Set(genome.map(f => f.split('/').slice(0, 2).join('/')))) home.remove(top);
       exportTree(plotCommit, home.root);
+      const reference = { plots: [], upstream: null };
+      for (const line of git(['-C', rootRepo, 'for-each-ref', '--format=%(refname:strip=3) %(objectname)', 'refs/heads/plot/']).split('\n').filter(Boolean)) {
+        const [name, commit] = line.split(' ');
+        if (name === plot || !isName(name)) continue;
+        exportTree(commit, home.root, { prefix: `${REFERENCE}/plots/${name}/` });
+        reference.plots.push({ plot: name, commit });
+      }
+      const up = upstream && git(['-C', upstream, 'rev-parse', '--verify', '--quiet', 'refs/upstream/garden^{commit}'], { allowFail: true });
+      if (up) {
+        const paths = UPSTREAM_PATHS.filter(p => git(['-C', upstream, 'ls-tree', '--name-only', up, p]));
+        exportTree(up, home.root, { repo: upstream, prefix: `${REFERENCE}/upstream/garden/`, paths });
+        reference.upstream = { commit: up };
+      }
+      home.write(`${REFERENCE}/reference.yay`, stringify(reference));
       ask({ op: 'plant', root: slots.root, slot, tombstones: TOMBSTONES, dirs: WORKDIRS });
       home.write('JOB.yay', stringify(job));
       state.write(`slots/${slot}.yay`, stringify({ slot, job: job.id, generation: job.claim?.generation ?? 0, plot, shed_commit: shedCommit, plot_commit: plotCommit, prepared_at: clock.now() }));
@@ -170,13 +197,34 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
           projects.push({ project: `${org}/${name}`, branches: fetched, wip });
         }
       }
+      // The home is the job's: a symbolic link anywhere on a genome path
+      // could point the steward at a file of its own, so such a path is
+      // never read, only reported as changed (and so dropped at landing).
+      const linked = file => file.split('/').some((_, i, parts) => home.isLink(parts.slice(0, i + 1).join('/')));
+      const plain = file => !linked(file) && home.exists(file) && !home.isDir(file);
       const changed = [];
-      for (const file of git(['-C', rootRepo, 'ls-tree', '-r', '--name-only', rec.plot_commit]).split('\n').filter(f => f && f !== 'plot.yay')) {
+      const planted = git(['-C', rootRepo, 'ls-tree', '-r', '--name-only', rec.plot_commit]).split('\n').filter(f => f && f !== 'plot.yay');
+      for (const file of planted) {
         const want = git(['-C', rootRepo, 'rev-parse', `${rec.plot_commit}:${file}`]);
-        const have = home.exists(file) && !home.isDir(file) ? git(['hash-object', home.path(file)]) : null;
+        const have = plain(file) ? git(['hash-object', home.path(file)]) : null;
         if (have === want) continue;
         changed.push(file);
         if (have) state.copyIn(home.path(file), `${out}/genome/${file}`);
+      }
+      // New files under a genome prefix: a skill the job adopted, say. Not
+      // what the plot had, and not the shed's own copy left in place.
+      const known = new Set(planted);
+      const prefixes = genomeEntries(git(['-C', rootRepo, 'show', `${rec.shed_commit}:plots/genome-paths`])).filter(e => e.endsWith('/'));
+      for (const prefix of prefixes) {
+        if (linked(prefix.slice(0, -1))) continue;
+        for (const rel of home.walk(prefix)) {
+          const file = `${prefix}${rel}`;
+          if (known.has(file) || !plain(file)) continue;
+          const shedBlob = git(['-C', rootRepo, 'rev-parse', '--verify', '--quiet', `${rec.shed_commit}:${file}`], { allowFail: true });
+          if (shedBlob && shedBlob === git(['hash-object', home.path(file)])) continue;
+          changed.push(file);
+          state.copyIn(home.path(file), `${out}/genome/${file}`);
+        }
       }
       const outbox = home.list('outbox').filter(f => !home.isDir(`outbox/${f}`));
       for (const f of outbox) state.copyIn(home.path(`outbox/${f}`), `${out}/outbox/${f}`);

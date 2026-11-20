@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-19"
+updated: "2026-11-20"
 ---
 
 # Adopting from upstream
@@ -45,6 +45,31 @@ copied. The ones here were written for this garden's mechanisms.
    `test/bootstrap.test.js` checks every entry's path exists and its commit is
    a full id.
 8. **A pull request to the shed**, reviewed by a maintainer.
+
+## A job that lacks a skill
+
+The procedure above is the shed's. A plot can also adopt, one skill at a
+time, from inside a job ([roles/COMMON.md](../roles/COMMON.md) § When you lack
+a skill):
+
+- **What it reads.** Every slot's home holds, under `reference/`, the other
+  plots' genomes and the prior garden's `roles/` and `skills/` at a pinned
+  commit, with `reference/reference.yay` naming the commits. The prior garden
+  is held by the steward in `.garden-state/upstream/garden.git`, fetched by
+  `garden plots fetchUpstream` at exactly `config/garden.yay`'s
+  `upstream.garden.commit` (depth one); moving the pin is a reviewed change.
+  The tower is never there.
+- **Where it writes.** `skills/adopted/<name>/`, a genome prefix, so the
+  skill lands on the job's own plot through the harvest like any lesson. A
+  role it needed is written as a skill there: which roles exist is the shed's
+  (dispatch reads them).
+- **Provenance.** A job cannot write `upstream/port-log.yay` (it is the
+  shed's), so the adopted skill's own front matter carries `adopted_from`:
+  `source` (`garden` or `plot/<name>`), `path`, `commit`. When the shed
+  takes such a skill (step 6, by a pull request), it gets a port-log entry
+  then.
+- **Order.** The other plots first, then the prior garden. Adapt to the
+  garden's mechanisms; one skill, for the job in hand.
 
 ## Borrowing history
 

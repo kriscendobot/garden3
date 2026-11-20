@@ -37,7 +37,12 @@ export const wall = (changes, entries, subject = '') => {
   return problems;
 };
 
-export const makePlots = ({ files, run, rootRepo, shards, stateDir, clock }) => {
+/**
+ * `upstream` is config/garden.yay's `upstream`: for `garden`, the prior
+ * garden's {url, ref, commit}. The commit is the pin (`ref` says where it
+ * was read); moving it is a reviewed change to the config.
+ */
+export const makePlots = ({ files, run, rootRepo, shards, stateDir, upstream = {}, clock }) => {
   const root = files(rootRepo);
   const state = files(stateDir);
   const git = (args, opts = {}) => {
@@ -48,6 +53,32 @@ export const makePlots = ({ files, run, rootRepo, shards, stateDir, clock }) => 
   const entries = () => genomeEntries(root.read('plots/genome-paths'));
 
   return harden({
+    /**
+     * Hold the prior garden at its pinned commit, as refs/upstream/garden in
+     * <state>/upstream/garden.git, where a slot's home reads its roles and
+     * skills from (designs/upstream.md). Only that commit is fetched, at
+     * depth one. Does nothing if it is already held. Returns {commit, fetched}.
+     */
+    fetchUpstream: async () => {
+      const u = upstream.garden ?? refuse('unset', 'config/garden.yay names no upstream.garden');
+      if (!/^[0-9a-f]{40}$/.test(u.commit ?? '')) refuse('invalid', 'upstream.garden.commit is a full commit id');
+      const bare = state.path('upstream/garden.git');
+      const g = (args, opts = {}) => {
+        const r = run('git', ['-C', bare, '-c', 'core.hooksPath=/dev/null', ...args], opts);
+        if (r.status !== 0 && !opts.allowFail) throw Object.assign(new Error(`git ${args.join(' ')}: ${r.stderr.trim()}`), { code: 'offline' });
+        return r.stdout.trim();
+      };
+      if (!state.exists('upstream/garden.git/HEAD')) {
+        state.mkdir('upstream/garden.git');
+        g(['init', '--quiet', '--bare']);
+      }
+      if (g(['rev-parse', '--verify', '--quiet', 'refs/upstream/garden^{commit}'], { allowFail: true }) === u.commit) return harden({ commit: u.commit, fetched: false });
+      g(['fetch', '--quiet', '--no-tags', '--depth=1', u.url, u.commit]);
+      if (g(['rev-parse', 'FETCH_HEAD^{commit}']) !== u.commit) refuse('not-found', `${u.url} did not give ${u.commit}`);
+      g(['update-ref', 'refs/upstream/garden', u.commit]);
+      return harden({ commit: u.commit, fetched: true });
+    },
+
     /**
      * Cut a plot: a parentless commit of the shed's genome at `from` plus
      * plot.yay, as the local branch plot/<name>. Refuses to move an existing
