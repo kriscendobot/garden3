@@ -32,8 +32,9 @@ repos:
     seen:
       - 5363839052
   "kriscendobot/minion.town":
-    cursor: "2026-11-10T15:59:29Z"
-    seen: []
+    cursor: "2026-11-18T02:48:55Z"
+    seen:
+      - 6967508293
   "kriscendobot/moddable":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
