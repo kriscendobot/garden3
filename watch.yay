@@ -46,8 +46,9 @@ repos:
     seen:
       - 5894768382
   "kriscendobot/proposal-compartments":
-    cursor: "2026-08-16T21:40:23Z"
-    seen: []
+    cursor: "2026-09-04T00:58:39Z"
+    seen:
+      - "rv5108200446"
   "kriscendobot/test262":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
