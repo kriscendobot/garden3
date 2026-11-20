@@ -42,8 +42,9 @@ repos:
     cursor: "2026-11-18T03:18:32Z"
     seen: []
   "kriscendobot/oros-ckm-data-readiness":
-    cursor: "2026-09-17T15:01:20Z"
-    seen: []
+    cursor: "2026-09-29T16:55:19Z"
+    seen:
+      - 5894768382
   "kriscendobot/proposal-compartments":
     cursor: "2026-08-16T21:40:23Z"
     seen: []
