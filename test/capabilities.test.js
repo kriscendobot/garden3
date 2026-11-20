@@ -3,16 +3,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { makeNodePowers, makeFiles, run } from '../src/powers/node.js';
 import { makeCapabilities, manifestProblem } from '../src/capabilities.js';
 import { parse, stringify } from '../src/yay.js';
-import { SHED } from './helpers.js';
+import { SHED, tempDir } from './helpers.js';
 
 const setup = t => {
-  const T = fs.mkdtempSync(path.join(os.tmpdir(), 'garden-cap-'));
+  const T = tempDir('garden-cap-');
   t.after(() => fs.rmSync(T, { recursive: true, force: true }));
   const p = makeNodePowers();
   const arch = p.arch();

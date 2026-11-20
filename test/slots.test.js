@@ -29,6 +29,7 @@ const setup = t => {
   write(root, 'roles/builder/AGENT.md', "the shed's stale copy of a genome role\n");
   write(root, 'roles/builder/stale.md', 'a file the plot does not have\n');
   write(root, 'scripts/x.sh', 'echo x\n');
+  write(root, 'plots/genome-paths', 'roles/builder/\n');
   git(root, 'add', '-A'); git(root, 'commit', '--quiet', '-m', 'shed');
   const plotDir = path.join(T, 'plot');
   fs.mkdirSync(plotDir);

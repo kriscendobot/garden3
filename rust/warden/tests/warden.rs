@@ -25,8 +25,11 @@ fn parse(text: &str) -> Result<Reply, String> {
 }
 
 fn warden(args: &[&str]) -> (i32, Reply) {
+    // No policy, not the box's own (which allows only the real slots
+    // directory): the policy has a test of its own below.
     let out = Command::new(env!("CARGO_BIN_EXE_warden"))
         .args(args)
+        .env("WARDEN_POLICY", "/nonexistent/warden.yay")
         .output()
         .expect("warden runs");
     let text = String::from_utf8(out.stdout).expect("utf8");
