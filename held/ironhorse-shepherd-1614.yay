@@ -1,0 +1,19 @@
+after: []
+arc: "ironhorse-test262-ratchet"
+attempts: 0
+body: "Shepherd ironhorse test262 ratchet head #1614 to passing CI on its own, ready to be consolidated into llm. The maintainer: \"merge the various heads of the ratchet first, provided they are individually shepherded to passing in CI and ready to be consolidated.\"\n\nProject: endojs/endo-but-for-bots. PR #1614, \"fix(ironhorse): eval global declarations per spec; replay the harness when attributing eval framing (test262 ratchet: eval-code)\", branch ironhorse-test262-ratchet-eval-global-decl-20261101, base llm.\n\nBefore this job was released, llm gained the XS oracle's pinned Math (job ironhorse-xs-oracle-pinned-libm); before that, every head was red only on test-ironhorse-oracle and ironhorse-oracle-sanitizers, for that reason and no other.\n\n1. Merge current llm into the head (the repo merges PRs by rebase; a merge of llm into the head is fine for shepherding, and a rebase is fine if it is clean).\n2. Resolve conflicts. Generated files are regenerated, never hand-merged: snapshot goldens with the ignored test regenerate_persistence_identities in rust/engine/ironhorse-snapshot/tests/state_golden.rs; whole-tree expectations with rust/engine/ironhorse-262/scripts/expectation-shards.sh; fuzz seeds as their test documents.\n3. Run what CI runs for this head's changed crates, including the oracle lane (rust/engine: cargo test --locked -p ironhorse-compile -p ironhorse-regexp -p ironhorse-262 -p ironhorse-fuzz --features ironhorse-compile/parity,ironhorse-regexp/parity, RUST_MIN_STACK=33554432), and cargo clippy -D warnings. Fix what fails within the head's purpose. The floor only rises: a covered case lost is a failure to fix, not a baseline to rewrite.\n4. Commit on the head's branch. Report: what changed, tests run and their results, the covered-count delta against llm, and any file another ratchet head also changes (consolidation will need it). You have no remote: the steward pushes the branch and watches CI."
+hold:
+  at: "2026-11-20T04:03:55Z"
+  reason: "maintainer"
+id: "ironhorse-shepherd-1614"
+level: 0
+plans: 0
+posted_at: "2026-11-20T04:03:55Z"
+posted_by: "endolin-garden-ece02cb4"
+priority: 1
+projects:
+  - "endojs/endo-but-for-bots"
+requires: []
+role: "builder"
+title: "Shepherd ratchet head #1614 to green"
+window_s: 3600
