@@ -7,6 +7,9 @@ import path from 'node:path';
 import { fromArgs } from '../../src/shon.js';
 import { stringify } from '../../src/yay.js';
 
+// `node --test` runs every file under test/ as a test, this one with no
+// arguments: there is nothing to do then.
+if (process.argv.length <= 2) process.exit(0);
 const r = fromArgs(process.argv.slice(2)).value;
 const home = path.join(r.root, r.slot ?? '');
 if (r.op === 'clear') fs.rmSync(home, { recursive: true, force: true });
