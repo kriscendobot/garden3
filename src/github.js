@@ -46,37 +46,74 @@ export const makeGitHub = ({ request, repo, perPage = 100 }) => {
     if (!ok.includes(r.status)) throw Object.assign(new Error(`GitHub answered ${r.status} to ${method} ${path}`), { code: 'github', status: r.status });
     return r.json;
   };
-  const pages = async (path, query) => {
+  // `enough` stops early, for a list sorted newest first that has reached
+  // what is already known.
+  const pages = async (path, query, { enough = () => false } = {}) => {
     const all = [];
     for (let page = 1; page <= 50; page += 1) {
       const batch = await call('GET', path, { query: { ...query, per_page: perPage, page } });
       all.push(...batch);
-      if (batch.length < perPage) break;
+      if (batch.length < perPage || batch.some(enough)) break;
     }
     return all;
+  };
+  // A fork's Issues are off by default, and then its issue and comment feeds
+  // answer 404 (or 410) for good. That is a feed that is not there (null),
+  // not a failure: its pull requests can still be read one by one.
+  const feed = async (path, query) => {
+    try {
+      return await pages(path, query);
+    } catch (err) {
+      if (err.status === 404 || err.status === 410) return null;
+      throw err;
+    }
   };
   const numberOf = url => Number(String(url).split('/').pop());
 
   return harden({
     repo,
     /**
-     * Issues opened, and comments made, at or after `since`, oldest first, as
-     * plain events: {kind, id, number, author, created_at, url, title?, body,
-     * pull, state}. Pull requests themselves are not issues here; comments on
-     * them are events like any other comment.
+     * What was written at or after `since`, oldest first, as plain events:
+     * {kind, id, number, author, created_at, url, title?, body, pull, state}.
+     * Kinds: `issue` (opened; only with `issues`), `comment` (on an issue
+     * or a pull request's conversation), `review-comment` (inline, on a
+     * pull request's diff) and `review` (a submitted review's body; its
+     * time is when it was submitted). Pull requests themselves are not
+     * issues here.
      */
-    events: async since => {
-      const issues = await pages(`/repos/${repo}/issues`, { state: 'all', since, sort: 'created', direction: 'asc' });
-      const comments = await pages(`/repos/${repo}/issues/comments`, { since, sort: 'created', direction: 'asc' });
+    events: async (since, { issues: withIssues = true } = {}) => {
+      const issues = (withIssues ? await feed(`/repos/${repo}/issues`, { state: 'all', since, sort: 'created', direction: 'asc' }) : null) ?? [];
+      const feedOf = await feed(`/repos/${repo}/issues/comments`, { since, sort: 'created', direction: 'asc' });
+      const gone = feedOf === null;
+      const comments = feedOf ?? [];
+      const inline = await pages(`/repos/${repo}/pulls/comments`, { since, sort: 'created', direction: 'asc' });
+      // Reviews have no `since`: a pull request reviewed (or commented on)
+      // since then was updated since then, so read the recently updated ones.
+      const pulls = (await pages(`/repos/${repo}/pulls`, { state: 'all', sort: 'updated', direction: 'desc' }, { enough: p => p.updated_at < since })).filter(p => p.updated_at >= since);
+      const submitted = [];
+      for (const p of pulls) {
+        for (const r of await pages(`/repos/${repo}/pulls/${p.number}/reviews`, {})) {
+          if (r.submitted_at && r.submitted_at >= since && (r.body ?? '') !== '') submitted.push({ ...r, number: p.number });
+        }
+        // With the repository's comment feed gone, each pull request's own.
+        if (gone) comments.push(...(await pages(`/repos/${repo}/issues/${p.number}/comments`, { since })));
+      }
       const events = [
         ...issues.filter(i => !i.pull_request && i.created_at >= since).map(i => ({ kind: 'issue', id: i.id, number: i.number, author: i.user?.login ?? '', created_at: i.created_at, url: i.html_url, title: i.title ?? '', body: i.body ?? '', pull: false, state: i.state })),
         ...comments.filter(c => c.created_at >= since).map(c => ({ kind: 'comment', id: c.id, number: numberOf(c.issue_url), author: c.user?.login ?? '', created_at: c.created_at, url: c.html_url, body: c.body ?? '', pull: String(c.html_url).includes('/pull/') })),
+        ...inline.filter(c => c.created_at >= since).map(c => ({ kind: 'review-comment', id: c.id, number: numberOf(c.pull_request_url), author: c.user?.login ?? '', created_at: c.created_at, url: c.html_url, body: c.body ?? '', pull: true })),
+        ...submitted.map(r => ({ kind: 'review', id: r.id, number: r.number, author: r.user?.login ?? '', created_at: r.submitted_at, url: r.html_url, body: r.body ?? '', pull: true })),
       ];
       return events.sort((a, b) => (a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : a.id - b.id));
     },
-    /** Add a reaction to an issue or a comment. Adding one that is there is not an error. */
-    react: async ({ kind, id, number }, content = 'eyes') =>
-      call('POST', kind === 'issue' ? `/repos/${repo}/issues/${number}/reactions` : `/repos/${repo}/issues/comments/${id}/reactions`, { body: { content }, ok: [200, 201] }),
+    /**
+     * Add a reaction to what was written. Adding one that is there is not an
+     * error. A review cannot carry a reaction, so its pull request does.
+     */
+    react: async ({ kind, id, number }, content = 'eyes') => {
+      const on = { issue: `issues/${number}`, review: `issues/${number}`, comment: `issues/comments/${id}`, 'review-comment': `pulls/comments/${id}` }[kind];
+      return call('POST', `/repos/${repo}/${on}/reactions`, { body: { content }, ok: [200, 201] });
+    },
     comments: async number => (await pages(`/repos/${repo}/issues/${number}/comments`, {})).map(c => ({ id: c.id, author: c.user?.login ?? '', body: c.body ?? '' })),
     comment: async (number, body) => call('POST', `/repos/${repo}/issues/${number}/comments`, { body: { body }, ok: [201] }),
   });

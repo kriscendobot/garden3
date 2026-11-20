@@ -110,10 +110,20 @@ export const assemble = (powers = makeNodePowers()) => {
   const stewardEnv = { HOME: stewardHome, GH_CONFIG_DIR: path.join(stewardHome, '.config/gh'), PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` };
   const keys = lazy(() => makeKeys({ files: makeFiles, stateDir, registryText: root.read('keys/registry.yay'), run, env: stewardEnv }));
   const login = lazy(() => makeLogin({ run, files: makeFiles, home: stewardHome, knownHostsText: root.read('config/github-known-hosts'), bot: config.github.bot, identity: config.github.identity }));
-  const github = lazy(() => makeGitHub({ repo: config.github.repo, request: curlTransport({ run, token: () => keys.read('github-bot', 'steward').catch(() => null) }) }));
+  // One client per repository, all over the one transport.
+  let transport;
+  const request = (...a) => (transport ??= curlTransport({ run, token: () => keys.read('github-bot', 'steward').catch(() => null) }))(...a);
+  const clients = new Map();
+  const github = repo => {
+    if (!clients.has(repo)) clients.set(repo, makeGitHub({ repo, request }));
+    return clients.get(repo);
+  };
+  // What the watcher polls: config/garden.yay's github.watch, or, without
+  // one, the home repository's issues alone.
+  const watches = config.github.watch ?? [{ repo: config.github.repo, issues: true }];
   const journal = lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock }));
-  const steward = lazy(() => makeSteward({ github, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
-  const watcher = lazy(() => makeWatcher({ github: { repo: config.github.repo, events: (...a) => github.events(...a) }, board, budget, steward, journal, hostinfo, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, log: powers.log }));
+  const steward = lazy(() => makeSteward({ github, home: config.github.repo, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
+  const watcher = lazy(() => makeWatcher({ github, watches, home: config.github.repo, board, budget, steward, journal, hostinfo, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, pollSeconds: config.github.poll_seconds, log: powers.log }));
   const hostinfo = lazy(() => makeHostInfo({ shards, host, clock, probe: powers.probe, capabilities, slots: config.slots.count, shed: () => run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), client: () => root.exists('CLIENT-CONSENT.yay') }));
   return {
     bot: login,
@@ -160,6 +170,9 @@ export const assemble = (powers = makeNodePowers()) => {
     }),
     board,
     budget,
+    // `garden watcher preview` looks without acting; `garden watcher adopt
+    // <record>` takes a YAY record's `cursors` ([{repo, cursor}]) onto the board.
+    watcher: lazy(() => ({ preview: () => watcher.preview(), adopt: file => watcher.adopt(Object.fromEntries(parse(root.read(file), file).cursors.map(c => [c.repo, c.cursor])), `cursors from ${file}`) })),
     capabilities,
     slots,
     quiescence: lazy(() => makeQuiescenceService({ shards, host, clock, config })),

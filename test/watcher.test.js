@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeGitHub, curlTransport } from '../src/github.js';
-import { gate, address, decide, makeWatcher, readWatch, summary } from '../src/watcher.js';
+import { gate, address, decide, adopt, jobPrefix, makeWatcher, readWatch, summary } from '../src/watcher.js';
 import { makeSteward } from '../src/steward.js';
 import { makeBoardService } from '../src/boardService.js';
 import { makeBudgetService } from '../src/budget.js';
@@ -55,26 +55,29 @@ test('decide: cursor and seen discard what was handled; closed issues and the bo
   assert.deepEqual([strangers.actions, strangers.strangers], [[], [{ login: 'mallory', url: 'https://github.com/o/r/issues/7#10' }]], 'a stranger using the verbs does nothing');
 });
 
-const setup = async (t, hosts = ['host-a']) => {
+const HOME = 'kriscendobot/garden';
+const setup = async (t, hosts = ['host-a'], { watches = [{ repo: HOME, issues: true }], fakes = {}, firstTick = true } = {}) => {
   const g = mkGarden(t, { hostBranches: hosts });
-  const gh = makeFakeGitHub();
+  const ghs = Object.fromEntries(watches.map(w => [w.repo, makeFakeGitHub({ repo: w.repo, ...fakes[w.repo] })]));
+  const gh = ghs[HOME] ?? ghs[watches[0].repo];
   const seed = g.host('seed').shards.shard('seed', 'journal');
   await seed.land('seed', tree => { tree.write('config/maintainers.yay', stringify({ maintainers: ['kriskowal'] })); tree.write('config/pools.yay', stringify({ pools: [{ pool: 'p', weekly_tokens: 1000000 }] })); return {}; });
   const mk = name => {
     const h = g.host(name);
-    const github = makeGitHub({ request: gh.request, repo: 'kriscendobot/garden' });
+    const clients = Object.fromEntries(watches.map(w => [w.repo, makeGitHub({ request: ghs[w.repo].request, repo: w.repo })]));
+    const github = repo => clients[repo];
     const board = makeBoardService({ shards: h.shards, host: name, clock: g.clock });
     const budget = makeBudgetService({ shards: h.shards, host: name, clock: g.clock });
     const journal = makeJournal({ files: makeFiles, shards: h.shards, stateDir: h.stateDir, host: name, clock: g.clock });
-    const steward = makeSteward({ github, board, shards: h.shards, host: name, shed: 'abcdef0123456789' });
-    const watcher = makeWatcher({ github, board, budget, steward, journal, shards: h.shards, clock: g.clock, bot: 'kriscendobot' });
+    const steward = makeSteward({ github, home: HOME, board, shards: h.shards, host: name, shed: 'abcdef0123456789' });
+    const watcher = makeWatcher({ github, watches, home: HOME, board, budget, steward, journal, shards: h.shards, clock: g.clock, bot: 'kriscendobot' });
     return { h, board, budget, journal, steward, watcher };
   };
   const all = hosts.map(mk);
-  for (const x of all) await x.watcher.tick(); // the first tick only sets the cursor
+  if (firstTick) for (const x of all) await x.watcher.tick(); // the first tick only sets the cursor
   const job = id => { const f = g.ls('board').find(x => x.endsWith(`/${id}.yay`)); return f ? { file: f, ...parse(g.show('board', f)) } : null; };
   const later = s => new Date(Date.parse(g.clock.now()) + s * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
-  return { g, gh, all, ...all[0], job, later, watch: () => parse(g.show('board', 'watch.yay')) };
+  return { g, gh, ghs, all, ...all[0], job, later, watch: () => parse(g.show('board', 'watch.yay')) };
 };
 
 test('a maintainer\'s issue becomes a job, is acknowledged, and is not handled twice', async t => {
@@ -155,7 +158,7 @@ test('the steward reports a finished job on its issue, once, and follows a hand-
   assert.deepEqual(await steward.report(), [], 'a second pass writes nothing');
   assert.equal(gh.writes.length, 2);
   // Even if the list were not settled (a crash after commenting), the marker stops a repeat.
-  assert.equal(await steward.reply(30, 'job:issue-30', 'again'), false);
+  assert.equal(await steward.reply(HOME, 30, 'job:issue-30', 'again'), false);
   const p = await board.claim({ worker: 'w' });
   await board.complete(p.id, 'failed', { generation: p.claim.generation });
   assert.deepEqual(await steward.report(), ['failed issue-31-plan']);
@@ -185,7 +188,7 @@ test('the token reaches curl on standard input and nowhere else', async () => {
     assert.deepEqual(c.args, ['-K', '-']);
     assert.ok(!JSON.stringify(c.args).includes('ghp_') && c.opts.env === undefined, 'not in argv, and no environment is built for it');
     assert.match(c.opts.input, /header = "Authorization: Bearer ghp_SECRETTOKEN"/);
-    assert.match(c.opts.input, /url = "https:\/\/api\.github\.com\/repos\/o\/r\/issues/);
+    assert.match(c.opts.input, /url = "https:\/\/api\.github\.com\/repos\/o\/r\/(issues|pulls)/);
   }
   const anonymous = curlTransport({ run, token: async () => null });
   calls.length = 0;
@@ -195,4 +198,50 @@ test('the token reaches curl on standard input and nowhere else', async () => {
   assert.match(summary({ jobs: { a: { where: 'held', job: { id: 'a', hold: { reason: 'maintainer' } } } }, quiescence: { phase: 'idle' } }), /Waiting on something: `a` \(maintainer\)\./);
   assert.deepEqual(readWatch({ readIf: () => null }), { repos: {}, strangers: [], reports: [] });
   assert.ok(fs.existsSync(path.join(import.meta.dirname, 'fixtures/github.js')));
+});
+
+test('many repositories: each its own cursor and commit; issues only where asked; jobs named by repository', async t => {
+  const OTHER = 'kriscendobot/garden3';
+  const FORK = 'endojs/endo-but-for-bots';
+  const { g, ghs, watcher, job, later, watch } = await setup(t, ['host-a'], { watches: [{ repo: HOME, issues: true }, { repo: OTHER, issues: true }, { repo: FORK }], fakes: { [FORK]: { issuesOff: true } } });
+  assert.deepEqual(Object.keys(watch().repos).sort(), [FORK, HOME, OTHER].sort(), 'the first tick set a cursor for each');
+  assert.equal(jobPrefix(FORK, HOME), 'endojs-endo-but-for-bots-');
+  ghs[HOME].openIssue(12, 'kriskowal', 'Here', 'x', later(1));
+  ghs[OTHER].openIssue(12, 'kriskowal', 'There', 'y', later(2));
+  ghs[FORK].openPull(7, 'someone', later(3));
+  const rc = ghs[FORK].addReviewComment(7, 'kriskowal', '@kriscendobot rename this', later(4));
+  const rv = ghs[FORK].addReview(7, 'kriskowal', '@kriscendobot please rebase on main', later(5), 'CHANGES_REQUESTED');
+  const cc = ghs[FORK].addComment(7, 'kriskowal', '@kriscendobot and the changelog', later(5), { pull: true });
+  ghs[FORK].openPull(7, 'someone', later(5));
+  ghs[FORK].addReview(7, 'kriskowal', 'Looks fine to me.', later(6), 'APPROVED');
+  const last = later(7);
+  const mv = ghs[FORK].addReview(7, 'mallory', `@kriscendobot ${INJECTION}`, last);
+  assert.deepEqual(await watcher.tick(), ['post issue-12', `${OTHER}: post kriscendobot-garden3-issue-12`, `${FORK}: post endojs-endo-but-for-bots-issue-7-c${rc}`, `${FORK}: post endojs-endo-but-for-bots-issue-7-c${rv}`, `${FORK}: post endojs-endo-but-for-bots-issue-7-c${cc}`, `${FORK}: stranger mallory`], 'with its comment feed gone, a fork\'s pull request conversations are read one by one');
+  assert.deepEqual([job('issue-12').title, job('kriscendobot-garden3-issue-12').title], ['Here', 'There'], 'issue 12 there is not issue 12 here');
+  assert.deepEqual(job(`endojs-endo-but-for-bots-issue-7-c${rv}`).origin, { repo: FORK, issue: 7, url: `https://github.com/${FORK}/pull/7#pullrequestreview-${rv}`, by: 'kriskowal', review: rv });
+  assert.deepEqual(ghs[FORK].writes, [{ react: 'review-comment', id: rc, content: 'eyes' }, { react: 'issue', number: 7, content: 'eyes' }, { react: 'comment', id: cc, content: 'eyes' }], 'an inline comment carries its own 👀; a review\'s goes on its pull request');
+  assert.deepEqual(watch().repos[FORK], { cursor: last, seen: [`rv${mv}`] });
+  assert.deepEqual(watch().reports.map(r => r.repo), [undefined, OTHER, FORK, FORK, FORK], 'a report goes back to the repository that asked');
+  const subjects = g.remoteGit('log', '--format=%s', 'board').split('\n');
+  assert.ok([HOME, OTHER, FORK].every(r => subjects.includes(`watch(${r})`)), 'one commit per repository');
+  assert.ok(!g.remoteGit('log', '-p', '--all').includes('SECRET-MARKER'));
+  ghs[FORK].openIssue(8, 'kriskowal', 'Not asked', 'z', later(8));
+  assert.deepEqual(await watcher.tick(), [], 'nothing again, and a watched fork\'s issues are not requests');
+});
+
+test('adopting cursors: an older one does not move a later one back; an adopted one resumes from its second', async t => {
+  const OTHER = 'kriscendobot/garden3';
+  const { ghs, watcher, later, watch, board } = await setup(t, ['host-a'], { watches: [{ repo: HOME, issues: true }, { repo: OTHER, issues: true }], firstTick: false });
+  await board.transact('watch: a cursor of its own', (_b, tree) => { tree.write('watch.yay', stringify({ repos: { [HOME]: { cursor: later(0), seen: [] } }, strangers: [], reports: [] })); return true; });
+  const pure = adopt({ repos: { a: { cursor: 't5', seen: [1] } }, strangers: [], reports: [] }, { a: 't3', b: 't4' });
+  assert.deepEqual([pure.adopted, pure.watch.repos], [['b'], { a: { cursor: 't5', seen: [1] }, b: { cursor: 't4', seen: [] } }]);
+  const mine = watch().repos[HOME].cursor;
+  ghs[OTHER].openIssue(1, 'kriskowal', 'Before', 'handled by the prior garden', later(-100));
+  ghs[OTHER].openIssue(2, 'kriskowal', 'After', 'not yet handled', later(-10));
+  assert.deepEqual(await watcher.adopt({ [HOME]: '2026-01-01T00:00:00Z', [OTHER]: later(-50) }), [OTHER]);
+  assert.equal(watch().repos[HOME].cursor, mine);
+  const look = await watcher.preview();
+  assert.deepEqual(look.map(p => [p.repo, p.actions.length]), [[HOME, 0], [OTHER, 1]], 'preview says what a poll would do');
+  assert.deepEqual(ghs[OTHER].writes, [], 'and does none of it');
+  assert.deepEqual(await watcher.tick(), [`${OTHER}: post kriscendobot-garden3-issue-2`]);
 });

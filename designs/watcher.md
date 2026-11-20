@@ -1,23 +1,24 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-20"
 ---
 
 # The watcher and the steward: steering from GitHub
 
-The garden's purpose is to be operated through GitHub. This is the first
-watcher: the one on the garden's **own** repository. Code: `src/github.js`,
-`src/watcher.js`, `src/steward.js`.
+The garden's purpose is to be operated through GitHub. This is the watcher
+on the garden's **own** repositories, and on the pull requests of the
+repositories it watches. Code: `src/github.js`, `src/watcher.js`,
+`src/steward.js`.
 
 ## Which watcher this is
 
 The prior garden has several. `issue-inbox-watcher.sh` is the one described in
 its own header as turning "the garden's OWN GitHub repo ISSUES into a
 maintainer-interaction inbox", so that a maintainer can "drive the garden by
-filing or commenting on an issue". That is the one ported. The others watch
-elsewhere and are not here yet: `comment-watcher.sh` (comments and reviews on
-the pull requests of managed project repositories, 2,615 lines),
+filing or commenting on an issue". That is the one ported first. `comment-watcher.sh` (comments and reviews on
+the pull requests of watched repositories, 2,615 lines) is now ported in
+part ([What is watched](#what-is-watched)). Not here yet:
 `mention-watcher.sh` (mentions GitHub-wide), `triager.sh` (commits),
 `ci-watcher.sh`, `receipt-watcher.sh`.
 
@@ -47,6 +48,45 @@ of `handlers/comment-reactji-gh.sh`, `comment-reply-gh.sh`, `mention-trust-gh.sh
 - **Acknowledges** with a 👀 reaction; replies are comments written by the
   job itself, with a provenance footer the `gh` wrapper adds.
 - **Several hosts**: it is a leader-only unit. Nothing else stops two.
+
+## What is watched
+
+`config/garden.yay`'s `github.watch` lists the repositories, each polled at
+most once in its `poll_seconds` (the default, `github.poll_seconds`, is 90;
+the forks are at 300), each with its own cursor and its own board commit.
+
+- **With `issues: true`** (`kriscendobot/garden3`, the home, and
+  `kriscendobot/garden`, the prior garden's, kept online until the house is
+  consolidated): a maintainer opening an issue asks for work, as below.
+- **Every watch**: a maintainer's comment or review addressed to the bot
+  (`@kriscendobot ` at the start) is heard, from three surfaces: issue and
+  pull-request conversation comments, inline review comments, and the bodies
+  of submitted reviews. Reviews have no `since`, so they are read from the
+  pull requests updated since the cursor. A fork's Issues are off by default
+  and its comment feed then answers 404 or 410 for good: that is read as a
+  feed that is not there, and each recently updated pull request's own
+  comments are read instead (the prior garden learned this the hard way).
+- **Jobs are named by repository**: `issue-12` is the home's; issue 12 of
+  another is `<owner>-<name>-issue-12`. A report goes back to the repository
+  that asked. A review cannot carry a reaction, so its 👀 goes on its pull
+  request.
+
+The list is the prior garden's `journal2:comment-repos/` (sixteen forks and
+`endojs/endo-but-for-bots`) and the two garden repositories. Where the prior
+armed a repository with `sender-gate: required`, this gate is already
+stricter: maintainers only, no organisation fallback.
+
+**Cursors adopted.** The prior garden's cursors (`journal2:cursors/issues/`
+and `cursors/comments/`) are recorded in `upstream/watch-cursors.yay`, with
+where each came from, and were taken onto the board by `garden watcher adopt
+upstream/watch-cursors.yay`, which never moves a later cursor back. The prior
+took what came strictly after its `last_seen`, so each is adopted as the next
+second. A repository armed without a cursor of its own starts from the prior
+leader's last cursor commit (2026-11-18T03:18:31Z). `kriscendobot/garden`
+keeps the board's own, later cursor: in the gap between its prior issue and
+comment cursors there was nothing but the bot's own comments. `garden
+watcher preview` says what the next poll of each would do, and does none of
+it.
 
 ## The garden's version
 
@@ -135,12 +175,20 @@ throttle and status by comment; the report on a finished job, once; following
 a hand-off; a failed job announced; a refused poll leaving the cursor; the
 token on standard input only (`test/watcher.test.js`).
 
-**Not run:** any call to GitHub. The wiring in `src/cli.js` (the curl
-transport with the key) has not been exercised.
+Also tested: many repositories, each its own cursor and commit; issues
+heard only where asked; review comments and reviews; a fork with its
+comment feed gone; jobs named by repository; adopting cursors; the preview.
+
+**Run against GitHub:** the home repository's watch, from the box (cursor
+on the board since 2026-11-19). On 2026-11-20, the adoption and a preview of
+every watch: all nineteen repositories answered, the Issues-off forks
+included; 118 events lay past the adopted cursors and none of them asked
+for anything (the bot's own comments, and maintainers not addressing it).
+The multi-repository watch runs once the supervisor restarts on this code.
 
 ## What stands between this and a first real run
 
-1. The fresh repository must exist and hold the branches ([lineage.md](lineage.md)).
+1. ~~The fresh repository must exist and hold the branches~~: done, `kriscendobot/garden3` ([lineage.md](lineage.md)).
 2. `journal:config/maintainers.yay` must list the maintainers (it is empty;
    the watcher is inert until it is not), `journal:config/hosts.yay` must name
    a leader, and `config/garden.yay` names the repository and the bot's login.
@@ -153,15 +201,17 @@ transport with the key) has not been exercised.
 
 ## Open questions
 
-1. **Comments on pull requests of the garden's own repository** are treated
-   like comments on issues. Reviews and review comments are not polled.
+1. **Pull request comments on the garden's own repositories** are treated
+   like comments on issues; reviews and review comments are now polled too.
 2. **An acknowledgement can be lost**: if a host lands the board commit and
    dies before reacting, the job exists and the 👀 does not. The alternative
    (react first) acknowledges things that may not have landed.
 3. **Edits are not seen.** An issue or comment edited after it was handled is
    not handled again; the prior garden is the same.
-4. **Rate limits and conditional requests.** A poll is two list calls every
-   90 s. No `ETag` is used.
+4. **Rate limits and conditional requests.** A poll is three list calls,
+   plus one per pull request updated since the cursor. Two repositories
+   every 90 s and seventeen every 300 s comes to roughly 1,000 calls an hour
+   of the bot's 5,000. No `ETag` is used.
 5. **What the steward does with a job it is given.** A job for the steward is
    a request to triage into smaller jobs; that role's run is an agent like any
    other and has not been exercised.

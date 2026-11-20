@@ -1,10 +1,13 @@
-// A stand-in for the GitHub REST API, for tests. It answers the five calls
-// the garden makes, in the shapes GitHub documents for them (written from the
+// A stand-in for the GitHub REST API, for tests. It answers the calls the
+// garden makes, in the shapes GitHub documents for them (written from the
 // documented schemas, not recorded from a live repository), and records every
 // write. Nothing here touches a network.
-export const makeFakeGitHub = ({ repo = 'kriscendobot/garden', perPage = 100 } = {}) => {
+export const makeFakeGitHub = ({ repo = 'kriscendobot/garden', perPage = 100, issuesOff = false } = {}) => {
   const issues = [];
   const comments = [];
+  const pulls = [];
+  const inline = [];
+  const reviews = [];
   const writes = [];
   let nextId = 9000;
   let failWith = null;
@@ -16,6 +19,12 @@ export const makeFakeGitHub = ({ repo = 'kriscendobot/garden', perPage = 100 } =
     if (failWith) return { status: failWith, json: { message: 'API rate limit exceeded' } };
     const rel = path.replace(`/repos/${repo}`, '');
     let m;
+    // A fork with Issues off: its issue feeds are gone for good.
+    if (issuesOff && method === 'GET' && (rel === '/issues' || rel === '/issues/comments')) return { status: 410, json: { message: 'Issues are disabled for this repo' } };
+    if (method === 'GET' && rel === '/pulls') return { status: 200, json: page([...pulls].sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1)), query) };
+    if (method === 'GET' && rel === '/pulls/comments') return { status: 200, json: page(inline.filter(c => c.updated_at >= (query.since ?? '')), query) };
+    if (method === 'GET' && (m = /^\/pulls\/(\d+)\/reviews$/.exec(rel))) return { status: 200, json: page(reviews.filter(r => r.pull === Number(m[1])), query) };
+    if (method === 'POST' && (m = /^\/pulls\/comments\/(\d+)\/reactions$/.exec(rel))) { writes.push({ react: 'review-comment', id: Number(m[1]), content: body.content }); return { status: 201, json: { id: (nextId += 1), content: body.content } }; }
     if (method === 'GET' && rel === '/issues') return { status: 200, json: page(issues.filter(i => i.updated_at >= (query.since ?? '')), query) };
     if (method === 'GET' && rel === '/issues/comments') return { status: 200, json: page(comments.filter(c => c.updated_at >= (query.since ?? '')), query) };
     if (method === 'GET' && (m = /^\/issues\/(\d+)\/comments$/.exec(rel))) return { status: 200, json: page(comments.filter(c => c.issue_url.endsWith(`/${m[1]}`)), query) };
@@ -36,6 +45,26 @@ export const makeFakeGitHub = ({ repo = 'kriscendobot/garden', perPage = 100 } =
     /** A person opens an issue. */
     openIssue: (number, login, title, body, at, extra = {}) => {
       issues.push({ id: 1000 + number, number, title, body, state: 'open', user: user(login), created_at: at, updated_at: at, html_url: `${web}/issues/${number}`, ...extra });
+    },
+    /** A pull request, touched at `at`. */
+    openPull: (number, login, at) => {
+      const p = pulls.find(x => x.number === number);
+      if (p) p.updated_at = at;
+      else pulls.push({ id: 5000 + number, number, user: user(login), state: 'open', created_at: at, updated_at: at, html_url: `${web}/pull/${number}` });
+    },
+    /** An inline comment on a pull request's diff; it touches the pull request. */
+    addReviewComment: (number, login, body, at) => {
+      const id = (nextId += 1);
+      inline.push({ id, user: user(login), body, created_at: at, updated_at: at, pull_request_url: `${api}/pulls/${number}`, html_url: `${web}/pull/${number}#discussion_r${id}` });
+      pulls.find(x => x.number === number).updated_at = at;
+      return id;
+    },
+    /** A submitted review; it touches the pull request. */
+    addReview: (number, login, body, at, state = 'COMMENTED') => {
+      const id = (nextId += 1);
+      reviews.push({ id, pull: number, user: user(login), body, state, submitted_at: at, html_url: `${web}/pull/${number}#pullrequestreview-${id}` });
+      pulls.find(x => x.number === number).updated_at = at;
+      return id;
     },
     /** A person comments on an issue (or, with pull: true, on a pull request). */
     addComment: (number, login, body, at, { pull = false } = {}) => {

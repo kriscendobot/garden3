@@ -16,7 +16,44 @@ github:
     name: "Kriscendo Bot"
   overlap_seconds: 120
   poll_seconds: 90
-  repo: "kriscendobot/garden"
+  repo: "kriscendobot/garden3"
+  watch:
+    - issues: true
+      repo: "kriscendobot/garden3"
+    - issues: true
+      repo: "kriscendobot/garden"
+    - poll_seconds: 300
+      repo: "endojs/endo-but-for-bots"
+    - poll_seconds: 300
+      repo: "kriscendobot/cosgov"
+    - poll_seconds: 300
+      repo: "kriscendobot/endo"
+    - poll_seconds: 300
+      repo: "kriscendobot/endo-but-for-bots"
+    - poll_seconds: 300
+      repo: "kriscendobot/finbot"
+    - poll_seconds: 300
+      repo: "kriscendobot/garden-book"
+    - poll_seconds: 300
+      repo: "kriscendobot/list"
+    - poll_seconds: 300
+      repo: "kriscendobot/minion.town"
+    - poll_seconds: 300
+      repo: "kriscendobot/moddable"
+    - poll_seconds: 300
+      repo: "kriscendobot/ocapn"
+    - poll_seconds: 300
+      repo: "kriscendobot/oros-ckm-data-readiness"
+    - poll_seconds: 300
+      repo: "kriscendobot/proposal-compartments"
+    - poll_seconds: 300
+      repo: "kriscendobot/test262"
+    - poll_seconds: 300
+      repo: "kriscendobot/vattr97"
+    - poll_seconds: 300
+      repo: "kriscendobot/ymax-e2e"
+    - poll_seconds: 300
+      repo: "kriscendobot/ymax-stdio-mcp"
 handoff:
   review_from: 2
 plots:

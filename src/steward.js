@@ -1,7 +1,8 @@
 // steward.js — the only thing in the garden that writes to GitHub.
 //
 // Small on purpose: acknowledge (a reaction), reply (one comment, once), and
-// report a finished job back on the issue that asked for it. Every comment
+// report a finished job back on the issue that asked for it, in whichever
+// repository that was. Every comment
 // carries an invisible marker naming what it is about, and before writing one
 // the steward looks for that marker, so a repeat (a retry, a second host) is
 // recognised instead of posted twice. Only the leader's supervisor runs it.
@@ -14,14 +15,16 @@ import { harden } from './harden.js';
 
 const marker = key => `<!-- garden:${key} -->`;
 
-export const makeSteward = ({ github, board, shards, host, shed = '', log = () => {} }) => {
+/** `github` gives the client for a repository; `home` is the garden's own. */
+export const makeSteward = ({ github, home, board, shards, host, shed = '', log = () => {} }) => {
   const footer = `\n\n<sub>the garden · host ${host}${shed ? ` · shed ${shed.slice(0, 12)}` : ''}</sub>`;
 
   /** One comment per key on an issue. Returns true if it wrote, false if it was there. */
-  const reply = async (number, key, text) => {
+  const reply = async (repo, number, key, text) => {
     const m = marker(key);
-    if ((await github.comments(number)).some(c => c.body.includes(m))) return false;
-    await github.comment(number, `${text.trim()}${footer}\n${m}`);
+    const gh = github(repo);
+    if ((await gh.comments(number)).some(c => c.body.includes(m))) return false;
+    await gh.comment(number, `${text.trim()}${footer}\n${m}`);
     return true;
   };
 
@@ -34,7 +37,7 @@ export const makeSteward = ({ github, board, shards, host, shed = '', log = () =
 
   return harden({
     /** "I saw this": an eyes reaction on the issue or comment. */
-    ack: async event => github.react(event, 'eyes'),
+    ack: async (repo, event) => github(repo).react(event, 'eyes'),
     reply,
 
     /**
@@ -48,13 +51,14 @@ export const makeSteward = ({ github, board, shards, host, shed = '', log = () =
       const did = [];
       const settle = [];
       for (const p of pending) {
+        const repo = p.repo ?? home;
         const rec = archived(p.job);
         if (rec?.outcome === 'handed-off') {
           settle.push({ ...p, job: rec.handed_to, was: p.job });
-          if (await reply(p.issue, `handoff:${p.job}`, `\`${p.job}\` ran out of time and handed off; \`${rec.handed_to}\` is planning what remains.`)) did.push(`handed-off ${p.job}`);
+          if (await reply(repo, p.issue, `handoff:${p.job}`, `\`${p.job}\` ran out of time and handed off; \`${rec.handed_to}\` is planning what remains.`)) did.push(`handed-off ${p.job}`);
         } else if (rec) {
           const text = rec.outcome === 'done' ? rec.report || `\`${p.job}\` is done.` : `\`${p.job}\` was ${rec.outcome}${rec.abandon_reason ? `: ${rec.abandon_reason}` : '.'}`;
-          await reply(p.issue, `job:${p.job}`, `${text.trim()}\n\nLevel ${rec.level ?? 0}; cost ${(rec.cost?.tokens ?? 0) + (rec.cost_under?.tokens ?? 0)} tokens.`);
+          await reply(repo, p.issue, `job:${p.job}`, `${text.trim()}\n\nLevel ${rec.level ?? 0}; cost ${(rec.cost?.tokens ?? 0) + (rec.cost_under?.tokens ?? 0)} tokens.`);
           settle.push({ ...p, gone: true });
           did.push(`${rec.outcome} ${p.job}`);
         } else {
@@ -62,16 +66,16 @@ export const makeSteward = ({ github, board, shards, host, shed = '', log = () =
           // Neither on the board nor in the archive's recent months: it ended
           // long ago and was rolled up. Nothing more will be said about it.
           if (!e) settle.push({ ...p, gone: true });
-          if (e?.where === 'failed' && (await reply(p.issue, `failed:${p.job}:${e.job.attempts ?? 0}`, `\`${p.job}\` failed and is waiting for a maintainer: \`@… release ${p.job}\` to try again, \`@… abandon ${p.job}\` to drop it.`))) did.push(`failed ${p.job}`);
+          if (e?.where === 'failed' && (await reply(repo, p.issue, `failed:${p.job}:${e.job.attempts ?? 0}`, `\`${p.job}\` failed and is waiting for a maintainer: \`@… release ${p.job}\` to try again, \`@… abandon ${p.job}\` to drop it.`))) did.push(`failed ${p.job}`);
         }
       }
       if (settle.length) {
         await board.transact('watch: reports settled', (_b, tree) => {
           const watch = readWatch(tree);
           watch.reports = (watch.reports ?? []).flatMap(r => {
-            const s = settle.find(x => (x.was ?? x.job) === r.job && x.issue === r.issue);
+            const s = settle.find(x => (x.was ?? x.job) === r.job && x.issue === r.issue && x.repo === r.repo);
             if (!s) return [r];
-            return s.gone ? [] : [{ job: s.job, issue: s.issue }];
+            return s.gone ? [] : [{ job: s.job, issue: s.issue, ...(r.repo ? { repo: r.repo } : {}) }];
           });
           tree.write('watch.yay', stringify(watch));
           return true;
