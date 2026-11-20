@@ -23,6 +23,26 @@ export const KEY_VARIABLES = harden([
 /** An environment with every key variable removed. */
 export const scrub = env => Object.fromEntries(Object.entries(env).filter(([k]) => !KEY_VARIABLES.includes(k) && !/_(API_KEY|TOKEN|SECRET)$/.test(k)));
 
+/**
+ * A subscription login, made lendable to a job: the harness's credentials
+ * with the refresh token removed. A job holding this can make model requests
+ * until the access token expires, and cannot refresh it, so it can never
+ * rotate the steward's own login out from under the steward or another job.
+ * Returns {text, expires_at, secret}: what to write, when it stops working,
+ * and the value harvest must refuse to carry out.
+ */
+export const accessOnly = text => {
+  let login;
+  try {
+    login = JSON.parse(text).claudeAiOauth;
+  } catch {
+    login = null;
+  }
+  if (!login?.accessToken || typeof login.expiresAt !== 'number') refuse('no-key', 'the login holds no access token');
+  const { refreshToken: _refresh, refreshTokenExpiresAt: _refreshExpiry, ...access } = login;
+  return harden({ text: `${JSON.stringify({ claudeAiOauth: access })}\n`, expires_at: new Date(login.expiresAt).toISOString().replace(/\.\d+Z$/, 'Z'), secret: login.accessToken });
+};
+
 export const makeKeys = ({ files, stateDir, registryText, run, env = {} }) => {
   const state = files(stateDir);
   const registry = registryText ? parse(registryText).keys : {};
@@ -65,6 +85,18 @@ export const makeKeys = ({ files, stateDir, registryText, run, env = {} }) => {
      * file's mode is exactly 0600: a key anyone else could read is treated as
      * no key at all.
      */
+    /**
+     * Lend a key to a job, as the registry allows (`lend: access-only`):
+     * {file, text, expires_at, secret}, `file` being where in the job's home
+     * it goes (`lend_as`). The steward's copy is untouched.
+     */
+    lend: async name => {
+      const spec = known(name);
+      if (spec.lend !== 'access-only' || !spec.lend_as) refuse('not-lendable', `${name} is not lent to jobs`);
+      if (!state.exists(fileOf(name))) refuse('no-key', `no ${name} on this host: log in with ./garden (the claude session)`);
+      if (state.mode(fileOf(name)) !== 0o600) refuse('bad-mode', `${name} is readable by others; treat it as leaked and replace it`);
+      return harden({ file: spec.lend_as, ...accessOnly(state.read(fileOf(name))) });
+    },
     read: async (name, consumer) => {
       const spec = known(name);
       if (spec.consumer !== consumer) refuse('wrong-consumer', `${name} is for ${spec.consumer}, not ${consumer}`);

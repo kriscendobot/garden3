@@ -2,6 +2,13 @@ keys:
   anthropic-worker:
     consumer: "worker"
     purpose: "The model credential a worker's harness uses. Given to the harness through its key helper, never its environment."
+  claude-login:
+    consumer: "steward"
+    file: "steward/.claude/.credentials.json"
+    lend: "access-only"
+    lend_as: ".claude/.credentials.json"
+    provider: "claude"
+    purpose: "The operator's Claude subscription login, made by logging in in the session ./garden opens. Its one home is the steward's Claude config; a job is lent only its access token, written into its home at setup, never the refresh token, so no job can rotate the login."
   github-bot:
     consumer: "steward"
     file: "steward/.config/gh/hosts.yml"

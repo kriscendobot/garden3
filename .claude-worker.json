@@ -1,0 +1,7 @@
+{
+  "permissions": { "defaultMode": "bypassPermissions" },
+  "env": { "DISABLE_AUTOUPDATER": "1" },
+  "hooks": {
+    "PostToolUse": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "garden hook" }] }]
+  }
+}

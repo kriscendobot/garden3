@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-20"
 ---
 
 # Keys are files
@@ -43,8 +43,48 @@ credential through a helper the harness calls. One exception remains:
    for, where it lives, and its one **consumer**. `read` is refused for any
    other consumer, and for a file whose mode is not exactly 0600.
 4. **Jobs hold no GitHub credential.** Only the steward does.
-5. **The model credential** (`anthropic-worker`) reaches the harness through
-   the harness's own key helper, as in the tower. Not built yet.
+5. **The model credential.** Jobs run on the operator's Claude subscription,
+   as the prior gardens' workers did, lent as described below
+   (`claude-login`). An API key (`anthropic-worker`, through the harness's
+   key helper, as in the tower) remains the alternative; not built.
+
+## The subscription login, lent to jobs
+
+The operator logs in once, in the Claude Code session `./garden` opens. The
+login's one home is the steward's Claude config,
+`.garden-state/steward/.claude/.credentials.json` (mode 0600), and that
+session keeps it fresh. The registry names it `claude-login`, with
+`lend: access-only`.
+
+Each job runs in a home of its own, so the steward lends the login at setup:
+`keys.lend` writes the harness's credentials with the **refresh token
+removed** into the home's `.claude/.credentials.json` (mode 0600, in a 0700
+directory, then the whole home is the slot account's). A job can make model
+requests until the access token expires and cannot refresh it, so no job can
+rotate the login out from under the steward or another job, and no copy
+outlives its token. This was tried against the real harness: a fresh home
+holding only the access token runs `claude -p` to the end.
+
+- **Expiry.** A job is claimed only if the lent token outlives its window,
+  kill time and a minute. Otherwise it goes straight back to the board and
+  waits until the login is refreshed. With no operator session open, nothing
+  refreshes it yet.
+- **No environment.** The token is a file in the home; the worker's
+  environment is still built from nothing and scrubbed (`scrub`).
+- **Nothing carried out holds it.** Harvest refuses any branch whose new
+  commits (its history, not only its tip), and any genome or outbox file,
+  containing the token. Each refusal is in the harvest's `refused` and is
+  noted in the journal.
+- **The terms.** Anthropic's documentation says subscription limits assume
+  "ordinary, individual usage", and that developers "may not collect, store,
+  or intermediate Claude.ai credentials or session tokens". The operator
+  lends their own login to their own garden's jobs on their own machine; the
+  maintainer chose this knowing that wording.
+
+The worker runs `claude -p --settings .claude-worker.json` with its prompt
+pointing at `PROMPT.md`. `.claude-worker.json` (in the shed, so in every home)
+grants the run its permissions inside the slot, turns off the auto-updater,
+and installs the deadline hook (`garden hook`, after every tool).
 
 ## The bot's GitHub login
 
@@ -111,11 +151,9 @@ helper, and the steward publishing branches and pull requests.
 
 ## Open questions
 
-1. **Subscription logins.** The prior garden's workers mostly run on Claude
-   subscription logins stored in the bind-mounted home, not API keys. Where
-   does a login live when each job has a fresh home? Probably the steward's
-   state, lent to the harness through the helper; this needs a real harness
-   to settle.
+1. ~~**Subscription logins.**~~ Settled: lent access-only at setup (above).
+   Still open: refreshing the steward's login when no operator session is
+   open.
 2. **One bot token for everything the steward does**, or a narrower token per
    act (push to forks, comment, read)?
 3. **Rotation.** The prior garden's registry has a maximum age per key and a

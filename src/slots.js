@@ -98,9 +98,11 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
      *  4. plant the tombstones and make worktrees/, scratch/ and outbox/;
      *  5. place the job's record as JOB.yay and record what was laid down in
      *     .slot.yay, which harvest needs to tell the job's changes apart;
-     *  6. in users mode, give the home to the slot's account, mode 0700.
+     *  6. write what the steward lends the job (`lent`, from keys.lend: the
+     *     harness's login, access token only), each file mode 0600;
+     *  7. in users mode, give the home to the slot's account, mode 0700.
      */
-    prepare: async (slot, job, plot, shed) => {
+    prepare: async (slot, job, plot, shed, lent = []) => {
       check(slot);
       if (!isName(plot)) refuse('invalid', 'bad plot name');
       if (!isName(job.id)) refuse('invalid', 'bad job id');
@@ -130,6 +132,16 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
       home.write(`${REFERENCE}/reference.yay`, stringify(reference));
       ask({ op: 'plant', root: slots.root, slot, tombstones: TOMBSTONES, dirs: WORKDIRS });
       home.write('JOB.yay', stringify(job));
+      for (const l of lent) {
+        const parts = String(l.file).split('/');
+        if (!parts.length || parts.some(p => !p || p === '.' || p === '..')) refuse('invalid', `a lent file must be a path inside the home, not ${l.file}`);
+        for (let i = 1; i < parts.length; i += 1) {
+          home.mkdir(parts.slice(0, i).join('/'));
+          home.chmod(parts.slice(0, i).join('/'), 0o700);
+        }
+        home.writeBytes(l.file, l.text, 0o600);
+        home.chmod(l.file, 0o600);
+      }
       state.write(`slots/${slot}.yay`, stringify({ slot, job: job.id, generation: job.claim?.generation ?? 0, plot, shed_commit: shedCommit, plot_commit: plotCommit, prepared_at: clock.now() }));
       if (mode === 'users') ask({ op: 'own', root: slots.root, slot, ...account(slot) });
       log(`prepared ${slot} for ${job.id} on plot ${plot}`);
@@ -156,8 +168,12 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
      * Genome: files of the plot's genome that differ from what prepare laid
      * down are copied to <state>/harvest/<id>/genome/ for the plot's landing.
      * Outbox: plain files the job left in outbox/ are copied alongside.
+     *
+     * Nothing carried out may hold a secret the job was lent (`secrets`):
+     * a branch whose new commits contain one is not fetched, and such a file
+     * is not copied. Each refusal is listed in the summary's `refused`.
      */
-    harvest: async slot => {
+    harvest: async (slot, { secrets = [] } = {}) => {
       const rec = info(slot) ?? refuse('empty', `${slot} holds no job`);
       // The job has ended: whatever its account still runs is killed, and its
       // home comes back to the steward, who can now read it and carry out.
@@ -170,6 +186,8 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
       state.mkdir(`${out}/genome`);
       state.mkdir(`${out}/outbox`);
       const projects = [];
+      const refused = [];
+      const holds = text => secrets.some(secret => secret && String(text).includes(secret));
       for (const org of home.list('worktrees')) {
         for (const name of home.isDir(`worktrees/${org}`) ? home.list(`worktrees/${org}`) : []) {
           const wt = home.path(`worktrees/${org}/${name}`);
@@ -192,6 +210,11 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
           const refs = git(['-C', wt, 'for-each-ref', '--format=%(refname)', `refs/heads/job/${id}/${gen}`, `refs/heads/wip/${id}/${gen}`]).split('\n').filter(Boolean);
           let fetched = 0;
           for (const ref of refs) {
+            // What the job added: commits not already on the mirror's branches.
+            if (holds(git(['-C', wt, 'log', '-p', '--format=%H%n%B', ref, '--not', '--remotes'], { allowFail: true }))) {
+              refused.push(`${org}/${name} ${ref}`);
+              continue;
+            }
             if (git(['-C', bare, 'fetch', '--quiet', '--no-tags', '--no-recurse-submodules', wt, `+${ref}:${ref}`], { allowFail: true }) !== null) fetched += 1;
           }
           projects.push({ project: `${org}/${name}`, branches: fetched, wip });
@@ -209,7 +232,8 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
         const have = plain(file) ? git(['hash-object', home.path(file)]) : null;
         if (have === want) continue;
         changed.push(file);
-        if (have) state.copyIn(home.path(file), `${out}/genome/${file}`);
+        if (have && holds(home.read(file))) refused.push(file);
+        else if (have) state.copyIn(home.path(file), `${out}/genome/${file}`);
       }
       // New files under a genome prefix: a skill the job adopted, say. Not
       // what the plot had, and not the shed's own copy left in place.
@@ -222,13 +246,24 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
           if (known.has(file) || !plain(file)) continue;
           const shedBlob = git(['-C', rootRepo, 'rev-parse', '--verify', '--quiet', `${rec.shed_commit}:${file}`], { allowFail: true });
           if (shedBlob && shedBlob === git(['hash-object', home.path(file)])) continue;
+          if (holds(home.read(file))) {
+            refused.push(file);
+            continue;
+          }
           changed.push(file);
           state.copyIn(home.path(file), `${out}/genome/${file}`);
         }
       }
-      const outbox = home.list('outbox').filter(f => !home.isDir(`outbox/${f}`));
-      for (const f of outbox) state.copyIn(home.path(`outbox/${f}`), `${out}/outbox/${f}`);
-      const summary = { job: id, plot: rec.plot, projects, genome_changed: changed, outbox };
+      const outbox = [];
+      for (const f of home.list('outbox').filter(x => !home.isDir(`outbox/${x}`))) {
+        if (holds(home.read(`outbox/${f}`))) {
+          refused.push(`outbox/${f}`);
+          continue;
+        }
+        outbox.push(f);
+        state.copyIn(home.path(`outbox/${f}`), `${out}/outbox/${f}`);
+      }
+      const summary = { job: id, plot: rec.plot, projects, genome_changed: changed, outbox, ...(refused.length ? { refused } : {}) };
       state.write(`${out}/harvest.yay`, stringify(summary));
       return harden(summary);
     },

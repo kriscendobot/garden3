@@ -41,6 +41,17 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
         if (hostinfo) await hostinfo.publish().catch(() => {});
       }
     }
+    // The harness's login, lent access-only (keys.lend). Without one there is
+    // nothing to run a job with, so none is claimed.
+    let lent = null;
+    if (worker.lend) {
+      try {
+        lent = await worker.lend();
+      } catch (err) {
+        log(`no login to lend a job (${err.code ?? ''} ${err.message}); not claiming`);
+        return null;
+      }
+    }
     const job = await board.claim({ worker: workerId });
     if (!job) return null;
     if (capabilities) await capabilities.used((job.requires ?? []).filter(t => !t.startsWith('host=')));
@@ -48,10 +59,18 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     const { generation } = job.claim;
     const windowS = job.window_s ?? defaultWindow;
     const started = Date.parse(clock.now());
+    // A lent login cannot be refreshed by the job: it must outlast the whole
+    // window, or the job would lose it part way. Give the job back and wait
+    // for the steward's login to be refreshed (the operator's session does).
+    if (lent && Date.parse(lent.expires_at) < started + (windowS + (worker.killAfterS ?? 30) + 60) * 1000) {
+      log(`${job.id}: the login expires at ${lent.expires_at}, inside this job's ${windowS}s window; given back until it is refreshed`);
+      await board.release(job.id, { generation }).catch(() => {});
+      return null;
+    }
     let result = { status: 1, timed_out: false, elapsed_s: 0 };
     let home;
     try {
-      home = await slots.prepare(slot, job, plot);
+      home = await slots.prepare(slot, job, plot, undefined, lent ? [lent] : []);
       const tree = files(home);
       const deadlineEpoch = Math.floor(started / 1000) + windowS;
       const deadlineIso = new Date(deadlineEpoch * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
@@ -89,7 +108,11 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
         log(`${job.id}: its hand-off is not YAY (${err.message}); treated as none`);
       }
       report = tree.readIf('outbox/report.md');
-      harvest = await slots.harvest(slot);
+      harvest = await slots.harvest(slot, { secrets: lent ? [lent.secret] : [] });
+      if (harvest.refused?.length) {
+        log(`${job.id}: refused to carry out what holds its lent login: ${harvest.refused.join(', ')}`);
+        if (journal) await journal.note('dispatch', `\`${job.id}\` left its lent login in ${harvest.refused.length} thing(s) it made; they were not carried out.`);
+      }
     }
     const kind = classify({ timedOut: result.timed_out, status: result.status, handoff, report });
     const usage = worker.usage ? await worker.usage(job.id) : { source: 'none' };
