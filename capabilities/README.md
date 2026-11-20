@@ -37,4 +37,4 @@ this table honest.
 | `gh` | amd64, arm64 | for a host that publishes. 2.105.0; the amd64 archive was downloaded and matches the release's checksums file; the arm64 hash is taken from it |
 | `buildkit` | amd64 | hashes carried from the tower's Dockerfile; no arm64 source |
 | `shellcheck` | no | used by `scripts/lint.sh` when present |
-| `claude-code` | draft | needs a committed lockfile before it can be pinned |
+| `claude-code` | amd64, arm64 | for a host with an operator or workers; `./garden` installs it on first use. 2.1.311, the publisher's native binary; the amd64 binary was downloaded and matches the checksum in the release's `manifest.json`; the arm64 hash is taken from that file |

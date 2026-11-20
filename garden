@@ -1,7 +1,7 @@
 #!/bin/sh
 # garden — the launcher. Runs on a host, outside the box, as the maintainer.
 #
-# Usage: ./garden [up | sh | logs | stop | status | build | check | adopt <archive> | promote <digest12> | reset]
+# Usage: ./garden [claude [args...] | up | sh | logs | stop | status | build | check | adopt <archive> | promote <digest12> | reset]
 #
 # Shell, because it runs before any runtime exists and only arranges for one
 # (designs/services.md). The box is one container: this checkout mounted at
@@ -59,8 +59,32 @@ check() {
   [ "$have" = "$want" ] && echo "image matches the Dockerfile ($want)" || { echo "image is stale: built from ${have:-nothing}, the Dockerfile is $want"; return 1; }
 }
 
-case "${1:-up}" in
-  up) docker container inspect "$NAME" >/dev/null 2>&1 && docker start "$NAME" >/dev/null || create ;;
+up() { docker container inspect "$NAME" >/dev/null 2>&1 && docker start "$NAME" >/dev/null || create; }
+# Wait until the entrypoint has written garden-env: on a first boot that is
+# after the runtime is fetched and the warden built.
+ready() {
+  i=0
+  until docker exec "$NAME" test -x /usr/local/bin/garden-env 2>/dev/null; do
+    i=$((i + 1)); [ "$i" -le 150 ] || die "the box did not come up; see ./garden logs"
+    [ "$i" != 1 ] || echo "garden: waiting for the box (a first boot takes about a minute)" >&2
+    sleep 2
+  done
+}
+
+case "${1:-claude}" in
+  # The default: bring the box up and open a Claude Code session in the shed,
+  # as the steward. The harness is a capability this host installs when it is
+  # first wanted (a no-op afterwards), pinned, so it does not update itself.
+  # Its login is the operator's, made in the session, and is kept under the
+  # steward's home in the state directory like the bot's (designs/keys.md).
+  claude)
+    [ $# -eq 0 ] || shift
+    up; ready
+    docker exec -u steward "$NAME" /usr/local/bin/garden-env garden capabilities install claude-code >/dev/null \
+      || die "the claude-code capability did not install"
+    docker exec -it -u steward -e TERM="${TERM:-xterm-256color}" -e DISABLE_AUTOUPDATER=1 "$NAME" /usr/local/bin/garden-env claude "$@"
+    ;;
+  up) up ;;
   # Enter the running box as the steward, with the garden's environment. The
   # entrypoint is not run again: it wrote garden-env once, at boot.
   # The shell it opens is already set up for the bot's login: gh, git and ssh
@@ -101,5 +125,5 @@ case "${1:-up}" in
     docker tag "garden-adopted:$d12" "$IMAGE"
     echo "promoted. ./garden reset recreates the box on it; roll back with: docker tag $IMAGE-previous $IMAGE && ./garden reset"
     ;;
-  *) die "usage: ./garden [up|sh|logs|stop|status|build|check|adopt <archive>|promote <digest12>|reset]" ;;
+  *) die "usage: ./garden [claude [args...]|up|sh|logs|stop|status|build|check|adopt <archive>|promote <digest12>|reset]" ;;
 esac

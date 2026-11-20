@@ -155,7 +155,7 @@ checksum before trusting it).
 
 **Not run:** any download. Still without a hash: `node` for arm64; `rust`,
 `shellcheck` and `gh` for both architectures; `buildkit` has no arm64 source;
-`claude-code` is a draft awaiting a lockfile. Design only: the supervisor
+`claude-code` is pinned to the publisher's native binary, by its release manifest's checksum, and installs in the box. Design only: the supervisor
 carrying out a client order's `set-capabilities` and `forbid-capabilities`.
 
 ## What this principle makes harder

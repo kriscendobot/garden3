@@ -98,8 +98,10 @@ be stopped and resumed at any point: `./wizard status <dir>`.
    state directory. Nothing changes the identity you commit with outside the
    box. A client host needs only what lets it push its claims: the same login,
    as whichever account the maintainers give it.
-9. **Move in.** In `./garden sh`, start the agent, and have it read
-   `CLAUDE.md` in the shed. From here the garden's own roles take over.
+9. **Move in.** `./garden` with no argument opens a Claude Code session in
+   the box, in the shed, as the steward (it installs the harness on first
+   use; the operator logs it in there, once). Have it read `CLAUDE.md` in
+   the shed. From here the garden's own roles take over.
 10. **Joined.** A maintainer adds the host to `journal:config/hosts.yay`.
     Then, inside: `garden quiescence status` answers, a `host/<name>` branch
     exists for this host, and `garden board claim` returns a job or `null`
