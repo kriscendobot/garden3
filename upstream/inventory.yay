@@ -3,6 +3,7 @@ entries:
     certainty: 0.95
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/shepherd/"
     plots:
       - "alder"
@@ -31,6 +32,7 @@ entries:
     certainty: 0.95
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/retcon/"
     plots:
       - "alder"
@@ -80,6 +82,7 @@ entries:
       - "rowan"
       - "willow"
     kind: "role"
+    landed: true
     path: "roles/conductor/"
     service: true
     source_path: "roles/conductor"
@@ -87,6 +90,7 @@ entries:
     certainty: 0.9
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/conflict-resolution/"
     plots:
       - "alder"
@@ -136,6 +140,7 @@ entries:
       - "rowan"
       - "willow"
     kind: "skill"
+    landed: true
     path: "skills/local-verify/"
     service: true
     source_path: "skills/local-verify"
@@ -143,6 +148,7 @@ entries:
     certainty: 0.9
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/regression-evidence/"
     plots:
       - "alder"
@@ -189,6 +195,7 @@ entries:
       - "pine"
       - "rowan"
     kind: "role"
+    landed: true
     path: "roles/fixer/"
     service: true
     source_path: "roles/fixer"
@@ -196,6 +203,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/changeset-discipline/"
     plots:
       - "alder"
@@ -220,6 +228,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/ci-failure-classification-loop/"
     plots:
       - "alder"
@@ -245,6 +254,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pr-formation/"
     plots:
       - "alder"
@@ -270,6 +280,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/rename-discipline/"
     plots:
       - "alder"
@@ -294,6 +305,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/review-feedback-followup-commits/"
     plots:
       - "alder"
@@ -318,6 +330,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/sibling-family-sweep/"
     plots:
       - "cedar"
@@ -342,6 +355,7 @@ entries:
     certainty: 0.85
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/yarn-lock-separate-commit/"
     plots:
       - "alder"
@@ -384,6 +398,7 @@ entries:
       - "rowan"
       - "willow"
     kind: "skill"
+    landed: true
     path: "skills/frozen-base-branch/"
     service: true
     source_path: "skills/frozen-base-branch"
@@ -391,6 +406,7 @@ entries:
     certainty: 0.8
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/rebase-before-followup/"
     plots:
       - "alder"
@@ -414,6 +430,7 @@ entries:
     certainty: 0.75
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/adversarial-tests/"
     plots:
       - "alder"
@@ -436,6 +453,7 @@ entries:
     certainty: 0.75
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/fully-qualified-github-urls/"
     plots:
       - "dogwood"
@@ -459,6 +477,7 @@ entries:
     certainty: 0.75
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pr-completion-summary-comment/"
     plots:
       - "alder"
@@ -481,6 +500,7 @@ entries:
     certainty: 0.75
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pr-review-thread-replies/"
     plots:
       - "alder"
@@ -520,6 +540,7 @@ entries:
       - "spruce"
       - "yew"
     kind: "skill"
+    landed: true
     path: "skills/pre-push-gates/"
     service: true
     source_path: "skills/pre-push-gates"
@@ -543,6 +564,7 @@ entries:
       - "oak"
       - "quince"
     kind: "role"
+    landed: true
     path: "roles/builder/"
     source_path: "roles/builder"
   - abbreviated:
@@ -565,6 +587,7 @@ entries:
       - "katsura"
       - "willow"
     kind: "role"
+    landed: true
     path: "roles/jurors/"
     service: true
     source_path: "roles/jurors"
@@ -578,6 +601,7 @@ entries:
     certainty: 0.7
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/gricean-maxims/"
     plots:
       - "alder"
@@ -599,6 +623,7 @@ entries:
     certainty: 0.7
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/node-parity-test/"
     plots:
       - "fir"
@@ -620,6 +645,7 @@ entries:
     certainty: 0.7
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pr-ci-watch/"
     plots:
       - "alder"
@@ -648,6 +674,7 @@ entries:
     certainty: 0.7
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/url-path-math/"
     plots:
       - "alder"
@@ -669,6 +696,7 @@ entries:
     certainty: 0.65
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/coverage-driven-testing/"
     plots:
       - "hazel"
@@ -704,12 +732,14 @@ entries:
       - "katsura"
       - "maple"
     kind: "skill"
+    landed: true
     path: "skills/panel-review/"
     source_path: "skills/panel-review"
   - bytes: 3111
     certainty: 0.65
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/test262-independent-assertions/"
     plots:
       - "alder"
@@ -730,6 +760,7 @@ entries:
     certainty: 0.6
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/assayer/"
     plots:
       - "ginkgo"
@@ -769,12 +800,14 @@ entries:
       - "holly"
       - "willow"
     kind: "role"
+    landed: true
     path: "roles/designer/"
     source_path: "roles/designer"
   - bytes: 8505
     certainty: 0.6
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/triager/"
     plots:
       - "alder"
@@ -795,6 +828,7 @@ entries:
     certainty: 0.6
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/em-dash-style/"
     plots:
       - "cedar"
@@ -814,6 +848,7 @@ entries:
     certainty: 0.6
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/mermaid-validation/"
     plots:
       - "alder"
@@ -833,6 +868,7 @@ entries:
     certainty: 0.6
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/no-comment-banners/"
     plots:
       - "ginkgo"
@@ -853,6 +889,7 @@ entries:
     certainty: 0.6
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/no-latin-shorthand/"
     plots:
       - "alder"
@@ -886,6 +923,7 @@ entries:
       - "rowan"
       - "willow"
     kind: "skill"
+    landed: true
     path: "skills/re-export-deprecation-policy/"
     source_path: "skills/re-export-deprecation-policy"
   - bytes: 6915
@@ -898,6 +936,7 @@ entries:
     certainty: 0.6
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/test-title-spec-spelling/"
     plots:
       - "cedar"
@@ -917,6 +956,7 @@ entries:
     certainty: 0.55
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/gap-revealing-build/"
     plots:
       - "alder"
@@ -935,6 +975,7 @@ entries:
     certainty: 0.55
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/ownership-map/"
     plots:
       - "fir"
@@ -953,6 +994,7 @@ entries:
     certainty: 0.55
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/saboteur-adversarial-review/"
     plots:
       - "alder"
@@ -971,6 +1013,7 @@ entries:
     certainty: 0.55
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/typist-friendly-code-points/"
     plots:
       - "hazel"
@@ -989,6 +1032,7 @@ entries:
     certainty: 0.5
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/cleaner/"
     plots:
       - "alder"
@@ -1018,6 +1062,7 @@ entries:
       - "pine"
       - "rowan"
     kind: "skill"
+    landed: true
     path: "skills/build-vs-buy/"
     service: true
     source_path: "skills/build-vs-buy"
@@ -1037,6 +1082,7 @@ entries:
       - "ginkgo"
       - "willow"
     kind: "skill"
+    landed: true
     path: "skills/panel/"
     service: true
     source_path: "skills/panel"
@@ -1044,6 +1090,7 @@ entries:
     certainty: 0.5
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/prompt-section-discovery/"
     plots:
       - "holly"
@@ -1067,6 +1114,7 @@ entries:
     certainty: 0.5
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/rebase-hygiene-audit/"
     plots:
       - "alder"
@@ -1085,6 +1133,7 @@ entries:
     certainty: 0.5
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/relative-paths/"
     plots:
       - "holly"
@@ -1102,6 +1151,7 @@ entries:
     certainty: 0.5
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/verify-upstream-state-before-pinning/"
     plots:
       - "alder"
@@ -1130,6 +1180,7 @@ entries:
       - "pine"
       - "rowan"
     kind: "role"
+    landed: true
     path: "roles/botanist/"
     service: true
     source_path: "roles/botanist"
@@ -1137,6 +1188,7 @@ entries:
     certainty: 0.45
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/at-mention-surveillance/"
     plots:
       - "alder"
@@ -1154,6 +1206,7 @@ entries:
     certainty: 0.45
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/design-dependency-walk/"
     plots:
       - "ginkgo"
@@ -1177,6 +1230,7 @@ entries:
     certainty: 0.45
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/stacked-pr-build/"
     plots:
       - "alder"
@@ -1193,6 +1247,7 @@ entries:
     certainty: 0.45
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/xs-debugging/"
     plots:
       - "elm"
@@ -1209,6 +1264,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/boatman/"
     plots:
       - "alder"
@@ -1225,6 +1281,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/groom/"
     plots:
       - "birch"
@@ -1246,6 +1303,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/prosecutor/"
     plots:
       - "juniper"
@@ -1268,6 +1326,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/chained-followup/"
     plots:
       - "alder"
@@ -1284,6 +1343,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/context-library/"
     plots:
       - "fir"
@@ -1309,6 +1369,7 @@ entries:
       - "rowan"
       - "willow"
     kind: "skill"
+    landed: true
     path: "skills/pr-creation-flow/"
     source_path: "skills/pr-creation-flow"
   - abbreviated:
@@ -1325,6 +1386,7 @@ entries:
       - "fir"
       - "hazel"
     kind: "skill"
+    landed: true
     path: "skills/pr-handoff/"
     service: true
     source_path: "skills/pr-handoff"
@@ -1332,6 +1394,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/review-retrospective/"
     plots:
       - "juniper"
@@ -1348,6 +1411,7 @@ entries:
     certainty: 0.4
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/schedule/"
     plots:
       - "alder"
@@ -1370,6 +1434,7 @@ entries:
     certainty: 0.35
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/proxy/"
     plots:
       - "fir"
@@ -1393,6 +1458,7 @@ entries:
       - "rowan"
       - "willow"
     kind: "role"
+    landed: true
     path: "roles/scholar/"
     service: true
     source_path: "roles/scholar"
@@ -1406,6 +1472,7 @@ entries:
     certainty: 0.35
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/design-to-pr-pipeline/"
     plots:
       - "alder"
@@ -1427,6 +1494,7 @@ entries:
     certainty: 0.35
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/orchestration/"
     plots:
       - "ginkgo"
@@ -1448,6 +1516,7 @@ entries:
     certainty: 0.35
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/review-queue-poll/"
     plots:
       - "oak"
@@ -1463,6 +1532,7 @@ entries:
     certainty: 0.3
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/americanizer/"
     plots:
       - "alder"
@@ -1501,6 +1571,7 @@ entries:
     certainty: 0.3
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/american-english-normalization/"
     plots:
       - "ginkgo"
@@ -1515,6 +1586,7 @@ entries:
     certainty: 0.3
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/caplet-validation/"
     plots:
       - "maple"
@@ -1536,6 +1608,7 @@ entries:
       - "cedar"
       - "willow"
     kind: "skill"
+    landed: true
     path: "skills/node-lts-window-watch/"
     service: true
     source_path: "skills/node-lts-window-watch"
@@ -1543,6 +1616,7 @@ entries:
     certainty: 0.3
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pr-dependency-graph/"
     plots:
       - "elm"
@@ -1557,6 +1631,7 @@ entries:
     certainty: 0.3
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/slog-debugging/"
     plots:
       - "katsura"
@@ -1582,6 +1657,7 @@ entries:
     certainty: 0.25
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/mentor/"
     plots:
       - "alder"
@@ -1594,6 +1670,7 @@ entries:
     certainty: 0.25
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/api-transport-rubric/"
     plots:
       - "birch"
@@ -1612,6 +1689,7 @@ entries:
     certainty: 0.25
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/foreign-content-preclassification/"
     plots:
       - "ginkgo"
@@ -1632,6 +1710,7 @@ entries:
       - "oak"
       - "quince"
     kind: "skill"
+    landed: true
     path: "skills/panel-hints/"
     service: true
     source_path: "skills/panel-hints"
@@ -1639,6 +1718,7 @@ entries:
     certainty: 0.25
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/self-healing-wrapper/"
     plots:
       - "alder"
@@ -1674,6 +1754,7 @@ entries:
     certainty: 0.2
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/model-selection/"
     plots:
       - "birch"
@@ -1685,6 +1766,7 @@ entries:
     certainty: 0.2
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/prompt-on-failure-capture/"
     plots:
       - "fir"
@@ -1696,6 +1778,7 @@ entries:
     certainty: 0.2
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/restore/"
     plots:
       - "juniper"
@@ -1707,6 +1790,7 @@ entries:
     certainty: 0.2
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/supports-feature-query-progressive-enhancement/"
     plots:
       - "oak"
@@ -1718,6 +1802,7 @@ entries:
     certainty: 0.2
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/svg-visual-review/"
     plots:
       - "alder"
@@ -1729,6 +1814,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/journalist/"
     plots:
       - "birch"
@@ -1745,6 +1831,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/web-builder/"
     plots:
       - "elm"
@@ -1755,6 +1842,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/web-designer/"
     plots:
       - "hazel"
@@ -1776,12 +1864,14 @@ entries:
       - "katsura"
       - "maple"
     kind: "skill"
+    landed: true
     path: "skills/css-anchor-positioning-and-flip-fallbacks/"
     source_path: "skills/css-anchor-positioning-and-flip-fallbacks"
   - bytes: 8931
     certainty: 0.15
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/css-design-tokens-and-theming/"
     plots:
       - "oak"
@@ -1792,6 +1882,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/css-intrinsic-and-content-sizing/"
     plots:
       - "rowan"
@@ -1802,6 +1893,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/gardener-inbox-error-reporting/"
     plots:
       - "alder"
@@ -1813,6 +1905,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/host-disposition-report/"
     plots:
       - "cedar"
@@ -1824,6 +1917,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/liaison-reports/"
     plots:
       - "fir"
@@ -1834,6 +1928,7 @@ entries:
     certainty: 0.15
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/oauth-use-case-patterns/"
     plots:
       - "holly"
@@ -1855,6 +1950,7 @@ entries:
     certainty: 0.1
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/mechanic/"
     plots:
       - "larch"
@@ -1864,6 +1960,7 @@ entries:
     certainty: 0.1
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/pages-shepherd/"
     plots:
       - "oak"
@@ -1873,6 +1970,7 @@ entries:
     certainty: 0.1
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/emoji-favicon/"
     plots:
       - "quince"
@@ -1882,6 +1980,7 @@ entries:
     certainty: 0.1
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/host-repair/"
     plots:
       - "spruce"
@@ -1911,6 +2010,7 @@ entries:
     certainty: 0.1
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/native-customizable-form-control-styling/"
     plots:
       - "alder"
@@ -1920,6 +2020,7 @@ entries:
     certainty: 0.1
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pty-context-introspection/"
     plots:
       - "birch"
@@ -1945,6 +2046,7 @@ entries:
     certainty: 0.05
     disposition: "port"
     kind: "role"
+    landed: true
     path: "roles/watchman/"
     plots:
       - "dogwood"
@@ -1955,12 +2057,14 @@ entries:
     full:
       - "elm"
     kind: "skill"
+    landed: true
     path: "skills/agoric-chain-snapshot/"
     source_path: "skills/agoric-chain-snapshot"
   - bytes: 10380
     certainty: 0.05
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/bid-auction/"
     plots:
       - "fir"
@@ -1992,6 +2096,7 @@ entries:
     certainty: 0.05
     disposition: "port"
     kind: "skill"
+    landed: true
     path: "skills/pages-build-shepherd/"
     plots:
       - "ginkgo"

@@ -71,6 +71,35 @@ a skill):
 - **Order.** The other plots first, then the prior garden. Adapt to the
   garden's mechanisms; one skill, for the job in hand.
 
+## Everything, on the plots
+
+On 2026-11-21 a maintainer asked for everything to be brought over and the
+evolution of plots to sort out what is not needed. The record is
+`upstream/inventory.yay`: all 146 of the prior garden's roles and skills
+at the pinned commit, each with a certainty (how sure we are it is useful)
+and a disposition.
+
+- **Ported (105)** to the plots: each item on a number of the twenty plots
+  in proportion to its certainty, all of them at 0.9 and above, at least one.
+  A large item is in full on half its plots and abbreviated (about a fifth)
+  on the rest, so the plots also try how much of it is worth reading. Each
+  file's front matter says `adopted_from`.
+- **Merged (24)** into another item, which names them in its last line, or
+  into the shed's own (the common brief, the planner, the watcher), which
+  is still to do.
+- **Already here (3)**, **superseded (6)** by the garden's own machinery.
+- **Left out (8)**: four hold private identifiers or secrets (an AWS account,
+  Cognito ids, a session token, a credential handoff), four describe only a
+  private product.
+
+These are prose. Where an item wants a mechanism a slot cannot have (a
+fetch, a probe, a watcher, a steward action), the port says so under
+"Not built yet"; 37 do. Those services are shed work, by pull request, the
+pull-request seam first ([pull-requests.md](pull-requests.md)).
+
+What sorts them is not built: plot trials and scoring (Open questions). Until
+then a job's plot is a hash of its id, and every plot is used alike.
+
 ## The library
 
 The prior garden's library (`library/` on its `journal2` branch) was
