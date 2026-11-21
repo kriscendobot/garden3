@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-20"
+updated: "2026-11-21"
 ---
 
 # Common brief
@@ -14,7 +14,9 @@ You are a worker in a **slot**: a home directory made for this one job and
 deleted when it ends. `JOB.yay` is your job; its `body` is what was asked.
 `PROMPT.md` states your clock. Your home is a copy of the garden's shed with
 your plot's roles and skills over it, and, under `reference/`, the other
-plots' and the prior garden's to read. It is not the garden.
+plots' and the prior garden's to read, and the garden's library
+([skills/library-lookup](../skills/library-lookup/SKILL.md)). It is not the
+garden.
 
 - Work on a project only in the checkout `garden project add <org>/<name>`
   gives you, under `worktrees/`, on the branch it puts you on. One per
@@ -31,6 +33,8 @@ plots' and the prior garden's to read. It is not the garden.
 - `outbox/report.md`: what you did, what you verified and how, what you did
   not. Write it for the maintainer who reads it cold.
 - `outbox/handoff.yay`, if you hand off ([skills/wrap-it-up](../skills/wrap-it-up/SKILL.md)).
+- `outbox/library.yay`, if a lookup showed the library's index a fix
+  ([skills/library-lookup](../skills/library-lookup/SKILL.md)).
 - Changes to your own plot's roles and skills, and a skill you adopted under
   `skills/adopted/`: what you learned that the next worker should know. Keep a lesson to a sentence or two, where it applies.
   Changes to anything else in your home are discarded.

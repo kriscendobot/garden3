@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-20"
+updated: "2026-11-21"
 ---
 
 # Adopting from upstream
@@ -71,6 +71,29 @@ a skill):
 - **Order.** The other plots first, then the prior garden. Adapt to the
   garden's mechanisms; one skill, for the job in hand.
 
+## The library
+
+The prior garden's library (`library/` on its `journal2` branch) was
+copied whole onto this garden's `library` branch, an exception to
+adopting on demand that a maintainer asked for: it is reference material,
+not roles or skills, and it is useful only whole. `provenance.yay` there
+names the source commit; its README says how to read it.
+
+- **How a job reads it.** `slots.prepare` exports the root's `library`
+  branch into the home under `reference/library/` and names the commit in
+  `reference/reference.yay`. The procedure is `skills/library-lookup`; a
+  question worth handing off is a `librarian` job. Both are adapted from the
+  prior garden's.
+- **How it changes.** A job proposes edits to the index and concept pages in
+  `outbox/library.yay` (whole new file bodies). Nothing lands them yet: a
+  maintainer does, through a clone of the branch. A landing for these
+  proposals, and the prior garden's `scholar`, which ingests new sources,
+  are not adopted.
+- **Keeping up.** The prior garden's library keeps growing. Taking more is a
+  copy of the same path at a later commit, with `provenance.yay` advanced;
+  `git diff <recorded>..<new> -- library` in its repository shows what
+  changed.
+
 ## Borrowing history
 
 This repository shares no git history with its ancestors. By default nothing
@@ -101,7 +124,8 @@ starter kit's library-adoption skill, in form.
 ## Status
 
 The procedure and the port log exist, and the log lists what this pass took.
-No tooling beyond the test. Nothing has been adopted by the procedure yet.
+No tooling beyond the test. Adopted by the procedure: `skills/library-lookup`
+and `roles/librarian`, with the library they read (§ The library).
 
 ## Open questions
 

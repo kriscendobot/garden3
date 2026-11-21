@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-21"
 ---
 
 # Skills
@@ -16,6 +16,7 @@ skill that needs software names the capability that brings it
 | [quiescence](quiescence/SKILL.md) | the shed | calling and following a coordinated restart |
 | [upstream-adoption](upstream-adoption/SKILL.md) | the shed | adopting a role or skill from an ancestor |
 | [successor-image](successor-image/SKILL.md) | the shed | building the next base image from inside the box |
+| [library-lookup](library-lookup/SKILL.md) | the shed | finding what the library says, and proposing index fixes |
 | [project-checkout](project-checkout/SKILL.md) | each plot | a job's checkout of a project |
 | [wrap-it-up](wrap-it-up/SKILL.md) | each plot | what to do when the deadline note comes |
 

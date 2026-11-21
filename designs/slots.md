@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-20"
+updated: "2026-11-21"
 ---
 
 # Slots: an account and a home per job
@@ -36,7 +36,8 @@ whole of the separation between one job and the next in a slot.)
    **References**, to read: each other plot's tree under
    `reference/plots/<name>/`, and the prior garden's `roles/` and `skills/`
    at its pinned commit under `reference/upstream/garden/`, if the steward
-   holds it; `reference/reference.yay` names the commits
+   holds it; the root's `library` branch under `reference/library/`, if it
+   has one; `reference/reference.yay` names the commits
    ([upstream.md](upstream.md)). Not genome, so not harvested.
 4. **Tombstones** (`warden plant`): at `repositories`, `board`, `archive`,
    `journal`, `library`, `gate`, `plots`, `slots`, `.garden-state` and `.git`

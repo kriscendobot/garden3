@@ -1,8 +1,9 @@
 // What a job may read beside its own plot: the other plots' genomes and the
-// prior garden's roles and skills at a pinned commit, under reference/. And
-// what it may carry out: a skill it adopted, as a new genome file, but never
-// a file a symbolic link points at. Driven with a stand-in warden, so it runs
-// on a host whose real warden is bound to its own slots directory.
+// prior garden's roles and skills at a pinned commit, and the library, under
+// reference/. And what it may carry out: a skill it adopted, as a new genome
+// file, but never a file a symbolic link points at. Driven with a stand-in
+// warden, so it runs on a host whose real warden is bound to its own slots
+// directory.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -38,6 +39,13 @@ const setup = t => {
     git(dir, 'add', '-A'); git(dir, 'commit', '--quiet', '-m', 'genome');
     git(root, 'fetch', '--quiet', dir, `plot/${name}:plot/${name}`);
   }
+  // The library branch, apart from the shed.
+  const lib = path.join(T, 'library');
+  fs.mkdirSync(lib);
+  git(lib, 'init', '--quiet', '-b', 'library');
+  write(lib, 'keywords.md', '- `harden` -> hardened-javascript\n');
+  git(lib, 'add', '-A'); git(lib, 'commit', '--quiet', '-m', 'library');
+  git(root, 'fetch', '--quiet', lib, 'library:library');
   // The prior garden, served by commit id.
   const prior = path.join(T, 'prior');
   fs.mkdirSync(prior);
@@ -68,8 +76,8 @@ test('the prior garden is held at its pinned commit, fetched once', async t => {
   await assert.rejects(makePlots({ files: makeFiles, run: gitRun, rootRepo: T, stateDir: path.join(T, 'state'), clock: null }).fetchUpstream(), { code: 'unset' });
 });
 
-test('a home holds the other plots and the prior garden\'s roles and skills, to read', async t => {
-  const { pinned, plots, slots } = setup(t);
+test('a home holds the other plots, the prior garden\'s roles and skills, and the library, to read', async t => {
+  const { root, pinned, plots, slots } = setup(t);
   await plots(pinned).fetchUpstream();
   const home = await slots.prepare('slot01', job, 'alder');
   const read = f => fs.readFileSync(path.join(home, f), 'utf8');
@@ -79,15 +87,19 @@ test('a home holds the other plots and the prior garden\'s roles and skills, to 
   assert.equal(read(`${REFERENCE}/upstream/garden/roles/shepherd/AGENT.md`), 'the prior shepherd\n');
   assert.equal(read(`${REFERENCE}/upstream/garden/skills/ci-triage/SKILL.md`), 'the prior triage\n');
   assert.equal(fs.existsSync(path.join(home, `${REFERENCE}/upstream/garden/scripts`)), false, 'roles and skills only');
+  assert.equal(read(`${REFERENCE}/library/keywords.md`), '- `harden` -> hardened-javascript\n');
   const ref = parse(read(`${REFERENCE}/reference.yay`));
-  assert.deepEqual([ref.plots.map(x => x.plot), ref.upstream.commit], [['birch'], pinned]);
+  assert.deepEqual([ref.plots.map(x => x.plot), ref.upstream.commit, ref.library.commit], [['birch'], pinned, git(root, 'rev-parse', 'library')]);
 });
 
-test('without the prior garden held, a home still holds the other plots', async t => {
-  const { slots } = setup(t);
+test('without the prior garden held or a library, a home still holds the other plots', async t => {
+  const { root, slots } = setup(t);
+  git(root, 'branch', '--quiet', '-D', 'library');
   const home = await slots.prepare('slot01', job, 'birch');
   assert.ok(fs.existsSync(path.join(home, `${REFERENCE}/plots/alder/roles/builder/AGENT.md`)));
-  assert.equal(parse(fs.readFileSync(path.join(home, `${REFERENCE}/reference.yay`), 'utf8')).upstream, null);
+  const ref = parse(fs.readFileSync(path.join(home, `${REFERENCE}/reference.yay`), 'utf8'));
+  assert.deepEqual([ref.upstream, ref.library], [null, null]);
+  assert.equal(fs.existsSync(path.join(home, `${REFERENCE}/library`)), false);
 });
 
 test('harvest carries out an adopted skill, but not reference/ and never through a link', async t => {

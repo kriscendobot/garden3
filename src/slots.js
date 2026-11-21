@@ -116,7 +116,7 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
       const genome = git(['-C', rootRepo, 'ls-tree', '-r', '--name-only', plotCommit]).split('\n').filter(f => f && f !== 'plot.yay');
       for (const top of new Set(genome.map(f => f.split('/').slice(0, 2).join('/')))) home.remove(top);
       exportTree(plotCommit, home.root);
-      const reference = { plots: [], upstream: null };
+      const reference = { plots: [], upstream: null, library: null };
       for (const line of git(['-C', rootRepo, 'for-each-ref', '--format=%(refname:strip=3) %(objectname)', 'refs/heads/plot/']).split('\n').filter(Boolean)) {
         const [name, commit] = line.split(' ');
         if (name === plot || !isName(name)) continue;
@@ -128,6 +128,12 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
         const paths = UPSTREAM_PATHS.filter(p => git(['-C', upstream, 'ls-tree', '--name-only', up, p]));
         exportTree(up, home.root, { repo: upstream, prefix: `${REFERENCE}/upstream/garden/`, paths });
         reference.upstream = { commit: up };
+      }
+      // The library, to read: the root's library branch as it stands.
+      const library = git(['-C', rootRepo, 'rev-parse', '--verify', '--quiet', 'refs/heads/library^{commit}'], { allowFail: true });
+      if (library) {
+        exportTree(library, home.root, { prefix: `${REFERENCE}/library/` });
+        reference.library = { commit: library };
       }
       home.write(`${REFERENCE}/reference.yay`, stringify(reference));
       ask({ op: 'plant', root: slots.root, slot, tombstones: TOMBSTONES, dirs: WORKDIRS });
