@@ -23,7 +23,7 @@ Purpose: do not re-author what a package already exports.
   *build* only when contract, semantics or rigor differ in a way the caller
   needs. Weigh rigor, not size. A distinctive name with the same shape is
   must-fix; others are should-fix.
-- An unpublished or not-yet-depended-on `@endo/*` upstream is no licence to
+- An unpublished or not-yet-depended-on `@endo/*` upstream is no license to
   vendor a copy: add the dependency.
 - Waive with `// build-not-buy: <reason>` above the declaration; a reviewer
   still judges the reason.

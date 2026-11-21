@@ -25,7 +25,7 @@ Skills: [project-checkout](../../skills/project-checkout/SKILL.md),
   that commit, never a branch name. Afterwards `git diff --stat <base>..HEAD`
   shows only the pull request's files.
 - **Never `--ours`, `--theirs`, `-X ours` or `-X theirs`.** Read both sides
-  and honour both. Regenerate lockfiles in their own commit. Name commits that
+  and honor both. Regenerate lockfiles in their own commit. Name commits that
   became empty. Two aborts in a row means stop and say so.
 - If the premise no longer holds on the new base, or the base is a snapshot
   of a non-trunk branch, stop with `next:` and the reason. On

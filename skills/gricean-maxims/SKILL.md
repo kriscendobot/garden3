@@ -12,7 +12,7 @@ updated: "2026-11-21"
 
 Purpose: write every report, comment, commit body, code comment and design so
 that the reader's attention is not spent on words that carry nothing. Be
-concise; optimise for the reader's attention.
+concise; optimize for the reader's attention.
 
 It applies to what a worker leaves in `outbox/`, what the steward posts, and
 what lands in a project. The last lasts longest: a report is read once, a
@@ -110,7 +110,7 @@ The failure is the buried decision.
 
 Reread what you wrote against the four failures: padding, unevidenced
 claims, asides, a buried decision. Cut what fails; never a required element.
-The maxims are a lens for judgement, not a checklist; where one seems to
+The maxims are a lens for judgment, not a checklist; where one seems to
 conflict with a required element, the element wins and the maxim tells you
 to say it more briefly.
 
