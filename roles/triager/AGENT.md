@@ -92,7 +92,7 @@ had one), or a reply says why none was posted.
   `endojs/endo-but-for-bots#849`: "This should occur automatically for every
   dependabot PR going forward."). It reads only authorship.
 - **Mentions anywhere on GitHub.** The prior garden heard mentions outside
-  the watched repositories, gated by an allowlist or organisation
+  the watched repositories, gated by an allowlist or organization
   membership. Not ported: here only maintainers are heard, and only on
   watched repositories.
 

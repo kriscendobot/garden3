@@ -48,7 +48,7 @@ concert with the builder on the same branch. A maintainer's "add tests for
   covers, see the test fail, revert. Cite the experiment (the break, the
   failure, the revert) in the report.
 - **Not the cleaner**: you cover the new branch, the new claim, the evidence
-  for the fix. **Not the saboteur**: you pin claimed behaviour; attacking
+  for the fix. **Not the saboteur**: you pin claimed behavior; attacking
   claimed invariants is the panel's. If you notice an invariant nobody stresses,
   name it for the panel. You may write a single invariant test when it is
   load-bearing for this change's contract.

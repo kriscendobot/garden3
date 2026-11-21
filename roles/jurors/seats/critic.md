@@ -28,7 +28,7 @@ Panel: design.
   ask what happens if each is false:
   - (a) the upstream specification, read correctly?
   - (b) the user's workflow, as users actually invoke the feature?
-  - (c) compatibility, with behaviour the codebase still has?
+  - (c) compatibility, with behavior the codebase still has?
   - (d) the test catalog, covering the claims or only the easy paths?
   - (e) failure modes, named for where the approach meets its edge?
   Walking the list is not optional; stop where the next premise is one the

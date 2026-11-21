@@ -93,7 +93,7 @@ with `translate`:
 ```
 
 **`position-area`** is the shorthand to reach for first. It names a cell, or a
-span of cells, of a 3 by 3 grid centred on the anchor. Two keywords pick a
+span of cells, of a 3 by 3 grid centered on the anchor. Two keywords pick a
 cell (one keyword implies `center` on the other axis). Keywords are physical
 (`top`, `bottom`, `left`, `right`, `center`) or logical (`block-start`,
 `block-end`, `inline-start`, `inline-end`, `start`, `end`, and `self-*`
@@ -276,7 +276,7 @@ The rules behind the table:
    `position: fixed` or `absolute` and `position-anchor: --x` on the floating
    element.
 2. **Place it.** `position-area` first; per-side `anchor()` (with `translate`
-   to centre) only for finer control. Do not mix physical and logical
+   to center) only for finer control. Do not mix physical and logical
    keywords.
 3. **Size from the anchor** where the design asks:
    `min-inline-size: anchor-size(self-inline)` for "at least as wide",
