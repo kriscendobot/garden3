@@ -17,7 +17,7 @@ whether to upgrade.
 ## When to write one
 
 - A new exported API.
-- A change in the observable behaviour of an exported API.
+- A change in the observable behavior of an exported API.
 - A bug fix a user could have noticed.
 - A breaking change: a removed export, a changed signature, stricter
   validation.
@@ -27,10 +27,10 @@ whether to upgrade.
 
 Write none, not even a "no-op" entry, when the change lets the user do nothing
 new, obliges no migration, and could not be detected from the package's
-documentation, signatures or behaviour. For example: removing an unused
+documentation, signatures or behavior. For example: removing an unused
 devDependency; moving tests into a sibling test package; renaming an internal
 file under `src/`; a private subpath behind a test export condition; a fixture
-refactor; a comment, JSDoc or README that describes existing behaviour; CI,
+refactor; a comment, JSDoc or README that describes existing behavior; CI,
 build or lint changes; anything under `.claude/`.
 
 A changelog full of "removed unused devDep" teaches readers to skip it, and

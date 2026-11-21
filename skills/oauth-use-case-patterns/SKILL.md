@@ -10,7 +10,7 @@ updated: "2026-11-21"
 
 # OAuth use-case patterns
 
-Purpose: recognise when a need calls for an OAuth application credential
+Purpose: recognize when a need calls for an OAuth application credential
 rather than a pasted token or a shared secret, choose the grant
 (client-credentials or authorization-code), and apply it with least-privilege
 scopes, a guarded durable secret and short-lived tokens.
@@ -26,7 +26,7 @@ data about one product; this skill keeps the transferable shape.
 ## Does this need an OAuth app or client?
 
 - **A program, not a person, needs ongoing access.** Unattended automation
-  needs a credential owned by the organisation, not an individual, so it
+  needs a credential owned by the organization, not an individual, so it
   survives that person leaving. A Tailscale OAuth client belongs to the
   tailnet and keeps working after its creator loses access.
 - **The access should be scoped.** When the task touches a narrow slice of an
@@ -52,7 +52,7 @@ token may do.
 | an unattended service needs access independent of any person | a tool acts on behalf of a consenting user |
 | what it creates carries a service identity (Tailscale: tag-owned) | what it creates carries the user's identity |
 | no human is present at access time | a user passes a consent screen when authorizing |
-| audit, quota and access control attribute to the organisation | they attribute to the user |
+| audit, quota and access control attribute to the organization | they attribute to the user |
 
 One system can need both. A provisioner that mints tag-owned CI nodes uses
 client-credentials; an internal tool that registers a device as the engineer
@@ -65,7 +65,7 @@ using it uses authorization-code.
    token it can mint. Do not take an `all` scope for convenience. Where the
    provider publishes which endpoints a scope reaches, check them.
 2. **Map any identity dimension narrowly too.** Tailscale's second dimension is
-   tags (which device identities a token may confer), honoured only by some
+   tags (which device identities a token may confer), honored only by some
    scopes. Grant the minimum, and prefer an owner or group indirection over
    long lists.
 3. **Capture the secret once.** Providers often show it exactly once. It goes
@@ -85,7 +85,7 @@ For authorization-code, the application sends the user to the provider's
 consent screen, receives an authorization, and exchanges it for a user-scoped
 token. Tailscale's limits are in `web--tailscale-oauth-apps--requirements-and-limitations`:
 an admin-scoped API token to create the app, one tailnet per authorization, a
-consent screen that cannot be customised.
+consent screen that cannot be customized.
 
 ## Failure modes
 
@@ -107,10 +107,10 @@ consent screen that cannot be customised.
 
 - **GitHub.** The garden reaches GitHub with the bot's token, read from its key
   file at each call by the steward alone ([watcher.md](../../designs/watcher.md)).
-  The nearest GitHub analogue to an OAuth client is a GitHub App: installation
+  The nearest GitHub analog to an OAuth client is a GitHub App: installation
   tokens minted from a durable app credential, scoped to named permissions.
 - **Hosts joining a private network.** A tag-scoped client that mints per-node
-  auth keys for unattended enrolment is the literal Tailscale case.
+  auth keys for unattended enrollment is the literal Tailscale case.
 - **Web surfaces** where a person consents and the tool acts as them:
   authorization-code.
 

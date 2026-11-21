@@ -31,7 +31,7 @@ re-requests review and merges.
   `git commit --fixup=<sha>`. Lockfile churn is its own commit.
 - Spell out every identifier you add. Reread every comment you add and cut
   the ones that restate the code.
-- Convert every sibling site in this pull request when a fix generalises;
+- Convert every sibling site in this pull request when a fix generalizes;
   leave other pull requests' sites as follow-ups in the report.
 - "Verified, no change needed" and "skipped, with the reason" are outcomes.
 - A description fix goes in `outbox/pr-body.md`, filled from the template.

@@ -42,7 +42,7 @@ garden's web skills (`emoji-favicon`, `css-intrinsic-and-content-sizing`,
 - **Name coverage gaps.** A browser-tab favicon, an `apple-touch-icon` and a
   web-app manifest icon are three surfaces with three asset needs. A design
   that covers one says which it does not.
-- **Accessibility and responsive behaviour are design content**: semantic
+- **Accessibility and responsive behavior are design content**: semantic
   markup, keyboard reach, contrast, and how the layout reflows across
   viewport sizes, in the body, not as polish.
 - **Cite the live exemplar** when borrowing a technique from a real site, so
@@ -50,6 +50,6 @@ garden's web skills (`emoji-favicon`, `css-intrinsic-and-content-sizing`,
 
 Done: the designer's, and the design states its surface and browser scope,
 names any icon or asset coverage gap, and treats accessibility and responsive
-behaviour as sections of their own.
+behavior as sections of their own.
 
 Adapted from the prior garden's `roles/web-designer`.
