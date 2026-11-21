@@ -13,7 +13,7 @@ updated: "2026-11-21"
 Purpose: apply a vetted list of prose fixes to a pull request's branch
 without changing what anything means: British spellings to the American
 (Chicago) form, and flagged cliché phrases ("Botese") to their plain rewrite.
-The judgement (identifier or prose, quoted or owned, literal or cliché) was
+The judgment (identifier or prose, quoted or owned, literal or cliché) was
 made before you, by the review seat that flagged each one; you apply it and
 check you reached a fixed point.
 
@@ -66,7 +66,7 @@ case is silently forgotten: every entry is either **applied** or
 
 ## Norms
 
-- **Semantics-neutral.** No behaviour changes. If consistency would need a
+- **Semantics-neutral.** No behavior changes. If consistency would need a
   rename of an identifier the change owns (`serialise`), say so in the
   report as coordination across pull requests; do not do it here.
 - **Curation is not yours.** A seat's proposed new rule is a list change a

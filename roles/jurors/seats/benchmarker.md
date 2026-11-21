@@ -10,7 +10,7 @@ updated: "2026-11-21"
 
 # Benchmarker
 
-Purpose: see that every optimisation the change claims is closed, by a
+Purpose: see that every optimization the change claims is closed, by a
 measurement or by an explicit decision not to pursue it.
 
 Panel: code.
@@ -31,7 +31,7 @@ Panel: code.
     assert a property nobody measured); should-fix for a non-blocking thread
     comment; a follow-up when a post-merge measurement would do.
 - **Read every `BENCH.md` in the diff** and check that it measures the
-  optimisation it claims to; one that measures something else leaves the
+  optimization it claims to; one that measures something else leaves the
   claim open.
 - **You do not run benchmarks.** Whether the closure exists is your lens; a
   measurement the loop needs is a builder's job.
@@ -39,6 +39,6 @@ Panel: code.
   repeated complaint, eight times across sixteen reviews of one pull
   request; the result never came back and the threads stalled.
 - **Example of a finding:** "the description proposes an inline-reader
-  optimisation; no measurement is posted and no decision recorded."
+  optimization; no measurement is posted and no decision recorded."
 
 Adapted from the prior garden's `roles/jurors/benchmarker`.

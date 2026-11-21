@@ -27,7 +27,7 @@ Panel: code.
   function became synchronous; a declaration missing a new optional
   parameter.
 - **Shared with the curator: the exported signature.** Yours is whether the
-  new signature's types describe the new behaviour; whether it breaks
+  new signature's types describe the new behavior; whether it breaks
   callers is the curator's and the migrator's.
 - **`[name]` in `@param` means optional.** Brackets on a parameter the
   function or the specification requires (the index and array arguments to

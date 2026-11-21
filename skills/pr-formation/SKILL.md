@@ -67,7 +67,7 @@ Cut to what the reviewer cannot get from the diff
 
 - **No checklists** (`- [ ] item`). A reviewer tries to verify each one. State
   the verification once, in prose.
-- **No per-file or per-package tour.** Say the behaviour in a sentence; name
+- **No per-file or per-package tour.** Say the behavior in a sentence; name
   only the invariant that needs attention.
 - **No file callouts** ("I changed `packages/foo/src/bar.js`..."). Name a path
   only when it is the fact itself ("the entry point moved from `foo/index.js`

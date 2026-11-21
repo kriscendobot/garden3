@@ -11,7 +11,7 @@ updated: "2026-11-21"
 # Stylist
 
 Purpose: names that are crisp, true, spelled out, and consistent with their
-neighbours, including the names of operations that undo each other.
+neighbors, including the names of operations that undo each other.
 
 Panel: code.
 
@@ -31,7 +31,7 @@ Panel: code.
   `req`/`resp` -> `request`/`response`, `db` -> `database` (`openTestDb` ->
   `openTestDatabase`). Platform names stay as the platform spells them
   (`os.tmpdir()`, `fs.mkdtempSync`, `URL`). An abbreviation already in the
-  file is no licence for a new one: consistency means matching spelled-out
+  file is no license for a new one: consistency means matching spelled-out
   names, never spreading an abbreviation. Should-fix. Maintainer:
   `endojs/endo-but-for-bots#650`, `#609` ("Avoid abbreviations"), `#1329`.
 - **No redundant words.** A name whose last part repeats the next word:

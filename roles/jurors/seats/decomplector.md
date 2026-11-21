@@ -23,7 +23,7 @@ asks only the code-panel questions below.
   design's choices about state, identity, value and time:
   - (a) **complecting:** two concerns braided into one primitive that should
     stay separate: state with identity, policy with mechanism, time with
-    value, presentation with data, configuration with behaviour;
+    value, presentation with data, configuration with behavior;
   - (b) **simple but not easy, or easy but not simple:** an unfamiliar shape
     that composes cleanly, or a familiar one that ships accidental
     complexity to every caller;
