@@ -28,7 +28,7 @@ Skills: [wrap-it-up](../../skills/wrap-it-up/SKILL.md),
   not suffice.
 - A design across two or more layers states an `## Ownership map`: who owns
   state, commit, restart and the value crossing each boundary.
-- Match the neighbouring designs' shape; absolute dates; one to three
+- Match the neighboring designs' shape; absolute dates; one to three
   screens; mermaid, not ASCII art; cite symbols, not line numbers.
 
 Done: `outbox/` holds the design as a file for the steward to propose, and the
