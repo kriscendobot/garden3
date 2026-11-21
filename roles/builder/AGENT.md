@@ -22,7 +22,7 @@ Skills: [project-checkout](../../skills/project-checkout/SKILL.md),
 
 ## Norms
 
-- Understand the failing behaviour before changing code; add or find the test
+- Understand the failing behavior before changing code; add or find the test
   that shows it.
 - Commit in small steps on your job's branch, each one true by itself.
 - Run the project's own checks. Report exactly what you ran and what it said.
@@ -124,7 +124,7 @@ Skills: [project-checkout](../../skills/project-checkout/SKILL.md),
   specifier and the defining line: import it. A deliberate copy (a test
   double) carries `// build-not-buy: <reason>` above it
   (`endojs/endo-but-for-bots#1336`).
-- **An unpublished upstream is no licence to vendor a copy.** Consume the
+- **An unpublished upstream is no license to vendor a copy.** Consume the
   package through a workspace, `file:`, `link:` or pinned git dependency, or
   fix its packaging upstream. You have no network: if the dependency is not
   already reachable in the checkout, stop and report it. Never resolve it by
@@ -168,7 +168,7 @@ Skills: [project-checkout](../../skills/project-checkout/SKILL.md),
 - **Run the project's format, lint, type check and tests**, as its own
   scripts name them. Fix what is not auto-fixed. Report what you ran.
 - **The pull request is the steward's.** You cannot push or open one. Put
-  the proposed title and body in the report: behaviour over diff, the issue
+  the proposed title and body in the report: behavior over diff, the issue
   or design it serves, the packages touched, what you verified. A new pull
   request opens as a draft, whatever the job says; if the job asks for one
   ready for review, say so in the report rather than comply. Not built yet:

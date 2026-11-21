@@ -28,7 +28,7 @@ costs more.
 
 - **No central auctioneer.** Every worker computed the same award from the
   same data, and the board's own compare-and-swap on claiming was the only
-  point of serialisation. One claim lands; a mistimed one is a mis-award,
+  point of serialization. One claim lands; a mistimed one is a mis-award,
   never a double award or a lost job.
 - **Deterministic draws.** Each bid was a Thompson sample seeded from a hash
   of the job, the bidder and the arm, so any award could be recomputed and

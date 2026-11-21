@@ -37,7 +37,7 @@ A linear history on your job's branch, grouped as:
   message scoped to the package (`feat(foo): ...`, `fix(bar): ...`).
 - **One `chore: Update yarn.lock` commit** for the lockfile, apart from the
   `package.json` change that caused it.
-- **Implementation and tests in the same commit.** A package's behaviour
+- **Implementation and tests in the same commit.** A package's behavior
   change and the tests covering it ship together: one commit, not two.
 - **Conventional-commit messages** on every commit:
   `<type>(<scope>): <imperative summary>`, and a body, when present, that says
@@ -53,7 +53,7 @@ A linear history on your job's branch, grouped as:
 
 A minor correction to code the pull request introduced (a small bug fix, an
 added test, a docs touch, a lint or formatting repair) is a follow-up to an
-existing commit, not new behaviour. Write it with
+existing commit, not new behavior. Write it with
 `git commit --fixup=<introducing-sha>` against the package commit that
 introduced the code, not as a standalone `fix:`, `style:` or
 `chore: prettier` commit.
@@ -64,7 +64,7 @@ introduced the code, not as a standalone `fix:`, `style:` or
   reviewer's delta stays legible. The final `conductor` stage absorbs them
   with a noninteractive `git rebase -i --autosquash`.
 - Keep a separate `feat:` or `fix:` commit only for distinct, independently
-  reviewable behaviour.
+  reviewable behavior.
 
 ## Procedure
 
