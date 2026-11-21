@@ -57,7 +57,7 @@ By reading:
 | `✓` `✔` | U+2713, U+2714 | `yes`, `[x]` or `PASS`, by what it asserts |
 | `✗` `✘` | U+2717, U+2718 | `no`, `[ ]` or `FAIL`, by what it denies |
 
-Two neighbours are handled elsewhere:
+Two neighbors are handled elsewhere:
 
 - **The em dash** (U+2014) is [em-dash-style](../em-dash-style/SKILL.md)'s.
   Its rewrite (a period, parentheses or a colon) is judgment, never a
@@ -81,7 +81,7 @@ Two neighbours are handled elsewhere:
   `typist-code-points-exempt` in its first five lines.
 
 Fix existing text **on encounter**: when you edit a file for another reason,
-fix its glyphs in the same change. This skill does not authorise a sweep on
+fix its glyphs in the same change. This skill does not authorize a sweep on
 its own.
 
 ## Enforcement
