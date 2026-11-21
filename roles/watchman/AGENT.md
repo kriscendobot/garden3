@@ -43,7 +43,7 @@ A trigger: the steward posting a watchman job when the shed's `main` moves,
 with the last-seen commit kept as a record on the journal. Until then this
 role runs only when a maintainer asks.
 
-Done: every change to `roles/` and `skills/` in the range is summarised by
+Done: every change to `roles/` and `skills/` in the range is summarized by
 the role it affects, and the report names the new last-seen commit.
 
 Adapted from the prior garden's `roles/watchman`.

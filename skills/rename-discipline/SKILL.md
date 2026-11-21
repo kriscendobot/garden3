@@ -24,7 +24,7 @@ should read.
 
 ## Warranted
 
-- The name is wrong against current behaviour: the function no longer does
+- The name is wrong against current behavior: the function no longer does
   what it says.
 - The name shadows a binding in scope and the shadow matters (a test that
   imports `random` and defines its own `random`). Rename the local, with the
@@ -40,7 +40,7 @@ sentence, do not rename.
 - **Test-local bindings.** Destructuring `random` and calling it
   `pickRandom` or `r` with no conflict. Keep the imported name, so a reader
   comparing the test with the documented surface need not translate.
-- **Clean-up inside a feature.** Renaming neighbouring identifiers in a
+- **Clean-up inside a feature.** Renaming neighboring identifiers in a
   feature change makes them look part of the feature. Take them out, or make
   them a separate preparatory change with its own reason.
 - **Matching the module to its export.** Renaming `equals.js` to

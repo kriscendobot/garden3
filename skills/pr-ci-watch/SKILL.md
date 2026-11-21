@@ -32,16 +32,16 @@ and writes them into your home before you start
    Queued, in progress, waiting and pending are not. If any check is not
    settled, CI was not terminal when you were posted: say so, and do not
    report the pull request as green or red.
-3. **Failed?** A settled check failed when its conclusion is failure,
-   cancelled, timed out, action required, startup failure or error. Neutral
-   and skipped are not failures.
+3. **Failed?** A settled check failed when its conclusion is `failure`,
+   `cancelled`, `timed_out`, `action_required`, `startup_failure` or
+   `error`. `neutral` and `skipped` are not failures.
 4. **Green** means every check that ran succeeded; skipped ones do not
    count.
 
 ## What the failures mean
 
 - **Matrix jobs fail fast.** When one shard fails, its siblings on the other
-  dimensions are cancelled in the same moment. A cancellation beside a
+  dimensions are canceled in the same moment. A cancellation beside a
   sibling's failure is a consequence: report it, pursue the failure.
 - **The set of checks grows during a run.** Later jobs register only when
   their prerequisites finish: a run that starts at fifteen checks can settle

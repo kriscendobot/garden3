@@ -21,11 +21,11 @@ the project cannot move.
   Do not reconstruct Node's schedule from memory.
 - The window is the active LTS major plus the maintenance majors. Odd majors
   are never LTS.
-- The shipped runtime goes to the active LTS at its latest patch. CI matrices
+- The shipped runtime goes to the active LTS at its latest patch. CI matrixes
   cover the window plus the current major. CI single pins follow the shipped
   major. A project's `.node-lts-window.json` overrides these.
 - Find every pin surface: download scripts, `.nvmrc`, workflow `node-version`
-  pins and matrices. Change them together, in one branch.
+  pins and matrixes. Change them together, in one branch.
 - Never edit a frozen matrix (one marked `# pinned` or `# policy-frozen`).
   Never rewrite `engines.node`; report it instead. Never advance to a major
   that has been active LTS for less than 30 days.
