@@ -18,7 +18,7 @@ Skills: [project-checkout](../../skills/project-checkout/SKILL.md),
 
 ## Norms
 
-- Understand the failing behaviour before changing code; add or find the test
+- Understand the failing behavior before changing code; add or find the test
   that shows it.
 - Commit in small steps on your job's branch, each one true by itself.
 - Run the project's own checks. Report exactly what you ran and what it said.

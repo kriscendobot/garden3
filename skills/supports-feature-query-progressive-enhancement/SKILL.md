@@ -45,7 +45,7 @@ both apply:
 
   /* 3. The fallback, only where it is not. */
   @supports not (min-block-size: calc-size(fit-content, min(size, 1px))) {
-    /* approximate the modern behaviour with what the engine has */
+    /* approximate the modern behavior with what the engine has */
   }
 }
 ```
@@ -82,7 +82,7 @@ where that is missing too, the baseline is the floor.
 ## Gate and document
 
 The same discipline applies to any styling with deliberate exceptions. In a
-themed design every colour outside `:root` becomes a `var(--*)`, and the
+themed design every color outside `:root` becomes a `var(--*)`, and the
 few that stay literal (white text on a saturated accent) carry a comment
 saying they are intentional, so a later audit can grep for literals and
 treat each survivor as a regression or a recorded exception. Wherever you
