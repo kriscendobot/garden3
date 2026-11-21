@@ -1,0 +1,2040 @@
+entries:
+  - bytes: 19887
+    certainty: 0.95
+    disposition: "port"
+    kind: "role"
+    path: "roles/shepherd/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "roles/shepherd"
+  - bytes: 12303
+    certainty: 0.95
+    disposition: "port"
+    kind: "skill"
+    path: "skills/retcon/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/retcon"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+      - "spruce"
+      - "yew"
+    bytes: 24991
+    certainty: 0.9
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+      - "willow"
+    kind: "role"
+    path: "roles/conductor/"
+    service: true
+    source_path: "roles/conductor"
+  - bytes: 4373
+    certainty: 0.9
+    disposition: "port"
+    kind: "skill"
+    path: "skills/conflict-resolution/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/conflict-resolution"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+      - "spruce"
+      - "yew"
+    bytes: 70036
+    certainty: 0.9
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+      - "willow"
+    kind: "skill"
+    path: "skills/local-verify/"
+    service: true
+    source_path: "skills/local-verify"
+  - bytes: 7663
+    certainty: 0.9
+    disposition: "port"
+    kind: "skill"
+    path: "skills/regression-evidence/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/regression-evidence"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+    bytes: 26151
+    certainty: 0.85
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+    kind: "role"
+    path: "roles/fixer/"
+    service: true
+    source_path: "roles/fixer"
+  - bytes: 7124
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/changeset-discipline/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/changeset-discipline"
+  - bytes: 17527
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/ci-failure-classification-loop/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/ci-failure-classification-loop"
+  - bytes: 15591
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pr-formation/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/pr-formation"
+  - bytes: 3664
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/rename-discipline/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/rename-discipline"
+  - bytes: 5139
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/review-feedback-followup-commits/"
+    plots:
+      - "alder"
+      - "birch"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/review-feedback-followup-commits"
+  - bytes: 5110
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/sibling-family-sweep/"
+    plots:
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+    source_path: "skills/sibling-family-sweep"
+  - bytes: 5073
+    certainty: 0.85
+    disposition: "port"
+    kind: "skill"
+    path: "skills/yarn-lock-separate-commit/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "yew"
+    source_path: "skills/yarn-lock-separate-commit"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "larch"
+      - "spruce"
+      - "yew"
+    bytes: 23662
+    certainty: 0.8
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "rowan"
+      - "willow"
+    kind: "skill"
+    path: "skills/frozen-base-branch/"
+    service: true
+    source_path: "skills/frozen-base-branch"
+  - bytes: 4520
+    certainty: 0.8
+    disposition: "port"
+    kind: "skill"
+    path: "skills/rebase-before-followup/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/rebase-before-followup"
+  - bytes: 6247
+    certainty: 0.75
+    disposition: "port"
+    kind: "skill"
+    path: "skills/adversarial-tests/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/adversarial-tests"
+  - bytes: 6170
+    certainty: 0.75
+    disposition: "port"
+    kind: "skill"
+    path: "skills/fully-qualified-github-urls/"
+    plots:
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    service: true
+    source_path: "skills/fully-qualified-github-urls"
+  - bytes: 8081
+    certainty: 0.75
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pr-completion-summary-comment/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "willow"
+      - "yew"
+    source_path: "skills/pr-completion-summary-comment"
+  - bytes: 6329
+    certainty: 0.75
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pr-review-thread-replies/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/pr-review-thread-replies"
+  - abbreviated:
+      - "birch"
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+      - "willow"
+    bytes: 42552
+    certainty: 0.75
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+      - "spruce"
+      - "yew"
+    kind: "skill"
+    path: "skills/pre-push-gates/"
+    service: true
+    source_path: "skills/pre-push-gates"
+  - abbreviated:
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+    bytes: 32673
+    certainty: 0.7
+    disposition: "port"
+    full:
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+    kind: "role"
+    path: "roles/builder/"
+    source_path: "roles/builder"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "spruce"
+      - "yew"
+    bytes: 281330
+    certainty: 0.7
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "willow"
+    kind: "role"
+    path: "roles/jurors/"
+    service: true
+    source_path: "roles/jurors"
+  - bytes: 8859
+    certainty: 0.7
+    disposition: "merge"
+    into: "conductor"
+    kind: "role"
+    source_path: "roles/weaver"
+  - bytes: 11956
+    certainty: 0.7
+    disposition: "port"
+    kind: "skill"
+    path: "skills/gricean-maxims/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/gricean-maxims"
+  - bytes: 12754
+    certainty: 0.7
+    disposition: "port"
+    kind: "skill"
+    path: "skills/node-parity-test/"
+    plots:
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+    source_path: "skills/node-parity-test"
+  - bytes: 9987
+    certainty: 0.7
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pr-ci-watch/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "yew"
+    service: true
+    source_path: "skills/pr-ci-watch"
+  - bytes: 5491
+    certainty: 0.7
+    disposition: "merge"
+    into: "local-verify,pr-formation"
+    kind: "skill"
+    source_path: "skills/pre-pr-checklist"
+  - bytes: 2634
+    certainty: 0.7
+    disposition: "port"
+    kind: "skill"
+    path: "skills/url-path-math/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/url-path-math"
+  - bytes: 9870
+    certainty: 0.65
+    disposition: "port"
+    kind: "skill"
+    path: "skills/coverage-driven-testing/"
+    plots:
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/coverage-driven-testing"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "larch"
+    bytes: 27453
+    certainty: 0.65
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "katsura"
+      - "maple"
+    kind: "skill"
+    path: "skills/panel-review/"
+    source_path: "skills/panel-review"
+  - bytes: 3111
+    certainty: 0.65
+    disposition: "port"
+    kind: "skill"
+    path: "skills/test262-independent-assertions/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/test262-independent-assertions"
+  - bytes: 4824
+    certainty: 0.6
+    disposition: "port"
+    kind: "role"
+    path: "roles/assayer/"
+    plots:
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    source_path: "roles/assayer"
+  - bytes: 48465
+    certainty: 0.6
+    disposition: "merge"
+    into: "COMMON"
+    kind: "role"
+    source_path: "roles/COMMON.md"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "juniper"
+      - "yew"
+    bytes: 22178
+    certainty: 0.6
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+      - "willow"
+    kind: "role"
+    path: "roles/designer/"
+    source_path: "roles/designer"
+  - bytes: 8505
+    certainty: 0.6
+    disposition: "port"
+    kind: "role"
+    path: "roles/triager/"
+    plots:
+      - "alder"
+      - "birch"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "roles/triager"
+  - bytes: 3556
+    certainty: 0.6
+    disposition: "port"
+    kind: "skill"
+    path: "skills/em-dash-style/"
+    plots:
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+    source_path: "skills/em-dash-style"
+  - bytes: 3510
+    certainty: 0.6
+    disposition: "port"
+    kind: "skill"
+    path: "skills/mermaid-validation/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/mermaid-validation"
+  - bytes: 6381
+    certainty: 0.6
+    disposition: "port"
+    kind: "skill"
+    path: "skills/no-comment-banners/"
+    plots:
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    service: true
+    source_path: "skills/no-comment-banners"
+  - bytes: 4385
+    certainty: 0.6
+    disposition: "port"
+    kind: "skill"
+    path: "skills/no-latin-shorthand/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "willow"
+      - "yew"
+    source_path: "skills/no-latin-shorthand"
+  - abbreviated:
+      - "birch"
+      - "larch"
+      - "oak"
+      - "quince"
+      - "spruce"
+      - "yew"
+    bytes: 532781
+    certainty: 0.6
+    disposition: "port"
+    full:
+      - "alder"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+      - "willow"
+    kind: "skill"
+    path: "skills/re-export-deprecation-policy/"
+    source_path: "skills/re-export-deprecation-policy"
+  - bytes: 6915
+    certainty: 0.6
+    disposition: "merge"
+    into: "PLOT.md"
+    kind: "skill"
+    source_path: "skills/self-improvement"
+  - bytes: 4202
+    certainty: 0.6
+    disposition: "port"
+    kind: "skill"
+    path: "skills/test-title-spec-spelling/"
+    plots:
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+    source_path: "skills/test-title-spec-spelling"
+  - bytes: 12126
+    certainty: 0.55
+    disposition: "port"
+    kind: "skill"
+    path: "skills/gap-revealing-build/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/gap-revealing-build"
+  - bytes: 5565
+    certainty: 0.55
+    disposition: "port"
+    kind: "skill"
+    path: "skills/ownership-map/"
+    plots:
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+    source_path: "skills/ownership-map"
+  - bytes: 7026
+    certainty: 0.55
+    disposition: "port"
+    kind: "skill"
+    path: "skills/saboteur-adversarial-review/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/saboteur-adversarial-review"
+  - bytes: 7708
+    certainty: 0.55
+    disposition: "port"
+    kind: "skill"
+    path: "skills/typist-friendly-code-points/"
+    plots:
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    source_path: "skills/typist-friendly-code-points"
+  - bytes: 4886
+    certainty: 0.5
+    disposition: "port"
+    kind: "role"
+    path: "roles/cleaner/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "willow"
+      - "yew"
+    source_path: "roles/cleaner"
+  - abbreviated:
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+      - "spruce"
+    bytes: 51717
+    certainty: 0.5
+    disposition: "port"
+    full:
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+    kind: "skill"
+    path: "skills/build-vs-buy/"
+    service: true
+    source_path: "skills/build-vs-buy"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+      - "yew"
+    bytes: 22288
+    certainty: 0.5
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "willow"
+    kind: "skill"
+    path: "skills/panel/"
+    service: true
+    source_path: "skills/panel"
+  - bytes: 2395
+    certainty: 0.5
+    disposition: "port"
+    kind: "skill"
+    path: "skills/prompt-section-discovery/"
+    plots:
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    source_path: "skills/prompt-section-discovery"
+  - bytes: 9971
+    certainty: 0.5
+    disposition: "merge"
+    into: "watcher(steward)"
+    kind: "skill"
+    source_path: "skills/reactji-acknowledgment"
+  - bytes: 4430
+    certainty: 0.5
+    disposition: "port"
+    kind: "skill"
+    path: "skills/rebase-hygiene-audit/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/rebase-hygiene-audit"
+  - bytes: 5132
+    certainty: 0.5
+    disposition: "port"
+    kind: "skill"
+    path: "skills/relative-paths/"
+    plots:
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    source_path: "skills/relative-paths"
+  - bytes: 2118
+    certainty: 0.5
+    disposition: "port"
+    kind: "skill"
+    path: "skills/verify-upstream-state-before-pinning/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "willow"
+      - "yew"
+    source_path: "skills/verify-upstream-state-before-pinning"
+  - abbreviated:
+      - "juniper"
+      - "larch"
+      - "oak"
+      - "quince"
+    bytes: 55273
+    certainty: 0.45
+    disposition: "port"
+    full:
+      - "holly"
+      - "katsura"
+      - "maple"
+      - "pine"
+      - "rowan"
+    kind: "role"
+    path: "roles/botanist/"
+    service: true
+    source_path: "roles/botanist"
+  - bytes: 16232
+    certainty: 0.45
+    disposition: "port"
+    kind: "skill"
+    path: "skills/at-mention-surveillance/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/at-mention-surveillance"
+  - bytes: 17850
+    certainty: 0.45
+    disposition: "port"
+    kind: "skill"
+    path: "skills/design-dependency-walk/"
+    plots:
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+    service: true
+    source_path: "skills/design-dependency-walk"
+  - bytes: 5204
+    certainty: 0.45
+    disposition: "merge"
+    into: "watcher"
+    kind: "skill"
+    source_path: "skills/github-activity-poll"
+  - bytes: 11501
+    certainty: 0.45
+    disposition: "port"
+    kind: "skill"
+    path: "skills/stacked-pr-build/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/stacked-pr-build"
+  - bytes: 9162
+    certainty: 0.45
+    disposition: "port"
+    kind: "skill"
+    path: "skills/xs-debugging/"
+    plots:
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+    source_path: "skills/xs-debugging"
+  - bytes: 12837
+    certainty: 0.4
+    disposition: "port"
+    kind: "role"
+    path: "roles/boatman/"
+    plots:
+      - "alder"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "roles/boatman"
+  - bytes: 10579
+    certainty: 0.4
+    disposition: "port"
+    kind: "role"
+    path: "roles/groom/"
+    plots:
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+    source_path: "roles/groom"
+  - bytes: 5437
+    certainty: 0.4
+    disposition: "merge"
+    into: "planner"
+    kind: "role"
+    source_path: "roles/orchestrator"
+  - bytes: 4832
+    certainty: 0.4
+    disposition: "port"
+    kind: "role"
+    path: "roles/prosecutor/"
+    plots:
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+    service: true
+    source_path: "roles/prosecutor"
+  - bytes: 6634
+    certainty: 0.4
+    disposition: "merge"
+    into: "librarian"
+    kind: "role"
+    source_path: "roles/researcher"
+  - bytes: 6739
+    certainty: 0.4
+    disposition: "port"
+    kind: "skill"
+    path: "skills/chained-followup/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/chained-followup"
+  - bytes: 7931
+    certainty: 0.4
+    disposition: "port"
+    kind: "skill"
+    path: "skills/context-library/"
+    plots:
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+    source_path: "skills/context-library"
+  - abbreviated:
+      - "oak"
+      - "quince"
+      - "spruce"
+      - "yew"
+    bytes: 23682
+    certainty: 0.4
+    disposition: "port"
+    full:
+      - "alder"
+      - "pine"
+      - "rowan"
+      - "willow"
+    kind: "skill"
+    path: "skills/pr-creation-flow/"
+    source_path: "skills/pr-creation-flow"
+  - abbreviated:
+      - "cedar"
+      - "elm"
+      - "ginkgo"
+      - "holly"
+    bytes: 22962
+    certainty: 0.4
+    disposition: "port"
+    full:
+      - "birch"
+      - "dogwood"
+      - "fir"
+      - "hazel"
+    kind: "skill"
+    path: "skills/pr-handoff/"
+    service: true
+    source_path: "skills/pr-handoff"
+  - bytes: 15982
+    certainty: 0.4
+    disposition: "port"
+    kind: "skill"
+    path: "skills/review-retrospective/"
+    plots:
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+    service: true
+    source_path: "skills/review-retrospective"
+  - bytes: 14585
+    certainty: 0.4
+    disposition: "port"
+    kind: "skill"
+    path: "skills/schedule/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/schedule"
+  - bytes: 4686
+    certainty: 0.35
+    disposition: "merge"
+    into: "panel"
+    kind: "role"
+    source_path: "roles/appellate"
+  - bytes: 15409
+    certainty: 0.35
+    disposition: "port"
+    kind: "role"
+    path: "roles/proxy/"
+    plots:
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+    source_path: "roles/proxy"
+  - abbreviated:
+      - "oak"
+      - "quince"
+      - "spruce"
+    bytes: 32821
+    certainty: 0.35
+    disposition: "port"
+    full:
+      - "maple"
+      - "pine"
+      - "rowan"
+      - "willow"
+    kind: "role"
+    path: "roles/scholar/"
+    service: true
+    source_path: "roles/scholar"
+  - bytes: 13616
+    certainty: 0.35
+    disposition: "merge"
+    into: "american-english-normalization"
+    kind: "skill"
+    source_path: "skills/botese-normalization"
+  - bytes: 8651
+    certainty: 0.35
+    disposition: "port"
+    kind: "skill"
+    path: "skills/design-to-pr-pipeline/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+      - "yew"
+    service: true
+    source_path: "skills/design-to-pr-pipeline"
+  - bytes: 5101
+    certainty: 0.35
+    disposition: "merge"
+    into: "watcher"
+    kind: "skill"
+    source_path: "skills/issue-inbox"
+  - bytes: 18825
+    certainty: 0.35
+    disposition: "port"
+    kind: "skill"
+    path: "skills/orchestration/"
+    plots:
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+    service: true
+    source_path: "skills/orchestration"
+  - bytes: 5298
+    certainty: 0.35
+    disposition: "merge"
+    into: "pr-dependency-graph"
+    kind: "skill"
+    source_path: "skills/pr-dependency-topo-sort"
+  - bytes: 16889
+    certainty: 0.35
+    disposition: "port"
+    kind: "skill"
+    path: "skills/review-queue-poll/"
+    plots:
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    service: true
+    source_path: "skills/review-queue-poll"
+  - bytes: 6102
+    certainty: 0.3
+    disposition: "port"
+    kind: "role"
+    path: "roles/americanizer/"
+    plots:
+      - "alder"
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+    service: true
+    source_path: "roles/americanizer"
+  - bytes: 3886
+    certainty: 0.3
+    disposition: "merge"
+    into: "panel"
+    kind: "role"
+    source_path: "roles/barrister"
+  - bytes: 7026
+    certainty: 0.3
+    disposition: "merge"
+    into: "americanizer"
+    kind: "role"
+    source_path: "roles/deslopper"
+  - bytes: 3876
+    certainty: 0.3
+    disposition: "merge"
+    into: "panel"
+    kind: "role"
+    source_path: "roles/solicitor"
+  - bytes: 7919
+    certainty: 0.3
+    disposition: "merge"
+    into: "watcher"
+    kind: "skill"
+    source_path: "skills/activity-feed-watcher"
+  - bytes: 17412
+    certainty: 0.3
+    disposition: "port"
+    kind: "skill"
+    path: "skills/american-english-normalization/"
+    plots:
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+      - "larch"
+    service: true
+    source_path: "skills/american-english-normalization"
+  - bytes: 18397
+    certainty: 0.3
+    disposition: "port"
+    kind: "skill"
+    path: "skills/caplet-validation/"
+    plots:
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+      - "spruce"
+    source_path: "skills/caplet-validation"
+  - abbreviated:
+      - "birch"
+      - "dogwood"
+      - "yew"
+    bytes: 37607
+    certainty: 0.3
+    disposition: "port"
+    full:
+      - "alder"
+      - "cedar"
+      - "willow"
+    kind: "skill"
+    path: "skills/node-lts-window-watch/"
+    service: true
+    source_path: "skills/node-lts-window-watch"
+  - bytes: 5655
+    certainty: 0.3
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pr-dependency-graph/"
+    plots:
+      - "elm"
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+    service: true
+    source_path: "skills/pr-dependency-graph"
+  - bytes: 4909
+    certainty: 0.3
+    disposition: "port"
+    kind: "skill"
+    path: "skills/slog-debugging/"
+    plots:
+      - "katsura"
+      - "larch"
+      - "maple"
+      - "oak"
+      - "pine"
+      - "quince"
+    source_path: "skills/slog-debugging"
+  - bytes: 7561
+    certainty: 0.25
+    disposition: "merge"
+    into: "planner"
+    kind: "role"
+    source_path: "roles/foreman"
+  - bytes: 3742
+    certainty: 0.25
+    disposition: "merge"
+    into: "panel"
+    kind: "role"
+    source_path: "roles/justice"
+  - bytes: 2249
+    certainty: 0.25
+    disposition: "port"
+    kind: "role"
+    path: "roles/mentor/"
+    plots:
+      - "alder"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "roles/mentor"
+  - bytes: 5263
+    certainty: 0.25
+    disposition: "port"
+    kind: "skill"
+    path: "skills/api-transport-rubric/"
+    plots:
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+      - "fir"
+    source_path: "skills/api-transport-rubric"
+  - bytes: 1373
+    certainty: 0.25
+    disposition: "merge"
+    into: "conflict-resolution"
+    kind: "skill"
+    source_path: "skills/cherry-pick-followup"
+  - bytes: 10763
+    certainty: 0.25
+    disposition: "port"
+    kind: "skill"
+    path: "skills/foreign-content-preclassification/"
+    plots:
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+      - "juniper"
+      - "katsura"
+    service: true
+    source_path: "skills/foreign-content-preclassification"
+  - abbreviated:
+      - "maple"
+      - "pine"
+    bytes: 85678
+    certainty: 0.25
+    disposition: "port"
+    full:
+      - "larch"
+      - "oak"
+      - "quince"
+    kind: "skill"
+    path: "skills/panel-hints/"
+    service: true
+    source_path: "skills/panel-hints"
+  - bytes: 18680
+    certainty: 0.25
+    disposition: "port"
+    kind: "skill"
+    path: "skills/self-healing-wrapper/"
+    plots:
+      - "alder"
+      - "rowan"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/self-healing-wrapper"
+  - bytes: 5868
+    certainty: 0.2
+    disposition: "merge"
+    into: "accountant"
+    kind: "role"
+    source_path: "roles/accountant"
+  - bytes: 33737
+    certainty: 0.2
+    disposition: "merge"
+    into: "steward"
+    kind: "role"
+    source_path: "roles/liaison"
+  - bytes: 5674
+    certainty: 0.2
+    disposition: "done"
+    kind: "role"
+    source_path: "roles/librarian"
+  - bytes: 3457
+    certainty: 0.2
+    disposition: "merge"
+    into: "budget"
+    kind: "skill"
+    source_path: "skills/budget-request"
+  - bytes: 15025
+    certainty: 0.2
+    disposition: "port"
+    kind: "skill"
+    path: "skills/model-selection/"
+    plots:
+      - "birch"
+      - "cedar"
+      - "dogwood"
+      - "elm"
+    source_path: "skills/model-selection"
+  - bytes: 8303
+    certainty: 0.2
+    disposition: "port"
+    kind: "skill"
+    path: "skills/prompt-on-failure-capture/"
+    plots:
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+      - "holly"
+    source_path: "skills/prompt-on-failure-capture"
+  - bytes: 8000
+    certainty: 0.2
+    disposition: "port"
+    kind: "skill"
+    path: "skills/restore/"
+    plots:
+      - "juniper"
+      - "katsura"
+      - "larch"
+      - "maple"
+    source_path: "skills/restore"
+  - bytes: 8935
+    certainty: 0.2
+    disposition: "port"
+    kind: "skill"
+    path: "skills/supports-feature-query-progressive-enhancement/"
+    plots:
+      - "oak"
+      - "pine"
+      - "quince"
+      - "rowan"
+    source_path: "skills/supports-feature-query-progressive-enhancement"
+  - bytes: 3156
+    certainty: 0.2
+    disposition: "port"
+    kind: "skill"
+    path: "skills/svg-visual-review/"
+    plots:
+      - "alder"
+      - "spruce"
+      - "willow"
+      - "yew"
+    source_path: "skills/svg-visual-review"
+  - bytes: 9069
+    certainty: 0.15
+    disposition: "port"
+    kind: "role"
+    path: "roles/journalist/"
+    plots:
+      - "birch"
+      - "cedar"
+      - "dogwood"
+    source_path: "roles/journalist"
+  - bytes: 3241
+    certainty: 0.15
+    disposition: "merge"
+    into: "panel"
+    kind: "role"
+    source_path: "roles/judge"
+  - bytes: 5753
+    certainty: 0.15
+    disposition: "port"
+    kind: "role"
+    path: "roles/web-builder/"
+    plots:
+      - "elm"
+      - "fir"
+      - "ginkgo"
+    source_path: "roles/web-builder"
+  - bytes: 5675
+    certainty: 0.15
+    disposition: "port"
+    kind: "role"
+    path: "roles/web-designer/"
+    plots:
+      - "hazel"
+      - "holly"
+      - "juniper"
+    source_path: "roles/web-designer"
+  - bytes: 5872
+    certainty: 0.15
+    disposition: "excluded"
+    kind: "skill"
+    note: "built on a live claude.ai session token"
+    source_path: "skills/claude-usage-dashboard-scrape"
+  - abbreviated:
+      - "larch"
+    bytes: 20631
+    certainty: 0.15
+    disposition: "port"
+    full:
+      - "katsura"
+      - "maple"
+    kind: "skill"
+    path: "skills/css-anchor-positioning-and-flip-fallbacks/"
+    source_path: "skills/css-anchor-positioning-and-flip-fallbacks"
+  - bytes: 8931
+    certainty: 0.15
+    disposition: "port"
+    kind: "skill"
+    path: "skills/css-design-tokens-and-theming/"
+    plots:
+      - "oak"
+      - "pine"
+      - "quince"
+    source_path: "skills/css-design-tokens-and-theming"
+  - bytes: 8628
+    certainty: 0.15
+    disposition: "port"
+    kind: "skill"
+    path: "skills/css-intrinsic-and-content-sizing/"
+    plots:
+      - "rowan"
+      - "spruce"
+      - "willow"
+    source_path: "skills/css-intrinsic-and-content-sizing"
+  - bytes: 18395
+    certainty: 0.15
+    disposition: "port"
+    kind: "skill"
+    path: "skills/gardener-inbox-error-reporting/"
+    plots:
+      - "alder"
+      - "birch"
+      - "yew"
+    service: true
+    source_path: "skills/gardener-inbox-error-reporting"
+  - bytes: 5922
+    certainty: 0.15
+    disposition: "port"
+    kind: "skill"
+    path: "skills/host-disposition-report/"
+    plots:
+      - "cedar"
+      - "dogwood"
+      - "elm"
+    service: true
+    source_path: "skills/host-disposition-report"
+  - bytes: 4911
+    certainty: 0.15
+    disposition: "port"
+    kind: "skill"
+    path: "skills/liaison-reports/"
+    plots:
+      - "fir"
+      - "ginkgo"
+      - "hazel"
+    source_path: "skills/liaison-reports"
+  - bytes: 10810
+    certainty: 0.15
+    disposition: "port"
+    kind: "skill"
+    path: "skills/oauth-use-case-patterns/"
+    plots:
+      - "holly"
+      - "juniper"
+      - "katsura"
+    source_path: "skills/oauth-use-case-patterns"
+  - bytes: 8780
+    certainty: 0.15
+    disposition: "merge"
+    into: "project-checkout"
+    kind: "skill"
+    source_path: "skills/worktree-per-pr"
+  - bytes: 7740
+    certainty: 0.1
+    disposition: "superseded"
+    kind: "role"
+    source_path: "roles/gardener"
+  - bytes: 1082
+    certainty: 0.1
+    disposition: "port"
+    kind: "role"
+    path: "roles/mechanic/"
+    plots:
+      - "larch"
+      - "maple"
+    source_path: "roles/mechanic"
+  - bytes: 4387
+    certainty: 0.1
+    disposition: "port"
+    kind: "role"
+    path: "roles/pages-shepherd/"
+    plots:
+      - "oak"
+      - "pine"
+    source_path: "roles/pages-shepherd"
+  - bytes: 5950
+    certainty: 0.1
+    disposition: "port"
+    kind: "skill"
+    path: "skills/emoji-favicon/"
+    plots:
+      - "quince"
+      - "rowan"
+    source_path: "skills/emoji-favicon"
+  - bytes: 8858
+    certainty: 0.1
+    disposition: "port"
+    kind: "skill"
+    path: "skills/host-repair/"
+    plots:
+      - "spruce"
+      - "willow"
+    source_path: "skills/host-repair"
+  - bytes: 27218
+    certainty: 0.1
+    disposition: "done"
+    kind: "skill"
+    source_path: "skills/job-board"
+  - bytes: 8672
+    certainty: 0.1
+    disposition: "superseded"
+    kind: "skill"
+    source_path: "skills/journalism"
+  - bytes: 8870
+    certainty: 0.1
+    disposition: "done"
+    kind: "skill"
+    source_path: "skills/library-lookup"
+  - bytes: 5459
+    certainty: 0.1
+    disposition: "superseded"
+    kind: "skill"
+    source_path: "skills/message-bus"
+  - bytes: 19999
+    certainty: 0.1
+    disposition: "port"
+    kind: "skill"
+    path: "skills/native-customizable-form-control-styling/"
+    plots:
+      - "alder"
+      - "yew"
+    source_path: "skills/native-customizable-form-control-styling"
+  - bytes: 4221
+    certainty: 0.1
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pty-context-introspection/"
+    plots:
+      - "birch"
+      - "cedar"
+    source_path: "skills/pty-context-introspection"
+  - bytes: 12260
+    certainty: 0.1
+    disposition: "excluded"
+    kind: "skill"
+    note: "brings a credential handoff"
+    source_path: "skills/typesafe-ai"
+  - bytes: 2545
+    certainty: 0.05
+    disposition: "superseded"
+    kind: "role"
+    source_path: "roles/monitor"
+  - bytes: 3997
+    certainty: 0.05
+    disposition: "superseded"
+    kind: "role"
+    source_path: "roles/sysop"
+  - bytes: 4160
+    certainty: 0.05
+    disposition: "port"
+    kind: "role"
+    path: "roles/watchman/"
+    plots:
+      - "dogwood"
+    source_path: "roles/watchman"
+  - bytes: 107721
+    certainty: 0.05
+    disposition: "port"
+    full:
+      - "elm"
+    kind: "skill"
+    path: "skills/agoric-chain-snapshot/"
+    source_path: "skills/agoric-chain-snapshot"
+  - bytes: 10380
+    certainty: 0.05
+    disposition: "port"
+    kind: "skill"
+    path: "skills/bid-auction/"
+    plots:
+      - "fir"
+    source_path: "skills/bid-auction"
+  - bytes: 22513
+    certainty: 0.05
+    disposition: "superseded"
+    kind: "skill"
+    source_path: "skills/dispatch-worktree"
+  - bytes: 8556
+    certainty: 0.05
+    disposition: "excluded"
+    kind: "skill"
+    note: "a private product"
+    source_path: "skills/minion-town-clip-publishing"
+  - bytes: 15891
+    certainty: 0.05
+    disposition: "excluded"
+    kind: "skill"
+    note: "a private product; never usable"
+    source_path: "skills/minion-town-ocapn-dispatch"
+  - bytes: 5089
+    certainty: 0.05
+    disposition: "excluded"
+    kind: "skill"
+    note: "a placeholder for a private product"
+    source_path: "skills/ocap-attenuation-authoring"
+  - bytes: 5336
+    certainty: 0.05
+    disposition: "port"
+    kind: "skill"
+    path: "skills/pages-build-shepherd/"
+    plots:
+      - "ginkgo"
+    source_path: "skills/pages-build-shepherd"
+  - bytes: 9200
+    certainty: 0
+    disposition: "excluded"
+    kind: "skill"
+    note: "holds an AWS account id and a host name"
+    source_path: "skills/aws-administration"
+  - bytes: 7765
+    certainty: 0
+    disposition: "excluded"
+    kind: "skill"
+    note: "a private product; its runner is torn down"
+    source_path: "skills/minion-town-ci-runner-switch"
+  - bytes: 4032
+    certainty: 0
+    disposition: "excluded"
+    kind: "skill"
+    note: "holds Cognito pool and client ids"
+    source_path: "skills/minion-town-mcp-playwright-login"
+plots:
+  - "alder"
+  - "birch"
+  - "cedar"
+  - "dogwood"
+  - "elm"
+  - "fir"
+  - "ginkgo"
+  - "hazel"
+  - "holly"
+  - "juniper"
+  - "katsura"
+  - "larch"
+  - "maple"
+  - "oak"
+  - "pine"
+  - "quince"
+  - "rowan"
+  - "spruce"
+  - "willow"
+  - "yew"
+source:
+  commit: "0dda301cbeb484d69447f7c60214788924464f8c"
+  repository: "kriscendobot/garden"
