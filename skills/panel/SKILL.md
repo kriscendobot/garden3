@@ -26,8 +26,8 @@ it changes nothing in the project.
    the closure of each prior must-fix item. Each block gives a verdict and
    findings, each citing a rule or proposing one.
 4. **Decide yourself, ignoring the seats' labels.** Must-fix: wrong
-   behaviour, a security or authority error, data loss, a broken contract,
-   failing or missing tests for changed behaviour, a dangerously false
+   behavior, a security or authority error, data loss, a broken contract,
+   failing or missing tests for changed behavior, a dangerously false
    comment. Wording, renames, history, description and test style never
    block. When unsure, must-fix.
 5. **On a pass, appeal** deferred findings that are small, in context, and
