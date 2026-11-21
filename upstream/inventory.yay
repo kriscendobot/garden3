@@ -1729,6 +1729,7 @@ entries:
     disposition: "merge"
     into: "steward"
     kind: "role"
+    note: "§ Muster absorbed into roles/steward/AGENT.md (2026-11-21); the rest not yet"
     source_path: "roles/liaison"
   - bytes: 5674
     certainty: 0.2
