@@ -117,7 +117,7 @@ the two bodies. When you cannot tell, say so rather than guess.
 
 A blocked hit is not judged, with one exception: a distinctive local copy of
 an `@endo/*` export whose package is not yet a dependency is **should fix**:
-add the dependency and consume it. An unpublished upstream is no licence to
+add the dependency and consume it. An unpublished upstream is no license to
 vendor a copy: consume it through a workspace, a `file:` or `link:`
 dependency, a dev registry, or a pinned git dependency, or stop and ask.
 
