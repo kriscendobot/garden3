@@ -35,7 +35,7 @@ rendered image is.
    depicts actually reads, not whether the source says it should.
 4. **Check the dark scheme** when the set claims one: put several SVGs as
    `<img>` on a scratch page with the dark background, screenshot it once,
-   and look for transparency artefacts and strokes that vanish.
+   and look for transparency artifacts and strokes that vanish.
 5. **Count in the source only as a supplement**: grep to prove a motif
    appears exactly N times, never instead of looking.
 

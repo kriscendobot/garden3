@@ -20,7 +20,7 @@ Panel: code.
 - **Should there be a changeset?** One belongs when the upgrading user must
   migrate, or can use something new they would not otherwise notice: a new
   public function, a removed export, a changed signature or default, a
-  raised engine requirement, changed behaviour on existing inputs. A bug fix
+  raised engine requirement, changed behavior on existing inputs. A bug fix
   belongs when users saw the bug, when some caller came to depend on it, or
   when it is a security or data-safety fix they will upgrade for. Refactors
   that keep the surface, CI configuration, test reorganization, lockfile-only

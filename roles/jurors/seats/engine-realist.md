@@ -19,7 +19,7 @@ Panel: code.
 ## Norms
 
 - **Walk these questions:**
-  - **V8 against XS.** When correctness depends on engine behaviour (real
+  - **V8 against XS.** When correctness depends on engine behavior (real
     against fake harden, frozen against sealed, `Object.isFrozen` on a tamed
     intrinsic, tail calls, async stack traces, type stripping,
     `async_hooks`), a test covers both engines or the change says why one is

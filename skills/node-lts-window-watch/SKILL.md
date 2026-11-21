@@ -16,7 +16,7 @@ small pull request, and surface loudly when the project cannot move.
 
 Pin surfaces drift apart silently. One project shipped a literal `v20.18.1`
 to every user from a download script while its CI workflow carried three
-version matrices and four single pins, each with a different opinion about
+version matrixes and four single pins, each with a different opinion about
 which majors were supported. Done by hand, this work only happens after
 something breaks. As a skill it is planned, and the same inputs always give
 the same plan.
@@ -72,7 +72,7 @@ The default, per surface:
   latest patch. When a new major becomes active LTS, advance at the start of
   its active window, after the embargo; when the shipped major drops to
   maintenance, advance at once.
-- **CI matrices** (the versions tested): every major in the window, plus the
+- **CI matrixes** (the versions tested): every major in the window, plus the
   current major. Drop a major when its end date passes; add one when it
   enters the window.
 - **CI single pins** (lint, depcheck, docs, release builds): the shipped
@@ -94,7 +94,7 @@ A project overrides this in `.node-lts-window.json` at its root:
 `app-bundle-policy` is `active-lts` (default), `active-lts-minus-1`, or a
 literal major. `ci-matrix-policy` is `window-only`, `window-plus-current`
 (default) or `window-plus-next`. `embargo-days-for-new-lts` defaults to 30.
-`frozen-matrices` names matrices by the job that holds them.
+`frozen-matrices` names matrixes by the job that holds them.
 
 ## Pin surfaces
 
@@ -155,7 +155,7 @@ Window on <date>: active <n>, maintenance <m...>, current <c>.
 - https://raw.githubusercontent.com/nodejs/Release/main/schedule.json (read <time>)
 
 ## Not changed
-<frozen matrices with their reason; engines.node ranges; anything else>
+<frozen matrixes with their reason; engines.node ranges; anything else>
 ```
 
 Cite the sources so a reviewer can check them.
@@ -195,7 +195,7 @@ request costs review. A daily run would report no motion six days in seven.
   intent, not a pin. Report it; advancing its floor is the project's decision.
 - **Do not edit a frozen matrix.**
 - **Do not propose a major younger than the embargo.**
-- **One project, one pull request.** The download script and the CI matrices
+- **One project, one pull request.** The download script and the CI matrixes
   move together.
 - **The formatter after the apply.** Write matrix YAML the formatter leaves
   alone, or the gate rewrites your edit.

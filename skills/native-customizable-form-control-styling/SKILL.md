@@ -210,7 +210,7 @@ not from this paragraph.
 
 ```css
 /* Baseline: a classic select, usable on its own. */
-select { /* font, colour, what a classic select allows */ }
+select { /* font, color, what a classic select allows */ }
 
 @supports (appearance: base-select) {
   select,
@@ -222,7 +222,7 @@ select { /* font, colour, what a classic select allows */ }
 A non-supporting browser ignores the button structure and strips non-text
 option content to its text, and the control still works. Keep the rich
 styling inside the gate so other engines never see selectors they cannot
-honour.
+honor.
 
 ## Procedure
 
