@@ -1,0 +1,7 @@
+copied: "2026-11-21"
+source:
+  commit: "8b17a2923a13edf9de333d603c9f24f4d0e7a878"
+  path: "library"
+  ref: "journal2"
+  repository: "kriscendobot/garden"
+unchanged: "everything but README.md and provenance.yay"

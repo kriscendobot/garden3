@@ -1,0 +1,182 @@
+# Keywords
+
+Grep-friendly map from a domain term or phrase to a concept-id (`concepts/<id>.md`). Most keyword resolution is served by each concept page's `aliases:` frontmatter; this file collects a few high-value cross-term pointers explicitly. Format: `- term, term, ... -> concept-id`.
+
+- ambient authority, ambient authorities, ambient capability, ambient permission, ambient user authority, identity-based authority, no-credential authority, undesignated authority -> ambient-authority
+- object-oriented security, object oriented security, OOS, object-oriented-security.org -> object-capability
+- web powerbox, WebPowerbox, browser powerbox, powerbox dialog -> powerbox
+- OpenSandbox, opensandbox-server, execd, secure container runtime, gVisor sandbox, Kata sandbox, bubblewrap isolation session, AI code sandbox, OpenSandbox MCP, Credential Vault, Secure Access, OpenSandbox multi-tenancy -> opensandbox
+- token subspace, token space topology, LLM token topology, stratified token manifold, local token dimension, token embedding curvature, structured prompt topology recovery, behavioral embedding recovery -> token-subspace-topology
+- Alan Kay, DynaBook, Dynabook, personal computer for children, personal portable information manipulator -> dynabook
+- active medium, personal dynamic medium, computer as a better book, user-programmable medium -> active-medium
+- child as active agent, productive learning environment, clarifying environment, Computer Aided Intuition, learn by doing -> constructionist-learning-environment
+- object as process, object as computer, each object is a computer, independent control paths, data and function as processes -> object-as-process
+
+- kni, decision graph, decision-graph language, interactive fiction language, choice graph, story engine, branching narrative -> decision-graph-as-agent-context-scaffold
+- decision graph as agent context, context scaffold, task graph for agents, dig deep and develop context -> decision-graph-as-agent-context-scaffold
+- deterministic elicitation, bounded interview, structured intake, triage flow, render user feedback deterministically, automatic agentic loop, mutually reinforcing loop -> deterministic-elicitation-loop
+- kni engine, kni handler, waypoint, resume, ask/answer, kni runtime hooks -> deterministic-elicitation-loop
+- AI writing tells, LLM prose tells, AI-assisted writing, formulaic prose, detector evasion, writing style detector -> ai-writing-tells-and-avoidance
+- module harmony, module harmony intersection, intersection semantics, coherent under module harmony, minimal Compartments intersection -> module-harmony-intersection-surface
+- `ModuleSource`, ModuleSource as key, ModuleSource opaque key, `%AbstractModuleSource%`, AbstractModuleSource -> module-harmony-intersection-surface
+- source phase imports, `import source`, `import.source`, source loading phase -> module-harmony-intersection-surface
+- `import defer`, deferred module evaluation, lazy module initialization, deferred re-exports -> module-harmony-intersection-surface
+- module expressions, module blocks, `module {}` -> module-harmony-intersection-surface
+- module declarations, module fragments, `module x {}`, named inline modules -> module-harmony-intersection-surface
+- `import module`, `import.module`, module instance vs module source, `Module` vs `ModuleInstance` -> module-harmony-intersection-surface
+- import phases model, import modifiers vs attributes, phased module loading -> module-harmony-intersection-surface
+- `ModuleSource.bindings`, module bindings reflection, static analysis of module graph, Binding shapes, `needsImportMeta`, `needsImport`, `importAllFrom`, `exportAllFrom` -> module-harmony-intersection-surface
+- virtual module source, `VirtualModuleSource`, virtualize module evaluation, JSON module, CommonJS virtual source, WASM virtual module source, module loader hooks -> module-harmony-intersection-surface
+- `Evaluators`, Evaluators constructor, per-compartment evaluators, separate globalThis, shared global object, realm intrinsics sharing, identity discontinuity, principle of least authority, supply-chain isolation -> module-harmony-intersection-surface
+- Compartments layers, compartment layer 0 1 2 3 4, five-layer compartment structure, module source record, Module Imports Namespace, Module Exports Namespace -> module-harmony-intersection-surface
+- import attributes, asset references, asset modules, ShadowRealm, module-harmony neighbors -> module-harmony-intersection-surface
+- TerraLingua, artifact-mediated cultural evolution, external cultural memory, AI Anthropologist, artifact phylogeny -> artifact-mediated-cultural-evolution
+- MemGPT, MemoryGPT, Letta, LLM operating system -> memgpt
+- virtual context, context paging, LLM memory tiers, memory pressure -> virtual-context-management
+- Fireworks AI, Fireworks API, FIREWORKS_API_KEY, api.fireworks.ai, Fireworks Serverless, Fireworks deployment, OpenAI-compatible Fireworks -> fireworks-ai-integration
+- Fireworks tool calling, Fireworks function calling, Fireworks structured outputs, Fireworks response_format, Firectl, Fireworks Priority tier, Fireworks Fast serving path -> fireworks-ai-integration
+- context engineering, effective context engineering, curate context, context configuration, configuration of context -> context-engineering
+- context rot, needle in a haystack, long-context recall, recall degradation, lost in the middle -> context-rot
+- attention budget, attention scarcity, finite attention, n squared attention, n^2 pairwise relationships, transformer attention constraint, position encoding interpolation -> attention-budget
+- just in time context, just-in-time retrieval, JIT context, lightweight identifiers, runtime context loading, agentic search, hybrid retrieval -> just-in-time-context
+- compaction, context compaction, conversation summarization, context window summarization, tool result clearing, auto-compact -> context-compaction
+- progressive disclosure, incremental context discovery, layer by layer understanding, self-managed context window -> progressive-disclosure
+- structured note-taking, agentic memory, NOTES.md, memory tool, notes outside the context window -> context-engineering
+- generative agents, Generative Agents memory stream, recency importance relevance, salience-weighted retrieval, reflection tree -> salience-weighted-agent-memory
+- right altitude, Goldilocks prompt altitude, minimal system prompt, smallest set of high-signal tokens -> context-engineering
+- atproto, at protocol, bluesky, at:// uri, merkle search tree, MST, DRISL, CAR file, signed commit, PDS, personal data server, subscribeRepos, firehose, operation inversion -> atproto-repository-mst
+- did, DID document, decentralized identifier, did:plc, did:web, did:key, did:webvh, service endpoint, serviceEndpoint, atproto_pds, alsoKnownAs, connection hint for DIDs, location hint -> did-document-service-endpoint
+- content address versus signature, hash versus signature, verify-on-load, what a hash authenticates, attestation by digest, xt, exact topic, magnet xt -> content-address-versus-signature
+- ucan 1.0, ucan/dlg, ucan/inv, powerline, principal alignment, attenuation, subject command policy, varsig, zdpu -> ucan-delegation
+- at-uri scheme, at:// authority, AT URI normalization, not content-addressed, strong reference, handle-based URI, NSID, record key, rkey, DRISL-CBOR, $link, $bytes, blessed CID, cid-link, DASL, DASL-CID, atproto blob, uploadBlob, getBlob, listBlobs, AppView, atproto data model -> atproto-repository-mst
+- atproto firehose, subscribeRepos, #commit event, #sync event, #identity event, #account event, relay, full-network firehose, prevData, operation inversion, inductive verification, repo revision, Atproto-Repo-Rev, getRepo, CAR export, record-level synchronization, desynchronized -> atproto-repository-mst
+- import attributes, import assertions, `with { type: "json" }`, `assert { type: "json" }`, module type attribute, JSON modules, module cache key, attributes versus phases -> module-harmony-intersection-surface
+- asset references, `asset Foo from "foo"`, AssetReference, asset modules, require.resolve, require.resolveWeak, per-module asset authority, module identity without loading -> module-harmony-intersection-surface
+- ShadowRealm, incubator realm, callable boundary, wrapped function exotic object, identity discontinuity, importValue, distinct realm isolation, stack censoring -> module-harmony-intersection-surface
+- errors crossing the callable boundary, wrapped function threw, ShadowRealm error propagation, error replaced by TypeError, `[[ErrorData]]` slot, error message not nested, uncaught exception Object -> module-harmony-intersection-surface
+- Content-Type versus file extension, mimetype mismatch, misconfigured Content-Type header, MIME confusion, Cloudflare Content-Type distribution, extension is not the type, `.js` served as text/html, `.json` served as JavaScript -> module-harmony-intersection-surface
+- verifyPaymentProof, payment proof verification, resource ledger in gateway, PaymentProcessor -> monetization-gateway
+- XS worker metering, computrons, meter-report, budget as pre-payment, admission control eliminates embargo, worker quota refill -> worker-metering-admission-control
+- `CostRecord`, notional dollars, true-cost-vs-notional-ledger, campaign spend ledger -> cost-ledger
+- coding agent spend, token spend, spend management -> coding-agent-spend
+- relative routing, relative route, choosing a route not an address, nearest reliable path, shortest path to a peer, connection hints as routes, path-based session establishment -> relative-routing
+- donorPath, donor path, vatASearchPath, search path, searchPath, acceptFrom route list, route list, candidate routes -> relative-routing
+- formula DAG, daemon formula incarnation, reincarnation, daemon-native commit formula, synthetic refs tree -> formula-graph
+- Parcel, nonce locator, formula identifier as Swiss number, formula-backed sturdyref, OCapN formula locator -> sturdyref
+- spatiotemporal composability, spatial composability, temporal composability, dynamic composability, dynamic composition -> spatiotemporal-composability
+- revertible effect, revertible effects, effect accumulator, twisted composition, effect context, track and recover -> spatiotemporal-composability
+- reactive coeffect, reactive coeffects, coeffect, coeffect system, coeffect context, activating deactivating neutral notification -> spatiotemporal-composability
+- effect system, coeffect system, graded effects, algebraic effects, effect handlers -> spatiotemporal-composability
+- Cordis, Koishi, meta-framework of composability, context paradigm -> spatiotemporal-composability
+- hot module replacement, HMR, component loader, configuration reconciliation -> spatiotemporal-composability
+- isolation realm, coeffect isolation, coeffect interception, service broker, dependency injection at runtime -> spatiotemporal-composability
+- Cloudflare OS, company OS, agent workspace, AI productivity environment -> cloudflare-os-gadget
+- gadget, Cloudflare OS gadget, personal software instance, Dynamic Worker gadget -> cloudflare-os-gadget
+- Gatekeeper, Cloudflare OS Gatekeeper, deferred approval, simulated side effect, capability-mediated integration, Email Gatekeeper, Home Assistant Gatekeeper, LLAT, long-lived access token, `GatekeeperVendor`, `GatekeeperUser`, `ApprovalQueue`, `bindHook`, `HookInitiator`, `prohibitAllSharing` -> cloudflare-os-gatekeeper
+- Blueprint, Cloudflare OS Blueprint, `.gadget`, gadget archive, bundled blueprint, output format -> cloudflare-os-blueprint
+- permission graph, permission edge, effective role graph, share-link node, `computeEffectiveRoles`, share key redemption, `redeemShareKey`, `shareKey` edge, link alias, fixed-point effective role, `minRole`, `sharerRole` -> permission-edge-graph
+- lazy revocation, reachability revocation, reversible revocation, `keepUsers`, revocation restart, `revokeShareLink`, `removeCollaborator`, soft revocation, open-time denial, re-root sugar -> lazy-graph-revocation
+- observer verification, observer record, Gatekeeper verifier, `GatekeeperUserVerifier`, `addObserver`, `removeObserver`, `excludeObservers`, data-set tracking, ACL check single unit, `hasProjectAccess`, `hasOrgAccess`, own-token verifier, `SupabaseVerifier`, forward exclusion -> observer-verification
+- Worker telemetry confinement, service-scoped telemetry, immutable service filter, defensive telemetry filtering, foreign telemetry event -> worker-telemetry-confinement
+- provisional action simulation, deferred side-effect simulation, pending action overlay, simulated pending write -> provisional-action-simulation
+- MCP Gatekeeper, MCP Server Portals gatekeeper, gatekeeper-mcp, gatekeeper-mcp-portal, Model Context Protocol connector, byo trust tier, vetted trust tier, `portal_list_servers`, `McpAccount`, `ServerTrust`, `classifyTool`, `readOnlyHint`, annotation trust boundary, `resolveConnectTarget`, `beginConnect`, endpoint immutability, credential confusion, portal repoint, `catalogRevision`, `autoApprovable`, `ClassifiedTool`, `submitAction`, `applyAction`, `rejectAction`, `revertAction` -> mcp-server-connector
+- Scheduled Tasks, Scheduler gatekeeper, gatekeeper-scheduler, `ScheduleSession`, `ScheduleDriver`, `calendarAt`, `runAt`, persistent scheduled callback -> scheduled-tasks-gatekeeper
+- authentication Gatekeeper, auth Gatekeeper, Gatekeeper sign-in, `AUTH_GATEKEEPERS`, verified-email login -> authentication-gatekeeper
+- Git-backed gadget code, git object store, gadget commit, gadget head commit, `gitObjects` -> git-backed-gadget-code
+- lazy per-gadget pinning, chat code pin, chat epoch, code-base generation, `observedCommit` -> lazy-gadget-pinning
+- code-change operational transform, `CodeChange`, `submitCodeChange`, `transformCodeChange`, `composeCodeChange`, revisioned change stream, `ChatCodeChanges`, change materialization watermark, editFile OT, code-change validation, `validateCodeChangeSchema`, `validateCodeChangeContent` -> code-change-operational-transform
+- three-way file-map merge, `threeWayMerge`, `GitStore`, `splitLines`, refless git object store, `makeGitObjectsFs`, isomorphic-git plumbing -> git-backed-gadget-code
+- `ChatCodeBase`, `mergeChanges`, `updateChatFromMainline`, `mainlineMerge`, `epochBoundary`, mainline merge, fast-forward accept, discontinuous gadgets -> lazy-gadget-pinning
+- `editPreviewStart`, `editPreviewDelta`, `AiChatStreamEvent`, live edit preview, streaming edit preview, `ChatLiveEditPreviews`, `ChatLiveChangeRows` -> code-change-operational-transform
+- `legacyChatBaseVersion`, `foldProposedChanges`, `chatChangeStatuses`, context compaction, compaction checkpoint, `COMPACTION_SYSTEM_PROMPT`, conversion boundary -> lazy-gadget-pinning
+- workpiece, `WorkpieceId`, multi-gadget workspace, gadget binding edge, named chat binding -> cloudflare-os-workpiece
+- pi-ai, pi-agent-core, `runAgentLoopContinue`, awaited agent event sink, pi migration -> pi-agent-loop
+- AI Gateway billing, AI Gateway credits, daily LLM allowance, BYOK routing, `CF_AI_GATEWAY` -> ai-gateway-credit-routing
+- `freezeTypedArray`, TypedArray hardening, integer-indexed exotic hardening, indexed cardinality -> typedarray-hardening
+- freezable TypedArray emulation, emulated TypedArray, emulated DataView, immutable ArrayBuffer view wrapper -> freezable-typedarray-emulation
+- `EndoRegistry`, MVS, minimum version selection, npm registry, registry capability -> npm-registry-proxy
+- `byteArray` -> freezable-typedarray-emulation
+- `introducedSpecialNames`, guest special names, indelible guest names, `specialNames` -> guest-special-names
+- Cedar, Cedar policy language, Cedar authorization engine, cedar-policy, Amazon Verified Permissions, Verified Permissions, AVP, PARC, principal action resource context, policy-as-code, verification-guided development -> cedar-policy-language
+- policy vs capability, policy language vs object capability, ACL vs ocap, reference monitor vs capability, access control behind the tool call, ocap behind the tool call, scope strings vs capabilities, Cedar vs ocap, attenuation vs policy -> policy-vs-capability-authorization
+- garbage collection, mark-and-sweep, mark and sweep, GC quarantine -> gc-quarantine-store
+- ordered key encoding, passable key encoding, lexicographic passable key -> rank-order-preserving-encoding
+- Cloudflare Artifacts, Artifacts, ArtifactFS -> cloudflare-artifacts
+- `formulaGraph`, `listRetentionPaths`, retention paths, retention pin -> formula-graph
+- durable set, id-keyed set, retention set -> four-tables-coordinated-retention
+- capabilities vs ACLs, capability vs ACL, ACL vs capability, access control list vs capability, ACLs on capabilities, equivalence myth, identity vs token, token vs identity -> capabilities-vs-acls
+- card keys, card key, swipe card, swipe cards, card keys are capabilities, Shapiro card key analogy -> card-keys
+- rescinded key, rescinded keys, indistinguishable revocation, `DK(0)` -> revocation-by-withdrawal
+- destroyable indirection object, indirection object revocation, EROS revocation primitive, key ID opacity -> card-keys
+- cap-talk, cap-talk mailing list, eros-os.org pipermail, EROS architects list -> capabilities-vs-acls
+- web-key, web-keys, web key, YURL, YURLs, capability URL, unguessable URL, mashing with permission -> web-keys
+- capability bucket, authenticated capability bucket, session capability set -> principle-of-least-authority
+- capability unforgeability, sparsity, partitioned capability, tagged capability -> object-capability
+- DMA authority, DMA driver trust, driver trusted computing base -> principle-of-least-authority
+- grant matcher, grant matching, nominated comparator -> object-sameness
+- principal attribution, capability provenance, proxy attribution -> capabilities-vs-acls
+- space bank, objects are allocated not created, storage accounting vs garbage collection -> capabilities-vs-acls
+- what is a capability, CAOS capable OS, syscall gating is not a capability, POSIX capabilities are not ocaps -> capabilities-vs-acls
+- lambda-capability, lambda capability, explicit descriptor binding, namespace owner assigns names -> object-capability
+- permission vs authority, permission versus authority, least permission, direct vs indirect access -> principle-of-least-authority
+- principal agent, user intent agent, pre-opened descriptor, save-as capability -> principle-of-least-authority
+- one-shot capability, non-transferable capability, limited transfer, proxy defeats non-transferability -> distributed-confinement
+- overt causality, covert causality, in-model causality, conforming-implementation channel test -> distributed-confinement
+- ad hominem security, trusted by whom, trusted computing, trusted PC, Palladium, who wrote the code -> ad-hominem-security
+- bearer capability, web-key, webkey, web key, webkeys, capability URL, capability-in-URL, capabilities in URLs, swiss number URL, unguessable URL, Waterken web-key, https capability -> web-key
+- petname, pet name, petnames, petname system, per-holder naming, Zooko's triangle, edgename, edge name, proposed name, alleged name, petname path -> petnames
+- OpenID, single sign-on, SSO, single sign-out, federated identity -> oauth-client-credentials-vs-authorization-code
+- introduction by default, introduction-by-default, proxy by default, proxy-by-default, direct delegation, path-based access -> introduction-by-default
+- master capability, master web-key, capability bootstrap, last secret, borrowed-computer login -> web-keys
+- YURL, YURLs, public-key fingerprint hostname, self-authenticating URL -> web-keys
+- policy verification, confinement verification, Doerrie confinement proof, verification within a model -> distributed-confinement
+
+- Bεtree, Betree, Be-tree, B-epsilon tree, write-optimized B-tree, write buffer B-tree, pivot write buffer, upsert message, blind upsert, BetrFS tree -> betree
+- GEFS, Good Enough File System, gefs9, Plan 9 file system, 9p file system, CWFS, HJFS, fossil venti, copy-on-write file system -> gefs
+- deadlist, deadlist algorithm, birth generation, epoch-based reclamation, snapshot tree, qid namespace, base snapshot -> gefs
+- max thinking useless, over-thinks to breaking, reasoning budget overrun, thinking budget exhausts output tokens, 128000 output token limit, 128k output limit, max effort no response, reasoning token output ceiling -> thinking-budget-output-overrun
+- KaozKit, kaoz, TyKaoz, heap snapshot agent, resident agent, agent brain is a file, `writeSnapshot`, `init(snapshot:)`, agents on ice, XS agent persistence -> xs-heap-snapshot-agent-persistence
+- XS agent runtime, XS for agents, one XS machine per agent, `host.llm`, `host.schedule`, host global capability surface -> principle-of-least-authority
+- hardened URL shim, `hardened-url-shim`, URL vetted shim, `%InitialURL%`, `%SharedURL%`, `urlBlobTaming` -> hardened-url-vetted-shim
+- fakecloud, fakecloud.dev, faiscadev/fakecloud, local AWS emulator, AWS emulator, LocalStack alternative, Moto alternative, `/_fakecloud/reset`, `/_fakecloud/*` introspection, `FAKECLOUD_IAM`, `--verify-sigv4`, fakecloud TypeScript SDK, fakecloud npm package -> fakecloud
+- web text editor, web code editor, code editor on the web, browser code editor, in-browser text editor, in-browser code editor, embed a code editor, add a text editor to a web app, text editor in the browser, rich text editor, Monaco, Monaco Editor, `monaco-editor`, VS Code editor component, CodeMirror, Ace editor, canvas text editor, `<canvas>` editor, contenteditable editor, `contenteditable="plaintext-only"`, `plaintext-only`, textarea editor, `<textarea>` editor, EditContext, EditContext API, div soup -> web-text-editor-approaches
+- syntax highlighting, code highlighting in the browser, CSS Custom Highlight API, `::highlight`, custom highlights, OpaqueRange, OpaqueRange API, Tree-sitter, tree-sitter, MicroLighter, highlight overlay layer, inverse sticky technique, virtualised scrolling, virtualized scrolling -> code-editor-syntax-highlighting
+- grapheme cluster, grapheme clusters, UTF-16 code units, UTF-16 string length, `Intl.Segmenter`, grapheme segmentation, ZWJ emoji length, code units vs code points vs graphemes -> grapheme-cluster-text-indexing
+- `ReadableTreeInterface`, `EndoReadableTree`, `SnapshotTree`, readable-tree capability -> npm-registry-proxy
+- HTTP request carrier, request carrier leakage, secret in URL, credential in URL, sensitive request data, request logging leakage -> request-carrier-leakage
+- fragment credential, URL fragment secret, hash-fragment bearer, fragment-held key, fragment-held credential, Navigation Timing secret, Performance Timeline secret -> fragment-held-credential
+- leak canary, leak-canary testing, secret propagation test, redaction canary, carrier canary -> leak-canary-testing
+- `pi-iso`, oh-my-pi isolation PAL, `Rcopy`, copy-on-write agent workspace, ProjFS workspace, overlayfs workspace -> pi-iso
+- `pi-shell` minimizer, output minimizer, command output minimization, `artifact://`, `MinimizerConfig`, `CommandPlan` -> pi-shell-output-minimizer
+- pi-vfs, oh-my-pi VFS, virtualized bash, virtual files without host materialization, `scheme://` filesystem provider, `ShellFilesystem`, `FileSystem` provider -> pi-vfs
+- pi-builtins, oh-my-pi builtins, `BuiltinSet`, `ShellBuilderExt`, in-process shell utilities -> pi-builtins
+- pi-natives search, native grep, native glob, fuzzyFind, ripgrep N-API, grep-searcher, grep-pcre2 -> pi-native-search
+- brush, brush-core, brush-parser, reubeno/brush, vendored brush, `crates/vendor/brush-core`, `crates/vendor/brush-parser`, `command_substitution_body_len`, here-document command substitution -> brush-shell
+- `astGrep`, `astMatch`, `astEdit`, pi-natives ast, ast-grep N-API, oh-my-pi structural search, oh-my-pi structural rewrite -> pi-ast-grep
+- oh-my-pi-design, yeluo45 explainer, oh-my-pi Rust core explainer, `MinimizerWarning`, `FsPrimitive`, `parseAst`, `crates/brush-core-vendored` -> oh-my-pi-design-explainer
+- pi-shell, oh-my-pi shell session, `pi_shell::Shell`, `terminate_tree`, `kill_tree`, `CancelToken`, `AbortReason`, pidfd process reference, harness-protected process kill, `GIT_REPO_LOCATION_ENV_VARS`, `execute_shell_streams` -> pi-shell
+- `ShellFsOp`, `ShellFsRequest`, `nativeLocalPaths`, `backingPath`, provider errno-as-data, `local` redirect, read-only redirect (EROFS) -> pi-vfs
+- pi-iso Rcopy, `git worktree add --detach` workspace, fuse-overlayfs fallback, `isoResolve` priority, `clone_candidates`, pi-iso auto order -> pi-iso
+- `SupportLang`, ast-grep expando char, pi-ast language registry, tree-sitter language list, pi-ast WASM claim, `apply_edits` overlap check, JSON multi-node pattern fallback -> pi-ast-grep
+- pi-natives loader, `loadNative`, `missingNativeExport`, `PI_NATIVE_VARIANT`, native JS fallback claim -> oh-my-pi-design-explainer
+- specification authority, specification-led development, spec-driven software, agentic SDLC, intent evidence boundary, authority evidence chain, generated source is disposable, independent acceptance, generation identity, component lock, implementation authority, regenerative qualification, exact versioned identity, authority ladder, regeneratively-qualified-fungible, component flavor, effective component revision, target profile, literate-markdown, specification-node hierarchy, nearest wins, continuity chain, provider resolution, capability-based provider selection, repository inheritance, repository lineage, effective-authority graph, retained library bindings, retained Cargo bridge, retained-library export set, importer binding, current-authority reader, retained evidence store, consumer admission receipt -> specification-authority-chain
+- pi-natives shell, `executeShell`, `Shell.pids`, `liveBackgroundJobCount`, `BRIDGE_QUEUE_CHUNKS`, `FORWARD_STALL_TIMEOUT`, shell output bridge backpressure -> pi-shell-output-minimizer
+- `isoResolve`, `isoStart`, `isoDiff`, `ISO_UNAVAILABLE`, `IsoBackendKind` -> pi-iso
+- sample portfolio, executable sample portfolio, executable conformance evidence, conformance ladder, product-design shelf, portfolio test value, portfolio reuse value -> executable-sample-portfolio
+- SBOM, CycloneDX, source SBOM, resolved SBOM, pre-build SBOM, post-build SBOM, dependency evidence transition, source-to-resolved preservation, `incomplete_third_party_only` -> sbom-transition-invariant
+- worker storage observation, worker storage protocol, worker health, `litai worker health`, `literate-ai/worker-storage-request@1`, `literate-ai/worker-storage-probe@1`, `StorageCapacitySample`, quota domain, `quotactl_fd`, worker alert history, cleanup authorization, `literate-ai/worker-cleanup-authorization@1`, WORKER-HEALTH-001, ADR 0043 -> bound-worker-health-observation
+- software-neutral lifecycle kernel, hexagonal lifecycle kernel, OVA extraction, OVA two-phase rebase, Literate AI ADR 0001, Literate AI ADR 0002, Python reference kernel, runtime dependency admission policy, OpenSpec contributor tooling -> specification-authority-chain
+- Scion, Anthropic Scion, agent-scale source control, always-online source control, asymmetric source-control server -> scion-source-control
+- Scion changeset, Scion derived data, changeset log, derived repository index, recursively derived source-control data -> scion-changeset-derived-data
+- Pando, OpenAI Pando, Express pack cache, ref version, packfile cover, L0 packfile, LSM packfile compaction, causal consistency for Git refs, trunk-only ref advertisement, Git pack reuse, Scaling Git at OpenAI -> pando-git-backend
+- packfile-uri, packfile URIs, explicit haves, offloaded packfiles, parallel pack indexing -> git-packfile-uri
+- sparse checkout, virtualized checkout, optional working copy, demand-materialized working copy, sparse working tree -> sparse-virtualized-working-copy
+- Endo Gateway, host gateway, gateway bootstrap registrar, public-key-keyed routing table, `@endo/gateway` -> endo-gateway
+- endopi edit tool, edit-by-replacement, exact-string replacement, `oldText`, `newText`, `editText`, structured diff preview -> llm-exact-string-editing
+inference provider broker, AgentInference, brokered Messages, inference reservation, provider spend cap, pre-secret admission, typed model fallback -> inference-provider-broker
+- hardened text codecs, hardened TextEncoder, hardened TextDecoder, `TextEncoder`, `TextDecoder`, `hardened-text-codecs-shim` -> permits-buckets
+- `HttpClient`, `HttpClientControl`, origin allowlist, network fetch, `http-confine`, `confined-fetch` -> endoclaw
+- Git capability, capability-scoped agent tools, confined agent tools -> policy-vs-capability-authorization
+- codefall, lividlabs/codefall, software factory, meta-harness, spec-driven development kit, Beads, bead, `bd`, EARS acceptance criteria, `/codefall-specify`, `/codefall-plan`, `/codefall-implement`, waves, rounds, ADR scaffold, Clean Architecture profile -> agentic-sdlc
+- ycc, whyrusleeping/ycc, docs-driven coding harness, work loop, ycc daemon, `spec.md`/`backlog`/`memory.md`, `ycc spec-check`, coordinator/implementer/reviewers roles, review tiers, `ycc login`, the daemon owns the work clients are views -> agent-fleet-orchestration
+- EndoPi extension package, extension package manifest, package manifest, plugin ecosystem, `endo` package key -> endopi-extension-packages
