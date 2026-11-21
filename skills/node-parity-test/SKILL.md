@@ -22,7 +22,7 @@ reviewer asks for one when a claim of parity has none.
 
 ## When to use
 
-- A change introduces or alters behaviour on a Node-adjacent path: a module
+- A change introduces or alters behavior on a Node-adjacent path: a module
   linker, loader, resolver, `require` or `import` edge case, module cache.
 - A test or commit message reaches for "matches Node", "same as Node.js",
   "verified under node", "per Node v22".
@@ -90,7 +90,7 @@ other side's pass says where the divergence is.
 
 ## When it deliberately does not
 
-The fixture is still shared; each side asserts its own behaviour. The Node
+The fixture is still shared; each side asserts its own behavior. The Node
 side usually asserts an error code, from a fresh Node process:
 
 ```js
@@ -109,10 +109,10 @@ test('ESM-in-CJS-cycle - node parity (rejects with ERR_REQUIRE_CYCLE_MODULE)', t
 });
 ```
 
-Both behaviours are pinned: a change that accidentally re-aligns the artifact
+Both behaviors are pinned: a change that accidentally re-aligns the artifact
 with Node fails one test; a Node release that changes its error code fails the
 other. The *reason* for the divergence goes in a JSDoc comment on both files.
-The reason is prose; the behaviour is code. A divergence pair needs no shared
+The reason is prose; the behavior is code. A divergence pair needs no shared
 assertions module, since the two sides assert opposite outcomes.
 
 ## Reference pairs

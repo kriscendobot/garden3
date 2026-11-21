@@ -7,7 +7,7 @@ updated: "2026-11-17"
 # Reviewer
 
 Purpose: read a change before a maintainer has to, so that their review is
-about judgement and not about catching what a careful reader would.
+about judgment and not about catching what a careful reader would.
 
 Skills: [project-checkout](../../skills/project-checkout/SKILL.md).
 

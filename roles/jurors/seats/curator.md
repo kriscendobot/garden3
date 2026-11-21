@@ -28,14 +28,14 @@ Panel: code.
   a surface that has an existing equivalent (an eager twin of a new streaming
   operation, an existing CLI verb, a path layer that already splits names
   into segments), find the sibling and judge two things:
-  - **redundancy**: do the two now reach the same behaviour two ways?
+  - **redundancy**: do the two now reach the same behavior two ways?
   - **composition**: does the new surface fuse what the sibling keeps
     apart (a fused `streamGrep(pattern, { glob })` where the eager sibling
     composes `grep(pattern, glob(g))`), or put a responsibility in a layer
     the sibling keeps elsewhere?
   Cite the sibling, name the axis, and propose composing with it or a
   one-line reason to diverge. Must-fix when the two reach the same
-  behaviour incoherently. (Grounding: `endojs/endo-but-for-bots#658`,
+  behavior incoherently. (Grounding: `endojs/endo-but-for-bots#658`,
   `#897`, `#1085`.)
 - **An option type shared across packages has one home.** A typedef for an
   options bag that travels through two or more packages is declared once,

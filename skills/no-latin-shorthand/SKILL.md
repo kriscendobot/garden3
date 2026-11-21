@@ -55,7 +55,7 @@ fit, keep it.
 - The maintainer's own writing, quoted verbatim, keeps its wording.
 - Vendored and reference material is read-only.
 - Fix existing prose **on encounter**, in a file you are already editing for
-  another reason. This skill does not authorise a sweep.
+  another reason. This skill does not authorize a sweep.
 - `vs.` in a compact label (a benchmark column header) is a judgment call.
 
 Adapted from the prior garden's `skills/no-latin-shorthand`.

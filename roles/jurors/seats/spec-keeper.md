@@ -18,12 +18,12 @@ Panel: code.
 ## Norms
 
 - **Walk these questions:**
-  - **Citation.** A claim about an intrinsic's behaviour cites the
+  - **Citation.** A claim about an intrinsic's behavior cites the
     ECMA-262, WebIDL, WHATWG or proposal section it rests on. A primordial
     replacement (a polyfill for `Uint8Array.fromBase64`, a NaN sanitization)
     matches its section.
   - **Engine variance.** V8, SpiderMonkey, JavaScriptCore, XS, QuickJS,
-    Hermes, engine262 and others: the change pins one behaviour across them
+    Hermes, engine262 and others: the change pins one behavior across them
     or documents the variance. Mind XS, where "slowdowns hurt much more in an
     already-slow engine".
   - **Primordials.** A captured `Reflect.apply` over `.call`; a captured
@@ -50,10 +50,10 @@ Panel: code.
     a looser match.
   - **Small hygiene.** A name for a returned function; consistent `name`
     properties. One line each.
-- **Shared with the prover: tests of implementation-defined behaviour.** A
+- **Shared with the prover: tests of implementation-defined behavior.** A
   test that passes on one engine and fails on another does not pin the
   specified contract. Cite the section and the engines that differ.
-- **Grading:** must-fix for a misread specification or reliance on behaviour
+- **Grading:** must-fix for a misread specification or reliance on behavior
   it does not require; should-fix for brittle tests and proposal overreach;
   comment-only for hygiene.
 - **Cite the section by URL** (`https://tc39.es/ecma262/...`,

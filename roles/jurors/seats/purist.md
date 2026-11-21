@@ -71,7 +71,7 @@ Panel: code.
   shorter, and a copy that silently drops a capability (a promise kit's
   `reject`) is a buy unless the caller needs the weaker shape. A buy is
   must-fix when the match is distinctive, should-fix when it is loose; an
-  adapt is should-fix. A `build-not-buy:` comment with a reason is honoured
+  adapt is should-fix. A `build-not-buy:` comment with a reason is honored
   when the reason is true of the two bodies.
 - **"Not published yet" is no reason to vendor.** Copying, porting or
   translating code from an upstream package because it has no release or is
@@ -87,7 +87,7 @@ Panel: code.
   across a boundary the module crosses; should-fix for name collisions,
   family lapses and abstraction overreach; comment-only for disputed taste.
 - **Example of a finding:** "`packages/foo/src/foo.js:42` adds an enumerable
-  property to the tamed prototype; its neighbours at lines 38-44 are not
+  property to the tamed prototype; its neighbors at lines 38-44 are not
   enumerable."
 
 Adapted from the prior garden's `roles/jurors/purist`, with `procurer` folded in.

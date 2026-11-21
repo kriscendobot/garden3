@@ -19,13 +19,13 @@ Panel: code.
 ## Norms
 
 - **Walk the boundary list** for each public function, exported constant,
-  claimed invariant or behaviour the change adds or modifies, for its domain:
+  claimed invariant or behavior the change adds or modifies, for its domain:
   - **numbers:** `0`, `-0`, `1`, `-1`, `Number.MAX_SAFE_INTEGER` and one
     past it, `Number.MIN_SAFE_INTEGER`, `Number.MAX_VALUE`,
     `Number.MIN_VALUE`, `Number.EPSILON`, `Infinity`, `-Infinity`, `NaN`,
     subnormals, an integer-valued float beside the same integer;
   - **integers and bigints:** the type's minimum and maximum and their
-    neighbours, the `2 ** 53` seam between `Number` and `BigInt`, sign
+    neighbors, the `2 ** 53` seam between `Number` and `BigInt`, sign
     extension in bitwise operations; in Rust, overflow in release and debug,
     `usize` on 32-bit targets;
   - **strings:** empty, one character, a surrogate pair, a lone surrogate,
