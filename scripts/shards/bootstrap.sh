@@ -84,6 +84,6 @@ done
 if [ -n "$host" ]; then
   valid_name "$host" || die "bad host name $host"
   tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
-  printf '# host/%s\n\nWritten only by the host %s: its heartbeat, capability record, usage rows and\nquiescence acknowledgements. See shed:designs/hosts.md.\n' "$host" "$host" >"$tmp/README.md"
+  printf '# host/%s\n\nWritten only by the host %s: its heartbeat, capability record, usage rows and\nquiescence acknowledgments. See shed:designs/hosts.md.\n' "$host" "$host" >"$tmp/README.md"
   make_branch "host/$host" "$tmp"
 fi

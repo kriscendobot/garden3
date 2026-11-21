@@ -44,7 +44,7 @@ export const call = (q, { id, by, hosts, shed }, now) => {
 
 /** A host acknowledges the current phase, with what it has to report. */
 export const ack = (q, host, report, now) => {
-  if (!ACKED[q.phase]) refuse('no-ack', `phase ${q.phase} takes no acknowledgement`);
+  if (!ACKED[q.phase]) refuse('no-ack', `phase ${q.phase} takes no acknowledgment`);
   if (!(q.expected ?? []).includes(host)) refuse('unexpected', `${host} is not one of this quiescence's hosts`);
   if ((q.absent ?? []).includes(host)) refuse('absent', `${host} was marked absent from ${q.id}; it catches up after the resume`);
   q.acks = { ...q.acks, [host]: { ...(q.acks?.[host] ?? {}), [q.phase]: { at: now, ...report } } };

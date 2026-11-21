@@ -11,7 +11,7 @@ much planning turned out to be needed underneath it. Rules: `src/board.js`.
 
 ## What the maintainer decided
 
-1. **The planning event** is a hand-off: a job realises it is running out of
+1. **The planning event** is a hand-off: a job realizes it is running out of
    time and hands off. It is a runtime event, prompted by the clock
    ([wrap-it-up.md](wrap-it-up.md)), not a choice made up front.
 2. **Level is structural.** A job that did the work itself and spawned nothing
@@ -23,12 +23,12 @@ much planning turned out to be needed underneath it. Rules: `src/board.js`.
    a branch is back-tracked, it stops counting.
 5. **Cost is separate and never falls.** The budget is fed by cost; level is
    only the signal of magnitude.
-6. **Re-planning needs judgement, not a limit.**
+6. **Re-planning needs judgment, not a limit.**
 7. **A hand-off has one shape.** There is no single-successor continuation. A
    job that runs out of time posts a **parent** to plan the steps that remain
    all the way to completion and dispatch them as its children, so that a
    sequence is a planner over a flat set and never a linked list.
-8. **Level bears on claim order only**, favouring leaves of the job tree.
+8. **Level bears on claim order only**, favoring leaves of the job tree.
    That is sufficient for now: no interaction with throttles or re-admission.
 
 ## The shape of a hand-off

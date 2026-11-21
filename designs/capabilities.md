@@ -36,7 +36,7 @@ for the sake of some host.
   version, sources **per architecture** each with a sha256, optional install
   steps, commands to link, verify steps, and the skill that goes with it.
 - **Availability** (`availability`): for this host, each capability is
-  `installed`, `available`, or not, with the reason: no pinned artefact for
+  `installed`, `available`, or not, with the reason: no pinned artifact for
   this host's architecture; a draft; forbidden by the host's policy; or its
   install failed recently. What is not available here is simply not this
   host's to offer, whatever other hosts can do.
@@ -80,7 +80,7 @@ for the sake of some host.
    garden's runtime) and `rust` (to build the warden). Every host has these or
    cannot take part. They are part of every host's own set, are never pruned,
    and the wizard says `CANNOT BOOT` before first start if either has no
-   pinned artefact for the machine's architecture.
+   pinned artifact for the machine's architecture.
 3. **What a client order pins** ([clients.md](clients.md)): `capabilities` in
    a client host's record are installed there; `forbid_capabilities` are
    never installed there.

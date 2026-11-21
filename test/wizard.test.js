@@ -128,7 +128,7 @@ test('the wizard names what is not pinned for this host\'s architecture, as the 
       assert.equal(r.status, blocking.length ? 1 : 0);
       for (const n of blocking) assert.match(r.stdout, new RegExp(`CANNOT BOOT +${n}: `), `${n} is needed by every host`);
     }
-    assert.match(wizard(['pins', home], { env: { WIZARD_ARCH: 'riscv64' } }).stdout, /CANNOT BOOT {2}node: no artefact for riscv64/, 'an architecture nobody planned for is told so plainly');
+    assert.match(wizard(['pins', home], { env: { WIZARD_ARCH: 'riscv64' } }).stdout, /CANNOT BOOT {2}node: no artifact for riscv64/, 'an architecture nobody planned for is told so plainly');
     assert.match(wizard(['check']).stdout, /this {5}machine is (amd64|arm64|\S+); no architecture is assumed/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

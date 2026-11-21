@@ -44,4 +44,17 @@ for (const f of walk(".")) {
 }
 process.exit(bad ? 1 : 0);
 ' < <(git ls-files --cached --others --exclude-standard) && note "YAY and front matter" ok || { note "YAY and front matter" FAILED; rc=1; }
+
+# The garden writes American English, without Botese. The lists themselves,
+# and the test that quotes them, are what name the words.
+node --input-type=module -e '
+import { makeProse, parseLists, SKILL } from "./src/prose.js";
+import { makeFiles, run } from "./src/powers/node.js";
+import fs from "node:fs";
+const lists = parseLists({ divergences: fs.readFileSync(`${SKILL}/divergences.tsv`, "utf8"), cliches: fs.readFileSync(`${SKILL}/cliches.tsv`, "utf8") });
+const leave = f => f.startsWith(`${SKILL}/`) || f === "test/prose.test.js" || !fs.existsSync(f);
+const hits = makeProse({ files: makeFiles(process.cwd()), run, lists }).check(...fs.readFileSync(0, "utf8").split("\n").filter(f => f && !leave(f)));
+for (const h of hits) console.error(h);
+process.exit(hits.length ? 1 : 0);
+' < <(git ls-files --cached --others --exclude-standard) && note "American English" ok || { note "American English" FAILED; rc=1; }
 exit $rc

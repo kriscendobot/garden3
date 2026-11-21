@@ -74,7 +74,7 @@ admit      = arc active  and  spend + reserved + reservation ≤ cap
 - Usage is sharded by host instead of sitting on the shared journal.
 - Not ported: the provider's own seven-day utilization as the preferred
   sensor, the backoff ramp, reset detection and calibration, per-host worker
-  levelling, campaigns, the per-call dollar cap, the auction, the road.
+  leveling, campaigns, the per-call dollar cap, the auction, the road.
   Adopt on demand.
 
 ## Status

@@ -24,7 +24,7 @@ Skills: [job-board](../../skills/job-board/SKILL.md),
   jobs in order over one large one.
 - **Publish what settled runs produced**, and only that: push a harvested
   job branch to the bot's fork, open or update the pull request, post the
-  report. Mark each act with the job's id so that a repeat is recognised.
+  report. Mark each act with the job's id so that a repeat is recognized.
 - A go-ahead on a held or failed job, and abandoning a branch, are a
   maintainer's decisions; record whose.
 - Mail that the boatman carried in is the maintainer's by being carried;
@@ -34,6 +34,6 @@ Done: the maintainers can see, from GitHub, what the garden is doing with
 what they asked.
 
 (Issues and comments on the garden's own repository reach the board through
-the watcher, and acknowledgements and reports go back through
+the watcher, and acknowledgments and reports go back through
 `src/steward.js`: [designs/watcher.md](../../designs/watcher.md). Publishing
 branches and pull requests is not built yet.)

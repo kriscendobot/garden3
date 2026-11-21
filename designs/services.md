@@ -49,6 +49,7 @@ re-owns a slot's home, and runs a job as that account under its deadline
 | `github.js`, `watcher.js`, `steward.js` | the garden's view of GitHub; hearing maintainers; answering them |
 | `dispatch.js`, `supervisor.js` | the composition, and the one loop |
 | `yay.js`, `shon.js` | the data model on disk and on the command line |
+| `prose.js` | American English without Botese: the lists' check, `garden prose` |
 | `powers/node.js` | the only module that imports Node's builtins |
 | `cli.js` | `garden <service> <method> [ value ]` |
 
@@ -73,7 +74,7 @@ What still shells out, and where it is isolated:
 
 | Program | Called from | For |
 | --- | --- | --- |
-| `git` | `shard.js`, `slots.js`, `project.js`, `plots.js`, `host.js` | everything about repositories; there is no library, by choice: git's own behaviour is the specification |
+| `git` | `shard.js`, `slots.js`, `project.js`, `plots.js`, `host.js` | everything about repositories; there is no library, by choice: git's own behavior is the specification |
 | `warden` | `slots.js` only | what needs root |
 | `curl`, `tar` | `capabilities.js` only | fetching and unpacking |
 | `curl` | `github.js` only | the GitHub API, with the token on standard input |

@@ -44,7 +44,7 @@ garden.
 Your plot has few roles and skills. When the job needs one it lacks, look
 before you improvise, in this order, and adapt what you find:
 
-1. **The other plots**, under `reference/plots/<plot>/`: what a neighbour
+1. **The other plots**, under `reference/plots/<plot>/`: what a neighbor
    learned.
 2. **The prior garden**, under `reference/upstream/garden/roles/` and
    `skills/`, at the commit `reference/reference.yay` names. It has many
@@ -83,5 +83,10 @@ harvested:
   you can do there: report it.
 - **Small and plain.** Make the change that was asked. Write so the reader
   need not ask what you meant.
+- **American English, without Botese**, in everything you write: code,
+  comments, documents, commits, reports. Before you finish, run
+  `garden prose diff <base>` in each checkout you changed and fix what is
+  real ([american-english-normalization](../skills/american-english-normalization/SKILL.md)).
+  Lines someone else wrote keep their own spelling.
 - Records are YAY; documents carry YAY front matter (`author`, `created`,
   `updated`).

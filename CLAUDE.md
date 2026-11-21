@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-21"
 ---
 
 # Working in the garden
@@ -23,6 +23,9 @@ leave in `outbox/` is what survives.
   is only for what runs before a runtime exists. No Python. New logic goes in
   a `make*(powers)` module that imports no builtin, with tests
   ([designs/services.md](designs/services.md)).
+- Prose is American English, without Botese: code, comments, documents,
+  commits, pull requests. `scripts/lint.sh` checks it
+  ([skills/american-english-normalization](skills/american-english-normalization/SKILL.md)).
 - Records and config are YAY; documents carry YAY front matter (`author`,
   `created`, `updated`). Write records with `stringify`, never by hand
   ([designs/data-model.md](designs/data-model.md)).

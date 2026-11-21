@@ -38,7 +38,7 @@ be stopped and resumed at any point: `./wizard status <dir>`.
    one clone, bare), `<dir>/garden` (the shed), and views of the other
    branches inside it. The board, archive and journal are fetched at depth 1.
    Safe to run again. It ends by saying what this machine is and which
-   capabilities have **no pinned artefact for its architecture**
+   capabilities have **no pinned artifact for its architecture**
    (`./wizard pins <dir>` repeats it). `CANNOT BOOT` names something every
    host needs: stop and tell the maintainers, rather than finding out at
    first start. `unavailable` is only a limit on which jobs this host will

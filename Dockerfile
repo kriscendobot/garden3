@@ -17,7 +17,7 @@
 #   openssh-client          every host pushes to the garden's repository (a
 #                           claim is a push), and the bot's login generates an
 #                           ssh key. OpenSSH publishes source, not binaries, so
-#                           there is no artefact to pin as a capability, and
+#                           there is no artifact to pin as a capability, and
 #                           building it would need a C compiler the box does
 #                           not have
 # Everything else the garden uses at boot is already in the base system:

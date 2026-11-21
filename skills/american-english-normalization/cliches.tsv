@@ -1,0 +1,22 @@
+# cliches.tsv: Botese phrases and what to write instead.
+# Read by skills/american-english-normalization/SKILL.md.
+#
+# Five TAB-separated columns, one phrase per row; lines starting with '#' and
+# blank lines are ignored. A phrase is literal and matched as a whole, ignoring
+# case, never a pattern. Source rows are multi-word constructions, so the
+# ordinary senses of their words do not match. Scope is blank for every
+# surface, or pr-metadata for a pull request's title and description only.
+# Inflected collocations are their own rows. Additions are reviewed by a
+# maintainer. Seeded with the two words the maintainer named on
+# endojs/endo-but-for-bots#1281: "seam" and "load-bearing".
+#
+# category	phrase	suggestion	notes	scope
+filler-emphasis	load-bearing invariant	name the invariant and why it matters; drop "load-bearing"	Botese "critical" filler on an abstraction; NOT a real load-bearing wall/beam/column/member
+filler-emphasis	load-bearing assumption	state the assumption plainly; drop "load-bearing"
+filler-emphasis	load-bearing abstraction	say what the abstraction does; drop "load-bearing"
+filler-emphasis	load-bearing comment	explain what the comment guarantees; drop "load-bearing"
+filler-emphasis	load-bearing detail	state the detail and its consequence; drop "load-bearing"
+filler-emphasis	load-bearing word	quote the word and say why it is precise; drop "load-bearing"
+overwrought-metaphor	seam where	say plainly what boundary or interface this is	overwrought "this is the seam where X happens" metaphor; NOT a real fabric/rock seam or a Feathers testing seam ("introduce a seam so ...")
+overwrought-metaphor	is the seam	name the boundary or interface directly	as in "this is the seam ..."; excludes the legitimate Feathers testing-"seam" sense, which the seat accepts with rationale
+overwrought-metaphor	seam	name the boundary, interface, or extension point directly	maintainer-directed title/description rule; source prose retains the phrase-only precision rule	pr-metadata

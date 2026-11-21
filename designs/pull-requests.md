@@ -56,7 +56,7 @@ requests is not built yet").
   `--force-with-lease=<head>:<recorded head>`, so a push that raced anything
   fails rather than overwriting it. Its report is posted as one comment
   carrying a marker with the job id, looked for first, so a repeat is
-  recognised ([deadlines.md](deadlines.md) § Side effects).
+  recognized ([deadlines.md](deadlines.md) § Side effects).
 - **Between jobs: watch CI.** The drive's tick reads the check runs on each
   pushed head. A head is green when every check that ran on it succeeded;
   skipped checks do not count. A job is not woken to wait: the next job is

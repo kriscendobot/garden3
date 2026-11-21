@@ -100,7 +100,7 @@ credential and no remote ([slots.md](slots.md)). What reaches GitHub is done
 by the steward from a *settled* run's outbox, and a superseded run does not
 settle. For what the steward does, the plan is to key each act by job id (a
 marker in the pull request or comment body, looked for before acting), so a
-repeat is recognised. That is design only, with the rest of the publishing.
+repeat is recognized. That is design only, with the rest of the publishing.
 
 ## Zombies
 

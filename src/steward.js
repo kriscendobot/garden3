@@ -5,7 +5,7 @@
 // repository that was. Every comment
 // carries an invisible marker naming what it is about, and before writing one
 // the steward looks for that marker, so a repeat (a retry, a second host) is
-// recognised instead of posted twice. Only the leader's supervisor runs it.
+// recognized instead of posted twice. Only the leader's supervisor runs it.
 // Design: designs/watcher.md. Publishing branches and pull requests is not
 // here yet.
 

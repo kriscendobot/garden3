@@ -18,7 +18,7 @@ is a rejuvenation.
 2. Build it in the box, rootless: RootlessKit starts BuildKit with a private
    mount namespace in which only a build context holding the `Dockerfile` is
    visible; `buildctl` writes `<digest12>.docker.tar`, tagged
-   `garden-successor:<digest12>`, labelled `garden.build-contract-sha` with
+   `garden-successor:<digest12>`, labeled `garden.build-contract-sha` with
    the sha256 of the `Dockerfile`.
 3. Write `<digest12>.yay` beside it: `contract`, `archive_sha256`.
 4. Report both paths. A maintainer adopts on the host

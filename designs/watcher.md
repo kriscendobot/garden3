@@ -34,7 +34,7 @@ of `handlers/comment-reactji-gh.sh`, `comment-reply-gh.sh`, `mention-trust-gh.sh
   the token on each call.
 - **Decides who is a maintainer** from `journal2:maintainers/allowlist` and
   nothing else: stricter than the other watchers, which fall back to
-  organisation membership. The check is plain code, runs before any text is
+  organization membership. The check is plain code, runs before any text is
   read, and no model is involved anywhere in the watcher. A dropped stranger
   is surfaced once to the maintainer inbox, with structured fields only.
 - **Remembers** with one cursor (`last_seen`) on the journal, read and written
@@ -74,7 +74,7 @@ the forks are at 300), each with its own cursor and its own board commit.
 The list is the prior garden's `journal2:comment-repos/` (sixteen forks and
 `endojs/endo-but-for-bots`) and the two garden repositories. Where the prior
 armed a repository with `sender-gate: required`, this gate is already
-stricter: maintainers only, no organisation fallback.
+stricter: maintainers only, no organization fallback.
 
 **Cursors adopted.** The prior garden's cursors (`journal2:cursors/issues/`
 and `cursors/comments/`) are recorded in `upstream/watch-cursors.yay`, with
@@ -132,7 +132,7 @@ grows with time, so there is nothing to consolidate.
 - `ack`: a 👀 on the issue or comment, after the board commit landed.
 - `reply(issue, key, text)`: one comment per key. Each carries an invisible
   marker, `<!-- garden:<key> -->`, and the steward looks for it before
-  writing, so a retry or a second host is recognised, not repeated. A footer
+  writing, so a retry or a second host is recognized, not repeated. A footer
   names the host and the shed commit.
 - `report`: for each issue-born job that has ended, its report (or its
   outcome) as a comment on its issue, with its level and cost. A job that
@@ -169,7 +169,7 @@ closed issues, noting a stranger once); the idea of a provenance footer from
 Implemented and tested against a fixture that answers in GitHub's documented
 shapes (not recorded from a live repository): the gate; the address gate and
 verbs; cursor and overlap; a maintainer's issue to a job with its
-acknowledgement, in one commit with the cursor; a stranger ignored, noted
+acknowledgment, in one commit with the cursor; a stranger ignored, noted
 once, and their text in no branch; two hosts and one job; release, abandon,
 throttle and status by comment; the report on a finished job, once; following
 a hand-off; a failed job announced; a refused poll leaving the cursor; the
@@ -203,7 +203,7 @@ The multi-repository watch runs once the supervisor restarts on this code.
 
 1. **Pull request comments on the garden's own repositories** are treated
    like comments on issues; reviews and review comments are now polled too.
-2. **An acknowledgement can be lost**: if a host lands the board commit and
+2. **An acknowledgment can be lost**: if a host lands the board commit and
    dies before reacting, the job exists and the 👀 does not. The alternative
    (react first) acknowledges things that may not have landed.
 3. **Edits are not seen.** An issue or comment edited after it was handled is

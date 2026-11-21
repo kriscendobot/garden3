@@ -30,7 +30,7 @@ arch() {
   case "$(uname -m)" in x86_64) echo amd64 ;; aarch64 | arm64) echo arm64 ;; *) uname -m ;; esac
 }
 
-# pin_state <manifest> <arch> — pinned | "draft" | "no artefact" | "not pinned".
+# pin_state <manifest> <arch> — pinned | "draft" | "no artifact" | "not pinned".
 # Reads the canonical YAY the garden writes; the shed's tests hold this to the
 # same answers as the garden's own reader.
 pin_state() {
@@ -41,13 +41,13 @@ pin_state() {
     insrc && inarch && /sha256: null/ { unpinned = 1 }
     END {
       if (draft) print "draft"
-      else if (!found) print "no artefact"
+      else if (!found) print "no artifact"
       else if (unpinned) print "not pinned"
       else print "pinned"
     }' "$1"
 }
 
-# pins <dir> — which capabilities have no pinned artefact for this host?
+# pins <dir> — which capabilities have no pinned artifact for this host?
 pins() {
   DIR="${1:?usage: wizard pins <dir>}"
   a="$(arch)"; rc=0
@@ -79,7 +79,7 @@ The wizard sets up one host in these steps. Nothing is changed by reading this.
                <dir>/garden.git, <dir>/garden (the shed), and views of the
                other branches inside it. The high-churn branches are fetched
                at depth 1. Makes <dir>; touches nothing outside it. Then it
-               says which capabilities have no pinned artefact for this
+               says which capabilities have no pinned artifact for this
                machine's architecture, before anything is started.
   4. consent   client hosts only: the operator writes CLIENT-CONSENT.yay by
                typing the host's name. Without it nothing on this host is

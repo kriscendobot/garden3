@@ -196,7 +196,7 @@ export const makeCapabilities = ({ files, run, sha256File, sha256, clock, arch, 
   /**
    * What this host could install, on its own architecture, under its own
    * policy: {name: 'installed' | 'available' | <the reason it is not>}. A
-   * capability with no pinned artefact for this architecture is not
+   * capability with no pinned artifact for this architecture is not
    * available here, whatever other hosts can do; one whose install failed
    * recently is not offered again until the retry time has passed.
    */

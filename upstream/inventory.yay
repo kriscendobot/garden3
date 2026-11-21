@@ -1568,19 +1568,10 @@ entries:
     kind: "skill"
     source_path: "skills/activity-feed-watcher"
   - bytes: 17412
-    certainty: 0.3
-    disposition: "port"
+    certainty: 1
+    disposition: "done"
     kind: "skill"
-    landed: true
-    path: "skills/american-english-normalization/"
-    plots:
-      - "ginkgo"
-      - "hazel"
-      - "holly"
-      - "juniper"
-      - "katsura"
-      - "larch"
-    service: true
+    note: "in the shed: the maintainer wants American English in all prose (2026-11-21)"
     source_path: "skills/american-english-normalization"
   - bytes: 18397
     certainty: 0.3

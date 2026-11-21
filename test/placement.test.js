@@ -50,7 +50,7 @@ test('a host describes itself, and writes the record only when it changes', asyn
   const arm = host('arm', 'arm64');
   const d = await arm.info.describe();
   assert.deepEqual([d.host, d.arch, d.os, d.cores, d.memory_gb, d.gpu, d.client, d.slots], ['arm', 'arm64', 'linux', 10, 64, false, false, 2]);
-  assert.deepEqual(d.capabilities, { installed: [], available: ['hammer'] }, 'what has no artefact for this architecture is not available here');
+  assert.deepEqual(d.capabilities, { installed: [], available: ['hammer'] }, 'what has no artifact for this architecture is not available here');
   assert.equal(await arm.info.publish(), true);
   const before = g.remoteGit('rev-parse', 'host/arm');
   assert.equal(await arm.info.publish(), false, 'unchanged: no commit');

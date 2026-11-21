@@ -32,7 +32,7 @@ and for others.
 not known in advance and nothing assumes one: the host reports what it is on
 its own branch at every start ([hosts.md](hosts.md)), capabilities are per
 architecture, the warden is built on the host for the host, and the wizard
-says before first start which capabilities have no pinned artefact for the
+says before first start which capabilities have no pinned artifact for the
 machine it is run on.
 
 What the prior garden can do to it: send `sysop` operations over the journal

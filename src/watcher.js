@@ -23,7 +23,7 @@ import { harden, isName } from './harden.js';
  * THE GATE. The one place that decides whose words the garden acts on.
  * An event whose author is not on the maintainers list comes out with its
  * title and body removed, so nothing downstream can read them even by
- * mistake. Logins compare case-insensitively. No pattern, no organisation
+ * mistake. Logins compare case-insensitively. No pattern, no organization
  * membership, no model: the list and nothing else.
  */
 export const gate = (events, maintainers) => {

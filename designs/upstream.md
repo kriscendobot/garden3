@@ -30,7 +30,7 @@ copied. The ones here were written for this garden's mechanisms.
 3. **Decide its disposition**: *synthesize* (write the garden's own, informed
    by one or both sources; the usual case), *port* (carry the mechanism,
    rewritten for this garden's services), *vendor* (take a file unchanged,
-   under `vendor/`, with its licence), or *leave*.
+   under `vendor/`, with its license), or *leave*.
 4. **Mind the two differences that matter.** The tower is private: carry
    mechanism, never its content, and if unsure leave it out and say so. And
    the garden's idiom is services and YAY, not scripts and front matter
@@ -131,7 +131,7 @@ and `commit`: enough to find the original and everything that led to it, in
 `kriscendobot/garden`, the prior garden's repository, which kept its name.
 
 Real commits are carried only when the history itself is the thing wanted:
-a file whose authorship or licence trail must stay attached, or a long
+a file whose authorship or license trail must stay attached, or a long
 evolution a maintainer wants `git log` to show here. Then it is done
 deliberately, for those paths alone (a filtered export of the source's
 history for the paths, merged once with `--allow-unrelated-histories`), on
@@ -159,7 +159,7 @@ and `roles/librarian`, with the library they read (§ The library).
 ## Open questions
 
 1. **What to adopt next.** The garden's own watcher is built. In this pass's
-   judgement: the watcher on managed repositories' pull requests, then the
+   judgment: the watcher on managed repositories' pull requests, then the
    steward publishing branches and pull requests, then plot trials and
    scoring, then the pull-request roles (shepherd, fixer, weaver).
 2. **Private provenance.** A port-log entry naming a tower path and commit

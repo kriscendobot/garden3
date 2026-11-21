@@ -108,7 +108,7 @@ test('harvest carries out an adopted skill, but not reference/ and never through
   const home = await slots.prepare('slot01', job, 'alder');
   const write = (file, text) => { fs.mkdirSync(path.dirname(path.join(home, file)), { recursive: true }); fs.writeFileSync(path.join(home, file), text); };
   write('skills/adopted/ci-triage/SKILL.md', '---\nsource: "garden"\n---\n\nadapted\n');
-  write(`${REFERENCE}/plots/birch/roles/builder/AGENT.md`, 'scribbled on a neighbour\n');
+  write(`${REFERENCE}/plots/birch/roles/builder/AGENT.md`, 'scribbled on a neighbor\n');
   const secret = path.join(T, 'secret');
   fs.writeFileSync(secret, 'SECRET-TOKEN-4471\n');
   fs.rmSync(path.join(home, 'roles/builder/AGENT.md'));

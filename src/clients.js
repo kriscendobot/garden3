@@ -14,7 +14,7 @@
 //   - the owner's consent file exists, says `watch: true`, and names this host;
 //   - the record is well formed, names this host, and is not older than the
 //     last one applied (so a stale fetch cannot roll a host back);
-//   - what it asks is in the vocabulary below, so a malformed or unrecognised
+//   - what it asks is in the vocabulary below, so a malformed or unrecognized
 //     order is refused whole rather than half-applied;
 //   - the owner's limits (slots, hours) bound it.
 // The vocabulary has no order that runs a command or reaches outside the

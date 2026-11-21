@@ -110,7 +110,7 @@ test('a job that hands off gets a planner, which dispatches the rest as its chil
   const planned = rec('board', 'big-plan');
   assert.deepEqual([planned.file, planned.level, planned.plans, planned.steps], ['held/big-plan.yay', 1, 1, ['big-1', 'big-2']], 'two steps, still level 1');
   assert.deepEqual(rec('board', 'big-2').after, ['big-1']);
-  // The steps have no stand-in behaviour: they fail, and keep blocking.
+  // The steps have no stand-in behavior: they fail, and keep blocking.
   assert.equal((await dispatcher.once()).outcome, 'failed');
   assert.equal(rec('board', 'big-1').file, 'failed/big-1.yay');
   assert.equal(await dispatcher.once(), null, 'big-2 waits on the failed step; nothing is claimable');
