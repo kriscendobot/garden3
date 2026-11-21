@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-21"
 ---
 
 # Designs
@@ -28,6 +28,7 @@ not a manual; the fuller explanation is for the garden book.
 | [quiescence.md](quiescence.md) | the coordinated restart: truncate, consolidate, rejuvenate |
 | [hosts.md](hosts.md) | several hosts |
 | [watcher.md](watcher.md) | the garden's own GitHub watcher, and the steward's replies |
+| [pull-requests.md](pull-requests.md) | shepherding and conducting pull requests in a project, across jobs |
 | [clients.md](clients.md) | client hosts and Oros Studio |
 | [services.md](services.md) | Rust and JavaScript; what remains shell |
 | [data-model.md](data-model.md) | YAY on disk, on the command line and across the seam |
