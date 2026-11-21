@@ -106,7 +106,7 @@ code, check them by reading the diff and grepping.
   `mkdtempSync` and `tmpdir` pass. A name the pre-change tree declares ambient
   in a `.d.ts` (a host binding the change cannot rename) is exempt; one the
   change declares itself is not. A fresh name that copies an abbreviated
-  neighbour still fails (`openTestDb` beside an existing `openTestDb`). A bare
+  neighbor still fails (`openTestDb` beside an existing `openTestDb`). A bare
   `args` binding cannot become `arguments` (strict mode forbids it): choose a
   descriptive name. Marker: `spell-out-exempt`. (`endojs/endo-but-for-bots`
   #650, #609, #684, #1329, #1336, #1538, #1588.)
@@ -169,7 +169,7 @@ ESLint's actual output first (`endojs/endo-but-for-bots#468`).
 - Lockfile changes still ship in their own commit, as the project's rule
   says. The gate does not stage a lockfile its fixers touched; split it.
 - The gate is the deterministic subset of reviewing your own change. What
-  needs judgment (does the body describe behaviour, not the diff) is still
+  needs judgment (does the body describe behavior, not the diff) is still
   yours, and review's.
 - After the gate, run the project's full checks (tests, docs) read-only, as
   [PLOT.md](../../roles/PLOT.md) asks, and report what they said.

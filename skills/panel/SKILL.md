@@ -129,16 +129,16 @@ seats mark prose and naming nits `request-changes`. Maintainer-authorized
 round, so treating every request-changes as blocking never converged; eight
 pull requests spent six to fourteen rounds each without a pass.
 
-- **Must-fix (blocks):** wrong behaviour; a security, capability or
+- **Must-fix (blocks):** wrong behavior; a security, capability or
   authority error; data loss or corruption; a broken contract (public API,
   exported or emitted types, wire or storage format, CLI, configuration; JSDoc
   type annotations the type checker reads are contract); failing tests, or
-  missing tests for behaviour the change adds or alters; a comment or doc
-  false enough to mislead a future change into unsafe behaviour.
+  missing tests for behavior the change adds or alters; a comment or doc
+  false enough to mislead a future change into unsafe behavior.
 - **Should-fix (never blocks):** comment or JSDoc wording that does not
-  change behaviour; identifier renames for spelling, abbreviation or style;
+  change behavior; identifier renames for spelling, abbreviation or style;
   commit-history tidiness; pull request title or description completeness;
-  test-style preferences where the changed behaviour is already tested.
+  test-style preferences where the changed behavior is already tested.
 - **When unsure, must-fix.** The disposition is `must-fix` if any finding is,
   else `pass`, with should-fix findings left in the review.
 - Taste or clarity raised by two seats independently is should-fix in this
@@ -223,7 +223,7 @@ the reader acts on.
 - **Publishing the review.** The steward would post the report as one
   pull request review, `request-changes` on must-fix and `approve` on pass,
   falling back to a plain comment when the garden's identity authored the
-  pull request, with a job-id marker so a repeat is recognised; and on a
+  pull request, with a job-id marker so a repeat is recognized; and on a
   pass, un-draft it. It belongs with publishing in `src/` beside the
   steward's other pull request actions
   ([designs/pull-requests.md](../../designs/pull-requests.md)).

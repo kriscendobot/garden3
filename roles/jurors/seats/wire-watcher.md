@@ -21,7 +21,7 @@ Panel: code.
   - **Check before trust.** When the change loads, parses, evaluates or runs
     bytes from outside the trust boundary (an archive, a bundle, a message,
     a stored capability), the integrity check comes before the bytes become
-    behaviour. An API that returns a computed hash after loading has the
+    behavior. An API that returns a computed hash after loading has the
     order wrong: "the wrong code has already had a chance to execute with
     whatever authorities you passed in. A safer API would be to pass the
     expected hash in."

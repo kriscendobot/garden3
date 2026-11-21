@@ -107,12 +107,12 @@ says where it comes from; the other says what happens to it.
 Group findings into three buckets, then give each a disposition.
 
 - **Must fix before merge**: a "request-changes" finding in a real-defect
-  class: wrong behaviour, a security or authority error, data loss, a broken
-  contract, failing or missing tests for changed behaviour, or a comment
+  class: wrong behavior, a security or authority error, data loss, a broken
+  contract, failing or missing tests for changed behavior, or a comment
   false enough to invite an unsafe change. Default: `must-fix-loop`.
 - **Should fix in this change**: nit-class findings, and taste or clarity
   points raised by at least two seats independently. Default: `summary-fix`.
-  Nit-class means: comment or JSDoc wording that does not change behaviour,
+  Nit-class means: comment or JSDoc wording that does not change behavior,
   identifier spelling or style renames, commit-history tidiness, pull
   request description completeness, test-style preferences. These never
   block, whatever the seat called them.

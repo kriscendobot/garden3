@@ -29,7 +29,7 @@ Panel: code.
   renamed export, is must-fix. The usual remedy is to reclassify the
   changeset and add the cascade entries.
 - **Shared with the curator: the silent break.** The signature stayed but
-  the contract moved. Cite the previous behaviour, the new one, and a caller
+  the contract moved. Cite the previous behavior, the new one, and a caller
   that relied on the old.
 - **Example of a finding:** "`packages/foo/src/index.js:42` returned `null`
   on missing input; it now throws `RangeError`; `packages/baz/src/use-foo.js:17`
