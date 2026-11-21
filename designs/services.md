@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-21"
 ---
 
 # Services: what the garden is written in
@@ -118,8 +118,11 @@ arguments, bounded by one policy file.
 The warden is compiled, so a host needs a binary for its own architecture,
 whatever that turns out to be. At first boot, and whenever its source on the
 shed has changed, a host **builds the warden from the shed's `rust/`**
-(`garden host build`) with the `rust` capability: rustc, cargo and the musl
-standard library, nothing else. It is built for the musl target and linked by
+(`garden host build`) with the `rust` capability: rustc, cargo, rustfmt,
+clippy and the musl standard library, nothing else. In the box a plain
+`cargo` builds for musl too (`CARGO_BUILD_TARGET`, set by the entrypoint), so
+the warden's tests and lints run there; a crate with build scripts or
+proc-macros (`rust/conformance`) needs a C linker and does not. It is built for the musl target and linked by
 `rust-lld`, the linker inside the toolchain (`rust/.cargo/config.toml`), with
 `--locked --offline`: no C compiler, no system linker, no registry, no
 network. The result is a static binary of about 500 KB.

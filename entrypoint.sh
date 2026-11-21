@@ -56,6 +56,9 @@ export HOME="$STATE/steward"
 export PATH="$CAP/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 export GARDEN_ROOT="$ROOT" GARDEN_CAP_ROOT="$CAP" GARDEN_SLOTS="$SLOTS" GARDEN_HOST="${GARDEN_HOST:-$(hostname)}"
 export GARDEN_WARDEN=/usr/local/libexec/garden-warden
+# The rust capability carries only the musl standard library and no C linker:
+# a plain cargo build, test, fmt or clippy in the box is for musl.
+export CARGO_BUILD_TARGET="$(uname -m)-unknown-linux-musl"
 # Not secrets: where gh keeps its store, so that a plain \`gh auth login\` in
 # this shell writes under the steward's home and nowhere in the checkout.
 export GH_CONFIG_DIR="$STATE/steward/.config/gh"

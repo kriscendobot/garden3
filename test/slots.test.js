@@ -11,9 +11,8 @@ import { makeNodePowers, makeFiles, run } from '../src/powers/node.js';
 import { makeSlots, TOMBSTONES } from '../src/slots.js';
 import { makeProjects } from '../src/project.js';
 import { parse } from '../src/yay.js';
-import { git, SHED } from './helpers.js';
+import { git, WARDEN } from './helpers.js';
 
-const WARDEN = path.join(SHED, 'rust/target/debug/warden');
 const skip = fs.existsSync(WARDEN) ? false : 'the warden is not built (cargo build --offline in rust/)';
 
 const setup = t => {

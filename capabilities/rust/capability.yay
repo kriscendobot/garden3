@@ -1,6 +1,10 @@
 bin:
   - "toolchain/bin/cargo"
   - "toolchain/bin/rustc"
+  - "toolchain/bin/rustfmt"
+  - "toolchain/bin/cargo-fmt"
+  - "toolchain/bin/cargo-clippy"
+  - "toolchain/bin/clippy-driver"
 install:
   - files: []
     run:
@@ -22,11 +26,25 @@ install:
       - "--disable-ldconfig"
   - files: []
     run:
+      - "sh"
+      - "{prefix}/installer-rustfmt/install.sh"
+      - "--prefix={prefix}/toolchain"
+      - "--disable-ldconfig"
+  - files: []
+    run:
+      - "sh"
+      - "{prefix}/installer-clippy/install.sh"
+      - "--prefix={prefix}/toolchain"
+      - "--disable-ldconfig"
+  - files: []
+    run:
       - "rm"
       - "-rf"
       - "{prefix}/installer-rustc"
       - "{prefix}/installer-cargo"
       - "{prefix}/installer-rust-std"
+      - "{prefix}/installer-rustfmt"
+      - "{prefix}/installer-clippy"
 name: "rust"
 requires: []
 sources:
@@ -43,6 +61,14 @@ sources:
       sha256: "4066d5dce6017dcd116c75972b3ec6c26fe5a1fa59f02a1da9e127d1f4a1aa7f"
       strip: 1
       url: "https://static.rust-lang.org/dist/rust-std-1.91.1-x86_64-unknown-linux-musl.tar.xz"
+    - into: "installer-rustfmt"
+      sha256: "4e1848cb39796f6927e9fc3bd2720299fb81349f4480cd68a5c3cf1b61649b53"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/rustfmt-1.91.1-x86_64-unknown-linux-gnu.tar.xz"
+    - into: "installer-clippy"
+      sha256: "09dda1d01cc3c95043dc34abba7db1e9ddd89ecabae7252d7238d158c0bb05f4"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/clippy-1.91.1-x86_64-unknown-linux-gnu.tar.xz"
   arm64:
     - into: "installer-rustc"
       sha256: "b9040293bc84d8b48cb859dcd0e95955c13ea29e3e637c7556bf7f0c12972217"
@@ -56,7 +82,15 @@ sources:
       sha256: "2a919a0e5df46e1bfe4b8be8fbc81cf48bf9813be34ff5f212a2a68f03eb517f"
       strip: 1
       url: "https://static.rust-lang.org/dist/rust-std-1.91.1-aarch64-unknown-linux-musl.tar.xz"
-summary: "rustc, cargo and the musl standard library: enough to build the warden from the shed with no C compiler and no system linker. Every host has it. A job that needs a fuller Rust toolchain (a C linker, the gnu standard library) needs more than this."
+    - into: "installer-rustfmt"
+      sha256: "6b69e11040d4829027caed10a886532badf01609f8466dbb8409cb109723722d"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/rustfmt-1.91.1-aarch64-unknown-linux-gnu.tar.xz"
+    - into: "installer-clippy"
+      sha256: "13b32a1f0b9def344bb93d4728b432ab7e63d2ebf195bcaac8b3b7f89e2b2fdf"
+      strip: 1
+      url: "https://static.rust-lang.org/dist/clippy-1.91.1-aarch64-unknown-linux-gnu.tar.xz"
+summary: "rustc, cargo, rustfmt, clippy and the musl standard library: enough to build and check the warden from the shed with no C compiler and no system linker. Every host has it, and the box builds for musl by default (CARGO_BUILD_TARGET). A job that needs a fuller Rust toolchain (a C linker, the gnu standard library) needs more than this."
 verify:
   - expect: "^cargo 1\\.91\\.1 "
     run:
@@ -65,5 +99,14 @@ verify:
   - expect: "^rustc 1\\.91\\.1 "
     run:
       - "rustc"
+      - "--version"
+  - expect: "^rustfmt 1\\.8"
+    run:
+      - "rustfmt"
+      - "--version"
+  - expect: "^clippy 0\\.1\\.91"
+    run:
+      - "cargo"
+      - "clippy"
       - "--version"
 version: "1.91.1"

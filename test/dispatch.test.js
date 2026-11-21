@@ -14,9 +14,8 @@ import { makeJournal } from '../src/journal.js';
 import { makeDispatcher } from '../src/dispatch.js';
 import { makeKeys, scrub } from '../src/keys.js';
 import { parse, stringify } from '../src/yay.js';
-import { mkGarden, git, SHED } from './helpers.js';
+import { mkGarden, git, SHED, WARDEN } from './helpers.js';
 
-const WARDEN = path.join(SHED, 'rust/target/debug/warden');
 const skip = fs.existsSync(WARDEN) ? false : 'the warden is not built (cargo build --offline in rust/)';
 
 // The stand-in agent. It reads its job id and behaves accordingly.

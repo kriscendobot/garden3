@@ -33,7 +33,7 @@ this table honest.
 | Capability | Pinned | Notes |
 | --- | --- | --- |
 | `node` | amd64, arm64 | base: every host. Also in `bootstrap/node.pin`. The amd64 archive was downloaded (nvm cache) and matches nodejs.org's `SHASUMS256.txt`; the arm64 hash is taken from that file |
-| `rust` | amd64, arm64 | base: every host. rustc, cargo and the musl standard library, from static.rust-lang.org; the amd64 archives were downloaded and match the publisher's `.sha256` files; the arm64 hashes are taken from those files |
+| `rust` | amd64, arm64 | base: every host. rustc, cargo, rustfmt, clippy and the musl standard library, from static.rust-lang.org; the amd64 archives were downloaded and match the publisher's `.sha256` files; the arm64 hashes are taken from those files |
 | `gh` | amd64, arm64 | for a host that publishes. 2.105.0; the amd64 archive was downloaded and matches the release's checksums file; the arm64 hash is taken from it |
 | `buildkit` | amd64 | hashes carried from the tower's Dockerfile; no arm64 source |
 | `shellcheck` | no | used by `scripts/lint.sh` when present |

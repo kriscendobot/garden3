@@ -12,6 +12,9 @@ export const SHED = path.resolve(import.meta.dirname, '..');
 // which in the box allows only the real slots directory. Tests name none, so
 // the warden checks the request alone; its policy has tests of its own.
 process.env.WARDEN_POLICY = '/nonexistent/warden.yay';
+// The debug warden, where cargo puts it: under the target triple when the
+// box sets one (CARGO_BUILD_TARGET), else under target/debug.
+export const WARDEN = path.join(SHED, 'rust/target', process.env.CARGO_BUILD_TARGET ?? '', 'debug/warden');
 
 // Where a test may run what it installs: the temp directory, unless it is
 // mounted noexec (as in the box), then /var/tmp.
