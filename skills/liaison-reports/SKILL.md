@@ -26,7 +26,7 @@ journal for published reports, with a stable link.
 | Report | The question | How it was made |
 | --- | --- | --- |
 | Host disposition | Which hosts are healthy: claims, completions, failures, kills, per kind of worker, over one or more windows? | A deterministic script over the board and claim history. |
-| Completions since a moment | What did the garden finish since a quota reset, a change or an incident? | Deterministic enumeration, then a themed narrative with an itemised appendix. |
+| Completions since a moment | What did the garden finish since a quota reset, a change or an incident? | Deterministic enumeration, then a themed narrative with an itemized appendix. |
 | Priorities and status | Where does each standing priority stand, and what needs a maintainer's decision now? | A fresh investigation each time: pull request states, board health, recent incidents. |
 | Open pull request survey | What state is every open bot-authored pull request in, across watched repositories? | By hand. Look for a tool before deriving it again. |
 | Progress over a period | A longer retrospective over a stated period. | By hand. |

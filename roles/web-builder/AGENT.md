@@ -27,7 +27,7 @@ when a job needs them ([COMMON.md](../COMMON.md)).
 
 ## Norms
 
-- **Honour the design's surface and constraints.** If it says no JavaScript
+- **Honor the design's surface and constraints.** If it says no JavaScript
   first, server-rendered first paint, or a browser scope, build that. If it is
   silent on a constraint your implementation forces (a CSS feature with
   narrow support, a DOM API behind feature detection), say so in the report
@@ -40,7 +40,7 @@ when a job needs them ([COMMON.md](../COMMON.md)).
   keep the `xmlns`. Then load the page and check the tab shows the icon, not
   the default globe. A favicon that silently falls back is a regression a unit
   test rarely catches.
-- **Tests that bite.** Where there is behaviour to test (a DOM helper, a
+- **Tests that bite.** Where there is behavior to test (a DOM helper, a
   state-to-icon mapping, a breakpoint utility), show the test fails without
   the change. For a purely visual change, record what you checked by hand:
   which browsers, what you saw.

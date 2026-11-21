@@ -31,13 +31,13 @@ pull request: its description is its opening summary.
 You cannot comment. Write the summary as `outbox/report.md` (or its first
 section, if the report also carries notes for the steward). The steward
 posts it as one comment carrying a marker with the job id, so a repeat is
-recognised rather than posted twice.
+recognized rather than posted twice.
 
 ## What it carries
 
 - **Head commit:** the exact commit it describes.
 - **What changed:** each item addressed and how, mapped to its commit when
-  there is one per concern. Behaviour, not diff.
+  there is one per concern. Behavior, not diff.
 - **What was declined and why:** out of scope, deferred to a follow-up,
   verified-no-change-needed with the proof. Silence on a declined item reads
   as an oversight.

@@ -70,7 +70,7 @@ lease, posts your summary as one comment, re-requests review and merges.
   fixups:** `git commit --fixup=<sha>` against the commit that introduced the
   violation, never a `style:` or `chore: prettier` commit, so the conductor
   can autosquash it ([retcon](../../skills/retcon/SKILL.md)). The shepherd
-  follows the same rule. A distinct, reviewable change in behaviour stays a
+  follows the same rule. A distinct, reviewable change in behavior stays a
   normal `fix:` or `feat:` commit.
 - **Lockfile churn ships in its own commit** (`chore: Update yarn.lock`).
 - **Do not rebase.** Your checkout starts at the head. Moving the pull
@@ -103,11 +103,11 @@ lease, posts your summary as one comment, re-requests review and merges.
   a compatibility shim with a `@deprecated` JSDoc naming the original, with
   importers migrated to the original. Barrels and `index.js` are not exempt;
   type-only re-exports are (@erights, endojs/endo-but-for-bots#475).
-- **A "gratuitous rename" comment is a revert**, not a defence.
+- **A "gratuitous rename" comment is a revert**, not a defense.
 - **When a fix changes the user-visible surface**, sweep the changeset in the
   same commit; do not add a second one
   ([changeset-discipline](../../skills/changeset-discipline/SKILL.md)).
-- **When a fix changes a test's behaviour, prove it fails closed:** revert the
+- **When a fix changes a test's behavior, prove it fails closed:** revert the
   fix, see the test fail, restore it. An equivalence claim gets an assertion.
 
 ### Scope
@@ -115,7 +115,7 @@ lease, posts your summary as one comment, re-requests review and merges.
 - **Your lane is this pull request.** When an item implies work across pull
   requests ("if X then also rename Y over there"), decide the local question,
   and put the cross-PR follow-up in your report. Do not act on it.
-- **A fix that generalises an operation across siblings converts every
+- **A fix that generalizes an operation across siblings converts every
   sibling in this pull request.** Twin packages (`packages/hex` and
   `packages/base64`), duplicated helpers (`packages/harden/make-hardener.js`
   and `packages/ses/src/make-hardener.js`), paired constructors keeping one
@@ -129,7 +129,7 @@ lease, posts your summary as one comment, re-requests review and merges.
   openly: a reproducer, a short analysis, and an offer to follow up.
 - **"Verified, no change needed" is an outcome.** When a reviewer asks for an
   invariant the code already keeps, cite the file and line, or the test, that
-  proves it. No empty commit; the reply is the artefact.
+  proves it. No empty commit; the reply is the artifact.
 - **A must-fix about the pull request's description is not a commit.** Write
   the new body, filled from the base branch's
   `.github/PULL_REQUEST_TEMPLATE.md` ([pr-formation](../../skills/pr-formation/SKILL.md)),
