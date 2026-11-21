@@ -83,10 +83,10 @@ authorization.
    done.
 6. **Write the upstream title and body** in `outbox/`, as a human contributor
    would have: the upstream template, no checklists, no file callouts,
-   behaviour rather than diff. Drop bot framing (`(mirror of #N)`), garden
+   behavior rather than diff. Drop bot framing (`(mirror of #N)`), garden
    bookkeeping, references to fork-side issues and pull requests (cite an
    upstream issue if one exists, otherwise omit), and garden-side packages,
-   branches or consumers upstream would not recognise.
+   branches or consumers upstream would not recognize.
 7. **Run upstream's checks** in the checkout and report what they said.
 
 ## Norms

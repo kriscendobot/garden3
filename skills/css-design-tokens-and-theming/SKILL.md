@@ -10,7 +10,7 @@ updated: "2026-11-21"
 
 # CSS design tokens and theming
 
-Purpose: express a web surface's colours (and spacing, elevation, radii) as
+Purpose: express a web surface's colors (and spacing, elevation, radii) as
 CSS custom properties on `:root`, derived from a named authority, re-bound per
 scheme, with a rationale per token, so a theme change is one place to edit
 and can be reviewed.
@@ -23,7 +23,7 @@ endojs/endo-but-for-bots's `llm` branch, which the garden's library indexes
 
 - A surface with more than one scheme (dark, high contrast) or a brand to
   follow.
-- A stylesheet collecting hard-coded colours that should vary by scheme.
+- A stylesheet collecting hard-coded colors that should vary by scheme.
 - A theme change a maintainer must be able to judge.
 
 A single-scheme surface that will never be rebranded may need only a small
@@ -46,7 +46,7 @@ re-theme renames nothing:
 }
 ```
 
-Components use `var(--text-primary)`. No hard-coded colour outside `:root`.
+Components use `var(--text-primary)`. No hard-coded color outside `:root`.
 
 ## Schemes
 
@@ -67,8 +67,8 @@ Another scheme re-binds the same names, so no component changes:
 
 Do not invent a palette from primaries. Name what the tokens derive from (a
 brand guide, a WCAG contrast target, a documented preference) and which
-source colour seeds each token. The chat client's dark scheme derives from
-the endojs.org brand: its link colour, button colour and gradient.
+source color seeds each token. The chat client's dark scheme derives from
+the endojs.org brand: its link color, button color and gradient.
 
 ## The rationale table
 
@@ -77,9 +77,9 @@ it a `:root` block is opaque numbers.
 
 | Role         | Light     | Dark      | Rationale                                       |
 | ------------ | --------- | --------- | ----------------------------------------------- |
-| Accent       | `#228be6` | `#d4455a` | endojs.org link colour, lightened for dark      |
+| Accent       | `#228be6` | `#d4455a` | endojs.org link color, lightened for dark      |
 | Code strings | `#0a3069` | `#fb923c` | orange from the endojs.org gradient             |
-| Backgrounds  | cool grey | warm grey | warm tones suit the burgundy and coral accent   |
+| Backgrounds  | cool gray | warm gray | warm tones suit the burgundy and coral accent   |
 
 A change to a token explains why its row changes; it does not just flip the
 value.
@@ -89,7 +89,7 @@ value.
 Text on a saturated accent (a sent-message bubble, an active row) is designed
 against the accent, so it keeps a fixed `white` in every scheme. Record each
 such exception in a comment at the declaration, so an audit for hard-coded
-colours finds only documented exceptions or regressions.
+colors finds only documented exceptions or regressions.
 
 ## Procedure
 
@@ -105,7 +105,7 @@ colours finds only documented exceptions or regressions.
 ## Verification
 
 - Every scheme re-themes every surface with no component change.
-- A search for colour literals outside `:root` finds only documented
+- A search for color literals outside `:root` finds only documented
   exceptions.
 - Contrast holds in each scheme against the named standard. Tokens
   centralise change; they do not guarantee contrast.
