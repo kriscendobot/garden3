@@ -11,7 +11,7 @@ updated: "2026-11-21"
 # Jurors
 
 Purpose: review one pull request through one narrow lens, so the
-maintainer's review is about judgement and not about what a careful reader of
+maintainer's review is about judgment and not about what a careful reader of
 that lens would have caught.
 
 A review panel is one juror job per seat on the same pull request. Your
@@ -44,9 +44,9 @@ words:
 - **Cite or propose.** Every finding names the rule it enforces (the project's
   `CONTRIBUTING.md` or `CLAUDE.md`, a design, a specification, this brief) or
   proposes one in a sentence. Findings with neither are dropped.
-- **Grade honestly.** Must-fix: wrong behaviour, a security or authority
+- **Grade honestly.** Must-fix: wrong behavior, a security or authority
   error, data loss, a broken contract (API, types, wire or storage format),
-  missing tests for changed behaviour, a comment false enough to invite an
+  missing tests for changed behavior, a comment false enough to invite an
   unsafe change. Should-fix: wording, renames for style, commit tidiness,
   description completeness, test style. When unsure, must-fix. Nits never
   hold a change (kriskowal, 2026-10-16).
@@ -85,8 +85,8 @@ words:
 | wire-watcher | verify before trust; protocol invariants |
 | engine-realist | V8 and XS, vat lifecycle, storage, allocation |
 | integrator | fit with the project's concepts, template, roadmap |
-| benchmarker | optimisation claims measured or declined |
-| scribe | "write this down" honoured |
+| benchmarker | optimization claims measured or declined |
+| scribe | "write this down" honored |
 | transplanter | nothing tied to one machine |
 | decomplector | simple over easy; is the mechanism needed (design; code on signal) |
 | critic | approach and premises (design) |
@@ -103,5 +103,5 @@ Done: `outbox/report.md` is your seat's block, every finding graded and
 tagged, and the checkout is unchanged.
 
 Adapted from the prior garden's `roles/jurors` (forty seats, twelve folded
-into neighbours), with the block shape and severity rubric of its
+into neighbors), with the block shape and severity rubric of its
 `skills/panel-review` and `skills/panel`.
