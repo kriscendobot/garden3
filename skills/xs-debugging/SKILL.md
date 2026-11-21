@@ -17,7 +17,7 @@ XS is the Moddable JavaScript engine. Agoric's `xsnap` worker runs on it
 (`packages/xsnap`, `packages/swingset-*` in `Agoric/agoric-sdk`: a contract
 bundle import or a vat upgrade runs user code under XS), and so do Endo's XS
 builds and the `xs2rust-endor` port (`endojs/endo-but-for-bots#600`), where
-XS behaviour is what is being ported, so any divergence is an XS question.
+XS behavior is what is being ported, so any divergence is an XS question.
 This is engine knowledge; reproduce with the project's own harness.
 
 ## The signals

@@ -11,7 +11,7 @@ updated: "2026-11-21"
 # Panel hints
 
 Purpose: from a pull request's diff alone, say which narrow review lenses
-("seats") have something to look at, so a review can grow many specialised
+("seats") have something to look at, so a review can grow many specialized
 seats without running every one of them on every change.
 
 A seat is one reviewer with one lens: the prior garden's jurors, whose briefs
@@ -73,7 +73,7 @@ boundary enumeration applies too broadly to risk a trigger missing it.
 Their signal is not a diff shape:
 
 - `scribe`: knowledge capture; needs the pull request's comment history.
-- `releaser`: whether the change is user-facing; a judgement, not a regex.
+- `releaser`: whether the change is user-facing; a judgment, not a regex.
 - `coverage-auditor`: test coverage of new lines; its signal is the coverage
   report. Cheap when coverage is clean, so seating it every time costs little,
   except on a platform arm (below), where a clean Node report proves nothing.

@@ -26,7 +26,7 @@ small change can take three to six seats.
 - **Cite or propose.** Every finding carries `[rule: <path>]` (the skill,
   role or project rule it enforces) or `[proposed-rule: <one sentence>]`.
   One with neither is dropped. List proposed rules in the report.
-- **Bucket, then dispose.** Real defects (wrong behaviour, security,
+- **Bucket, then dispose.** Real defects (wrong behavior, security,
   data loss, broken contract, missing tests) are `must-fix-loop`. Nits
   (wording, renames, commit tidiness, test style) and points two seats
   raised are `summary-fix`, and never block. Out of scope is `follow-up`,
