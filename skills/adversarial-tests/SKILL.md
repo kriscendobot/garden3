@@ -11,7 +11,7 @@ updated: "2026-11-21"
 # Adversarial tests
 
 Purpose: attack each invariant a module claims, with a list of inputs and
-orderings a regular review misses, and either pin the module's defence in a
+orderings a regular review misses, and either pin the module's defense in a
 test or surface the bug.
 
 Walk the list once per invariant the module asserts. Skip a category only
@@ -58,7 +58,7 @@ asked to "stress-test the invariants of `<module>`" writes tests; a reviewer
 - A callback that re-enters the function that called it.
 - A `then` that calls back synchronously (a user-supplied thenable can).
 - An `async` callback the code forgets to `await`.
-- A skipped or reordered initialisation step.
+- A skipped or reordered initialization step.
 - Lookup before write, write after revocation, send after cancel.
 
 ### SES
@@ -67,7 +67,7 @@ asked to "stress-test the invariants of `<module>`" writes tests; a reviewer
 - An object from a child compartment, where the code expects the start
   compartment's prototype.
 - A `passStyleOf` claim on a compartment-bound value.
-- Behaviour under `--feral-errors` versus the default taming, when the test
+- Behavior under `--feral-errors` versus the default taming, when the test
   depends on stack visibility.
 
 ### Timing and state

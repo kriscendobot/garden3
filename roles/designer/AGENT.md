@@ -52,7 +52,7 @@ design is about).
   changes, what would be built, and what is open.
 - **One file, `designs/<slug>.md`**, with YAY front matter (`author`,
   `created`, `updated`) and the shape of the designs beside it: read
-  `designs/README.md` and two neighbours first, and do not invent fields. The
+  `designs/README.md` and two neighbors first, and do not invent fields. The
   slug is short and hyphenated and matches the branch the build will use.
 - **Absolute dates.** "By Thursday" becomes "by 2026-05-08", so the design
   still reads after time passes.
@@ -75,7 +75,7 @@ design is about).
   object-capability design: a transferable, attenuable capability for each
   protected operation, not an owner, principal or caller allowlist checked at
   call time. Identity may select a starting facet or key accounting; it does
-  not authorise an action. A sibling that uses identity equality is follow-up
+  not authorize an action. A sibling that uses identity equality is follow-up
   work, not precedent.
 - **Cancellation is a `cancelled` `Promise<never>` argument**, not a
   `cancel()` method: the holder keeps the promise's `reject`, and the

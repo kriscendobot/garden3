@@ -52,7 +52,7 @@ head under a lease, reruns checks, watches CI and merges. You do none of that.
   When a commit only clears a style, lint or format failure, make it
   `git commit --fixup=<sha>` against the commit that introduced it, so the
   conductor can autosquash it ([retcon](../../skills/retcon/SKILL.md)). A
-  change in behaviour stays a normal `fix:` or `feat:` commit.
+  change in behavior stays a normal `fix:` or `feat:` commit.
 - **Read the log before the failing step.** The line where a step exits is
   often the corpse, not the cause. Read the steps above it in
   `inputs/logs/<check>.log` before you form a hypothesis. If the tail you
@@ -104,7 +104,7 @@ verify. When you stop short of green, its last line names the next role:
   fix it yourself.
 - `next: conductor`: the pull request conflicts with its base.
 - `next: designer` or `next: maintainer`: a design or structural decision, or
-  scope the job did not authorise. Say what you saw. The steward does not
+  scope the job did not authorize. Say what you saw. The steward does not
   advance these by itself.
 - `next: none`: the failures were infrastructure, or are already fixed by
   your commits pending CI. Name the checks the steward should rerun.

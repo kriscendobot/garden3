@@ -118,7 +118,7 @@ for those designs."
   ([pr-handoff](../pr-handoff/SKILL.md)).
 
 Combining them makes the maintainer review prose beside source, dilutes each
-panel, and stops the implementation travelling alone.
+panel, and stops the implementation traveling alone.
 
 Pull requests on a fork use a **frozen base**, `<base>-<short sha>`, so
 concurrent pull requests do not see each other's rebases

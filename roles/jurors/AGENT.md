@@ -11,7 +11,7 @@ updated: "2026-11-21"
 # Jurors
 
 Purpose: review one pull request through one narrow lens, so that the
-maintainer's review is about judgement and not about catching what a careful
+maintainer's review is about judgment and not about catching what a careful
 reader of that lens would have caught.
 
 A review panel is a set of juror jobs on one pull request, one job per seat.
@@ -89,7 +89,7 @@ with what matters most.
 ## Norms
 
 - **Stay in your seat.** Your seat's brief names its primary surface and the
-  slice it shares with neighbours. When you notice something that belongs to
+  slice it shares with neighbors. When you notice something that belongs to
   another seat, one line in Notes naming that seat is enough; do not expand
   the inquiry.
 - **Cite or propose, every finding.** A finding carries `[rule: <path>]`,
@@ -101,16 +101,16 @@ with what matters most.
   the severity answers "what do we do with it". They are independent.
 - **Grade each finding.** The aggregator grades again and its grade wins,
   so grade honestly rather than loudly:
-  - **must-fix**: wrong behaviour; a security, capability or authority
+  - **must-fix**: wrong behavior; a security, capability or authority
     error; data loss; a broken contract (public API, emitted types, wire or
     storage format, CLI, configuration surface; JSDoc type annotations a
     type checker reads count as contract); failing tests, or missing tests
-    for behaviour the change adds or alters; a comment or document that is
-    false in a way that would mislead a future change into unsafe behaviour.
+    for behavior the change adds or alters; a comment or document that is
+    false in a way that would mislead a future change into unsafe behavior.
   - **should-fix**: comment or JSDoc wording that does not change
-    behaviour; identifier renames for spelling, abbreviation or style;
+    behavior; identifier renames for spelling, abbreviation or style;
     commit-history tidiness; pull request title or description
-    completeness; test-style preferences where the behaviour is already
+    completeness; test-style preferences where the behavior is already
     tested.
   - **comment-only**: taste.
   - When unsure between must-fix and should-fix, must-fix.
@@ -227,8 +227,8 @@ know how its block will be read.
 | [wire-watcher](seats/wire-watcher.md) | code | integrity and protocols on the wire |
 | [engine-realist](seats/engine-realist.md) | code | V8 and XS, vat lifecycle, storage, allocation |
 | [integrator](seats/integrator.md) | code | fit with the project's concepts, conventions and future reader |
-| [benchmarker](seats/benchmarker.md) | code | every optimisation claim measured or declined |
-| [scribe](seats/scribe.md) | code | every "write this down" honoured |
+| [benchmarker](seats/benchmarker.md) | code | every optimization claim measured or declined |
+| [scribe](seats/scribe.md) | code | every "write this down" honored |
 | [transplanter](seats/transplanter.md) | code | nothing tied to one developer's machine |
 | [decomplector](seats/decomplector.md) | design, code on signal | simple over easy; is the mechanism needed at all |
 | [critic](seats/critic.md) | design | the approach and the premises it rests on |
@@ -238,7 +238,7 @@ know how its block will be read.
 
 ### Merged
 
-The prior garden had forty seats. Twelve folded into a neighbour that
+The prior garden had forty seats. Twelve folded into a neighbor that
 already owned most of their surface:
 
 - `coverage-auditor` into **prover** (both ask whether tests stand behind

@@ -115,7 +115,7 @@ maintainer set: cheap first).
    Have the importers in the project actually moved? A shim whose importers
    still use it is not compliant.
 
-There is no automatic fixer. Complying takes judgement: which importers to
+There is no automatic fixer. Complying takes judgment: which importers to
 move and what the message says.
 
 ## When reviewing

@@ -23,7 +23,7 @@ Panel: code.
   goes red. A test that passes on both the patched and the unpatched code is
   not load-bearing: must-fix.
 - **Coverage-padding tests are the recurring finding.** Tests added to move
-  a coverage number, each not pinning a real branch's behaviour, are
+  a coverage number, each not pinning a real branch's behavior, are
   must-fix. The remedy is an explicit failure-mode assertion, or deleting the
   test.
 - **Shared with the assessor: the bug the test does not catch.** When a test

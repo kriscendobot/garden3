@@ -119,7 +119,7 @@ sibling's row is lost.
 
 `outbox/report.md` opens with two to five sentences a maintainer can take in
 at a glance: what was ingested (source, section count) or skipped, and, when
-the job asked a judgement question ("is this useful", "does it overlap"), the
+the job asked a judgment question ("is this useful", "does it overlap"), the
 answer first. Then: each source ingested with its section count, or skipped
 with the matching commit; each topic and concept page touched; the
 classification of each fetched source; that the link check passed; and what

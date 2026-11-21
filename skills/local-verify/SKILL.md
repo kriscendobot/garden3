@@ -19,7 +19,7 @@ local run means a green CI run.
 The maintainer's standing policy (2026-07-20): a lint or test failure in CI
 is a failure of our automation to anticipate it. Every check CI runs is run
 locally first. A red CI check is a defect to close, not only a pull request
-to fix. Running the checks is not an optimisation; it is the rule. The
+to fix. Running the checks is not an optimization; it is the rule. The
 saving (a short or empty shepherd round, CI logs kept out of a worker's
 context) follows from it.
 
@@ -110,7 +110,7 @@ Why each is where it is:
   makes the clean-tree check vacuous; a missed regen once turned CI's
   `build:types:check` red after a new workspace dependency.
 - **The clean-tree check**, after everything: if `git status --porcelain`
-  shows changes, a generator rewrote a checked-in artefact, which was stale.
+  shows changes, a generator rewrote a checked-in artifact, which was stale.
   Commit the regeneration (endojs/endo-but-for-bots#714: a rebase staled
   `packages/agentry/src/execute/{git,fs}-types.js` and every CI test job went
   red after approval). A mutating `format` trips it too, which is right:
@@ -133,7 +133,7 @@ Why each is where it is:
 - **root-types**, the other check outside `yarn lint`:
   `NODE_OPTIONS=--max-old-space-size=8192 corepack yarn tsc -p tsconfig.json --noEmit`,
   when the root `tsconfig.json` checks JavaScript (`checkJs: true`, read from
-  `tsc -p tsconfig.json --showConfig` so `extends` is honoured). A package
+  `tsc -p tsconfig.json --showConfig` so `extends` is honored). A package
   with `checkJs: false` never type-checks its `.js` tests under its own
   `tsc`, so an ill-typed test passes there and fails CI's root program
   (endojs/endo-but-for-bots#1125). The whole-repo program runs out of memory
