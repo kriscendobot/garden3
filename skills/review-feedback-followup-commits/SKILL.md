@@ -44,9 +44,9 @@ job whose body carries the comments.
 - **An item that demands a major rewrite.** Land the rewrite as one commit,
   and later follow-ups as additive sharpenings a reviewer could drop without
   unwinding it. Do not split it into theatrical phases.
-- **A job that summarises threads with line numbers and suggested actions.**
+- **A job that summarizes threads with line numbers and suggested actions.**
   The line is authoritative; the action is a hint. Read the file at the line
-  yourself: whoever summarised it may have matched it to the wrong file or
+  yourself: whoever summarized it may have matched it to the wrong file or
   name.
 - **A package rename.** Sweep the whole cascade: the directory,
   `package.json`, test files, `.changeset/*.md`, error strings, designs, the
@@ -56,7 +56,7 @@ job whose body carries the comments.
   it `git commit --fixup=<introducing sha>`, not a standalone commit, so the
   conductor absorbs it at merge with autosquash
   ([retcon](../retcon/SKILL.md), [conductor](../../roles/conductor/AGENT.md)).
-  Behaviour a reviewer would weigh on its own is still a normal `fix:` or
+  Behavior a reviewer would weigh on its own is still a normal `fix:` or
   `feat:` commit.
 - **The pull request merged while you worked.** If the head branch is gone,
   build your commits on the base as given and say in the report that they

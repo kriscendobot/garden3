@@ -59,11 +59,11 @@ seat or gate in `missed_by`. Three shapes:
   made the logic testable now. The coverage seat saw no untested new runtime
   path and passed.
 - **Moving the measurement**: assertions that restate the implementation
-  instead of testing behaviour; a rename that dodges a lint rule instead of
+  instead of testing behavior; a rename that dodges a lint rule instead of
   fixing the name.
 
 Record the verdict either way, with grounds. A dismissal is as durable as a
-miss, so the same comment is never argued twice and the judgement stays
+miss, so the same comment is never argued twice and the judgment stays
 auditable.
 
 ## 2. Record
@@ -123,7 +123,7 @@ The seats are the panel's ([panel](../panel/SKILL.md)).
 ## 4. Threshold
 
 At the end of every retro that records a miss, look at the one cluster you
-touched and decide then. The threshold is your judgement, bounded by a floor
+touched and decide then. The threshold is your judgment, bounded by a floor
 and written down:
 
 - **Floor**: three or more misses across two or more distinct pull requests.
