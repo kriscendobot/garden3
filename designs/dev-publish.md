@@ -21,8 +21,8 @@ built. This is the same procedure, run on request as `garden devpublish`
    `dev_publish.work`.
 2. Stamp each public workspace `<x.y.z+1>-dev.<YYYYMMDDHHMMSS>.g<sha7>`: the
    next patch of its version, so it sorts above the published release, and
-   the commit's time in UTC. Then and rewrite `workspace:` dependencies to the stamped
-   versions.
+   the commit's time in UTC. Rewrite `workspace:` dependencies to the
+   stamped versions.
 3. Exclude a workspace whose version is not plain `x.y.z`, or that depends at
    run time on a private workspace, with every workspace that depends on it.
 4. Install with `yarn install --immutable --mode=skip-build`, and with
@@ -84,8 +84,8 @@ If only endojs/endo is allowed, `dev_publish.repository` and `ref` in
 `npm-minion-town` (`keys/registry.yay`): a `PublishGrant` token the registry's
 operator issues, for `@endo/*` and `ses`, as the user `garden`, good until
 2027-05-21 (a new one is promised in April). `garden devpublish whoami`
-checks it. By the registry's policy it can publish only `dev-*` prereleases. The
-steward reads it at the start of `publish`, writes it into a 0600 `.npmrc` in
+checks it. By the registry's policy it can publish only `dev-*` prereleases.
+The steward reads it at the start of `publish`, writes it into a 0600 `.npmrc` in
 the run directory, and removes that file when the run ends, whether it
 succeeded or failed.
 
