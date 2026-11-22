@@ -38,9 +38,10 @@ import { parse, stringify } from './yay.js';
 import { fromArgs } from './shon.js';
 import { Refusal } from './harden.js';
 
+// Exit only once the reply is written: a pipe takes a large reply in pieces,
+// and exiting at once would cut it off.
 const reply = (doc, status) => {
-  process.stdout.write(stringify(doc));
-  process.exit(status);
+  process.stdout.write(stringify(doc), () => process.exit(status));
 };
 
 /** Assemble the services of this host from its environment. Nothing is contacted until a method runs. */
