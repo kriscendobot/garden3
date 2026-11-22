@@ -1,9 +1,9 @@
 reports: []
 repos:
   "endojs/endo-but-for-bots":
-    cursor: "2026-11-18T00:38:12Z"
+    cursor: "2026-11-22T20:05:46Z"
     seen:
-      - "rv5949027843"
+      - 7084935146
   "kriscendobot/cosgov":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
@@ -61,4 +61,5 @@ repos:
   "kriscendobot/ymax-stdio-mcp":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
-strangers: []
+strangers:
+  - "dependabot[bot]"
