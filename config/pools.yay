@@ -1,1 +1,8 @@
-pools: []
+pools:
+  - hosts:
+      - "endolin-garden-ece02cb4"
+    note: "the prior garden's calibration of claude-endolin1 on 2026-10-06 (301M implied at 90%); correct it when the real ceiling is known"
+    pool: "claude-endolin"
+    set_at: "2026-11-22T20:06:23Z"
+    set_by: "kriskowal"
+    weekly_tokens: 301000000
