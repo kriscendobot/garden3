@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-21"
+updated: "2026-11-22"
 ---
 
 # Services: what the garden is written in
@@ -49,6 +49,7 @@ re-owns a slot's home, and runs a job as that account under its deadline
 | `github.js`, `watcher.js`, `steward.js` | the garden's view of GitHub; hearing maintainers; answering them |
 | `dispatch.js`, `supervisor.js` | the composition, and the one loop |
 | `yay.js`, `shon.js` | the data model on disk and on the command line |
+| `devpublish.js` | publishing a branch's `dev-*` releases, on the steward's command |
 | `prose.js` | American English without Botese: the lists' check, `garden prose` |
 | `powers/node.js` | the only module that imports Node's builtins |
 | `cli.js` | `garden <service> <method> [ value ]` |

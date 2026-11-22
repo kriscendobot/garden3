@@ -21,7 +21,7 @@ import { makeProjects } from './project.js';
 import { makeJournal } from './journal.js';
 import { makeBoatman } from './mail.js';
 import { makePlots } from './plots.js';
-import { makeKeys } from './keys.js';
+import { makeKeys, scrub } from './keys.js';
 import { makeHost } from './host.js';
 import { makeDispatcher } from './dispatch.js';
 import { makeSupervisor } from './supervisor.js';
@@ -32,6 +32,7 @@ import { makeSteward } from './steward.js';
 import { makeHostInfo } from './hostinfo.js';
 import { makeLogin } from './login.js';
 import { makeProse, parseLists, SKILL } from './prose.js';
+import { makeDevPublisher } from './devpublish.js';
 import * as wrapup from './wrapup.js';
 import { parse, stringify } from './yay.js';
 import { fromArgs } from './shon.js';
@@ -183,6 +184,8 @@ export const assemble = (powers = makeNodePowers()) => {
     host: lazy(() => makeHost({ files: makeFiles, run, rootRepo, stateDir, host, clock, shards, capabilities, slots, log: powers.log, build })),
     project: lazy(() => makeProjects({ files: makeFiles, run, home: env.GARDEN_JOB_HOME ?? env.HOME, repositories: env.GARDEN_REPOSITORIES })),
     clients: lazy(() => makeClientWatch({ shards, run, files: makeFiles, stateDir, host, consentFile: env.GARDEN_CLIENT_CONSENT ?? path.join(rootRepo, 'CLIENT-CONSENT.yay'), clock })),
+    // `garden devpublish plan|publish [ --by <login> ]`: the steward publishing a branch's dev-* releases.
+    devpublish: lazy(() => makeDevPublisher({ files: makeFiles, run, env: scrub(env), keys, journal, clock, work: config.dev_publish.work, config: config.dev_publish, log: powers.log })),
     // `garden prose check|diff|metadata`, against the lists on this shed, in the working directory.
     prose: lazy(() => makeProse({ files: makeFiles(path.resolve('.')), run, lists: parseLists({ divergences: root.read(`${SKILL}/divergences.tsv`), cliches: root.read(`${SKILL}/cliches.tsv`) }) })),
     mail: lazy(() => makeBoatman({ files: makeFiles, sha256File: powers.sha256File, towerDir: env.GARDEN_TOWER ?? path.resolve(rootRepo, '../tower'), gardenDir: stateDir, clock })),

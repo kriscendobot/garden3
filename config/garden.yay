@@ -9,6 +9,12 @@ capabilities:
   base:
     - "node"
     - "rust"
+dev_publish:
+  key: "npm-minion-town"
+  ref: "llm"
+  registry: "https://npm.minion.town"
+  repository: "endojs/endo-but-for-bots"
+  work: "/var/tmp/garden-dev-publish"
 github:
   bot: "kriscendobot"
   identity:

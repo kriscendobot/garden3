@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-21"
+updated: "2026-11-22"
 ---
 
 # Steward
@@ -12,7 +12,8 @@ workers do not: the bot's GitHub key and the right to post and settle jobs.
 
 Skills: [job-board](../../skills/job-board/SKILL.md),
 [quiescence](../../skills/quiescence/SKILL.md),
-[upstream-adoption](../../skills/upstream-adoption/SKILL.md).
+[upstream-adoption](../../skills/upstream-adoption/SKILL.md),
+[dev-publish](../../skills/dev-publish/SKILL.md).
 
 ## Norms
 
