@@ -14,6 +14,6 @@ gpu: false
 host: "endolin-garden-ece02cb4"
 memory_gb: 125.1
 os: "linux"
-shed: "062aaaf29dbef6452077e6b817edaec4b6acd1d8"
+shed: "35c615f62cdf66239a39919096ad3c03dcaed61b"
 slots: 4
-updated_at: "2026-11-20T14:56:04Z"
+updated_at: "2026-11-22T22:26:04Z"
