@@ -3,4 +3,10 @@ arcs:
     status: "active"
     summary: "work posted without an arc"
     throttle: 1
+  - arc: "ironhorse-test262-ratchet"
+    set_at: "2026-11-22T20:06:27Z"
+    set_by: "kriskowal"
+    share: 0.25
+    status: "active"
+    summary: "ironhorse: the test262 ratchet"
 week_start: "2026-11-14T17:00:00Z"
