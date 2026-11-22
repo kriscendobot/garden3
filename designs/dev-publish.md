@@ -19,8 +19,9 @@ built. This is the same procedure, run on request as `garden devpublish`
 
 1. Clone the branch's tip, shallow, into a fresh run directory under
    `dev_publish.work`.
-2. Stamp each public workspace `<x.y.z>-dev.<YYYYMMDDHHMMSS>.g<sha7>` from the
-   commit's time in UTC, and rewrite `workspace:` dependencies to the stamped
+2. Stamp each public workspace `<x.y.z+1>-dev.<YYYYMMDDHHMMSS>.g<sha7>`: the
+   next patch of its version, so it sorts above the published release, and
+   the commit's time in UTC. Then and rewrite `workspace:` dependencies to the stamped
    versions.
 3. Exclude a workspace whose version is not plain `x.y.z`, or that depends at
    run time on a private workspace, with every workspace that depends on it.
@@ -64,11 +65,26 @@ Found on the way:
 - npm reads a bare `dist/<file>.tgz` as GitHub shorthand, so paths start with
   `./`.
 
+## The operator's rules
+
+The registry's operator sent the garden its token on 2026-11-22, with rules:
+- publish only `@endo/*` and `ses`, only from public commits on
+  github.com/endojs/endo;
+- versions are the next patch of the published version, tagged with the
+  commit's UTC date;
+- tags move only forward; no unpublish, no deprecate, never `latest`.
+
+endo-but-for-bots is not a fork of endojs/endo, and `llm`'s commits are not
+on it, so publishing `llm` is asked of the operator and waits for the answer.
+If only endojs/endo is allowed, `dev_publish.repository` and `ref` in
+`config/garden.yay` move to endojs/endo's `master`.
+
 ## The key
 
 `npm-minion-town` (`keys/registry.yay`): a `PublishGrant` token the registry's
-operator issues with `npm-registry-admin grants issue`, for `@endo/*` and
-`ses`. By the registry's policy it can publish only `dev-*` prereleases. The
+operator issues, for `@endo/*` and `ses`, as the user `garden`, good until
+2027-05-21 (a new one is promised in April). `garden devpublish whoami`
+checks it. By the registry's policy it can publish only `dev-*` prereleases. The
 steward reads it at the start of `publish`, writes it into a 0600 `.npmrc` in
 the run directory, and removes that file when the run ends, whether it
 succeeded or failed.
@@ -79,5 +95,6 @@ succeeded or failed.
   exclusions, and a run against a fixture repository with npm faked. The
   tests check that `dev-latest` moves only after every publish, that a rerun
   skips, and that a failure leaves no token and no moved tag.
-- Not yet run against npm.minion.town: it waits for the key.
+- The key is set and `whoami` answers `garden`. No publish yet: it waits for
+  the operator's answer about the source repository.
 - Not built: a cadence. The maintainer asked for a manual trigger.

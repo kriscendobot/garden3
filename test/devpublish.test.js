@@ -32,8 +32,8 @@ test('stamping: workspace dependencies get the stamped versions; a private one e
   const s = stampWorkspaces(WORKSPACES, 'dev.20261117035838.g0368767');
   assert.deepEqual(s.packages.map(p => p.name), ['@endo/a', '@endo/b']);
   const a = s.manifests.find(m => m.pkg.name === '@endo/a').pkg;
-  assert.equal(a.version, '1.0.0-dev.20261117035838.g0368767');
-  assert.deepEqual(a.dependencies, { '@endo/b': '1.0.0-dev.20261117035838.g0368767', left: '^1.0.0' });
+  assert.equal(a.version, '1.0.1-dev.20261117035838.g0368767', 'the next patch, so it sorts above the published 1.0.0');
+  assert.deepEqual(a.dependencies, { '@endo/b': '1.0.1-dev.20261117035838.g0368767', left: '^1.0.0' });
   assert.deepEqual(a.devDependencies, {}, 'a dev dependency on a private workspace is dropped');
   assert.deepEqual(s.excluded, [
     { name: '@endo/downstream', reason: 'depends on excluded @endo/leaky' },
@@ -73,6 +73,7 @@ const fixture = ({ failPublish } = {}) => {
       const rc = args[args.indexOf('--userconfig') + 1];
       assert.match(fs.readFileSync(rc, 'utf8'), /^\/\/npm\.example\/:_authToken=tok\n$/);
       assert.equal(fs.statSync(rc).mode & 0o777, 0o600);
+      if (args[0] === 'whoami') return { status: 0, stdout: 'garden\n', stderr: '' };
       if (args[0] === 'view') return registry.has(args[1]) ? { status: 0, stdout: `${args[1].split('@').pop()}\n`, stderr: '' } : { status: 1, stdout: '', stderr: 'E404' };
       if (args[0] === 'publish') {
         if (failPublish && args[1].includes(failPublish)) return { status: 1, stdout: '', stderr: 'npm error code E400' };
@@ -128,6 +129,12 @@ test('a failed publish moves no dev-latest, leaves no token, and keeps the run t
   const [kept] = fs.readdirSync(path.join(f.work, 'runs'));
   assert.ok(kept, 'the run is kept');
   assert.ok(!fs.existsSync(path.join(f.work, 'runs', kept, '.npmrc')), 'the token is gone');
+});
+
+test('whoami checks the key against the registry, and leaves no token behind', async () => {
+  const f = fixture();
+  assert.equal(await f.make().whoami(), 'garden');
+  assert.deepEqual(fs.readdirSync(path.join(f.work, 'check')), []);
 });
 
 test('no key, no run', async () => {

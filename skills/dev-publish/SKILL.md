@@ -11,10 +11,16 @@ npm.minion.town as `dev-*` releases, when a maintainer asks. Design:
 [dev-publish.md](../../designs/dev-publish.md).
 
 ```sh
+garden devpublish whoami                     # the key and the registry: answers "garden"
 garden devpublish plan                       # everything but publishing: versions, tag, what is left out
 garden devpublish publish [ --by <login> ]   # publish the tip, then move dev-latest
 ```
 
+0. **Mind the operator's rules.** npm.minion.town's operator allows
+   publishing only from public commits on github.com/endojs/endo, for
+   `@endo/*` and `ses`. Whether endo-but-for-bots' `llm` may be published
+   too is asked and not yet answered: until it is, do not run `publish`
+   against it.
 1. **Run `plan` first** when the branch has changed in a way you have not
    seen: new public packages, a new build step. It clones, installs, stamps,
    builds and packs, and says what would go and what is excluded and why.

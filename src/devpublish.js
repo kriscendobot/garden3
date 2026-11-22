@@ -8,8 +8,9 @@
 // project's own scripts, publish every tarball under the commit's date tag,
 // and only when all are present move `dev-latest`. The registry is
 // npm.minion.town, whose rules (packages/npm-registry-server/src/
-// dev-release.js) are what the versions and tags follow: versions
-// <x.y.z>-dev.<YYYYMMDDHHMMSS>.g<sha>, date tags dev-YYYY-MM-DD, and only
+// dev-release.js) and its operator's note are what the versions and tags
+// follow: versions <x.y.z+1>-dev.<YYYYMMDDHHMMSS>.g<sha> (the next patch of
+// the published version), date tags dev-YYYY-MM-DD, and only
 // dev-* tags, which move forward. Design: designs/dev-publish.md.
 //
 // The publisher token is a key the maintainer sets (keys/registry.yay); it
@@ -34,8 +35,9 @@ const RUNTIME = ['dependencies', 'peerDependencies', 'optionalDependencies'];
 
 /**
  * Stamp a monorepo's workspaces. `workspaces` is [{location, pkg}]. A public
- * workspace gets `<version>-<id>`, and its workspace: dependencies the
- * stamped versions. One is excluded, with every public workspace that
+ * workspace gets the next patch of its version with the release's suffix
+ * (2.1.0 becomes 2.1.1-<id>, which sorts above the published 2.1.0), and its
+ * workspace: dependencies the stamped versions. One is excluded, with every public workspace that
  * depends on it, when its version is not plain x.y.z or it depends at run
  * time on a private workspace: npm would resolve that to nothing.
  * Returns {manifests, packages, excluded}; manifests are the rewritten
@@ -66,7 +68,8 @@ export const stampWorkspaces = (workspaces, id) => {
     }
   }
   const included = publics.filter(w => !excluded.has(w.pkg.name));
-  const version = new Map(included.map(w => [w.pkg.name, `${w.pkg.version}-${id}`]));
+  const nextPatch = v => v.replace(/^(\d+)\.(\d+)\.(\d+)$/, (_, x, y, z) => `${x}.${y}.${Number(z) + 1}`);
+  const version = new Map(included.map(w => [w.pkg.name, `${nextPatch(w.pkg.version)}-${id}`]));
   const manifests = included.map(w => {
     const pkg = structuredClone(w.pkg);
     pkg.version = version.get(pkg.name);
@@ -142,10 +145,33 @@ export const makeDevPublisher = ({ files, run, env, keys, journal, clock, work, 
     return { runDir, dir, release, ...stamped };
   };
 
+  /** Run npm with the token in a 0600 .npmrc that lives only for the call. */
+  const withToken = async (dirRel, fn) => {
+    const token = await keys.read(config.key, 'steward');
+    const npmrc = `${dirRel}/.npmrc`;
+    root.writeBytes(npmrc, `${registry.replace(/^https?:/, '')}/:_authToken=${token}\n`, 0o600);
+    try {
+      return await fn(args => run('npm', [...args, '--userconfig', root.path(npmrc), '--registry', registry], { env: toolEnv, cwd: root.path(dirRel), timeoutMs: 5 * 60 * 1000 }));
+    } finally {
+      root.remove(npmrc);
+    }
+  };
+
   const summary = (p, extra = {}) =>
     harden({ repository: config.repository, ref: config.ref, commit: p.release.commit, version_suffix: p.release.id, tag: p.release.tag, packages: p.packages.length, excluded: p.excluded, ...extra });
 
   return harden({
+    /** Who the registry takes the key for. Checks the key and the registry without publishing. */
+    whoami: async () => {
+      root.mkdir('check');
+      root.chmod('.', 0o700);
+      return withToken('check', npm => {
+        const r = npm(['whoami']);
+        if (r.status !== 0) refuse('whoami-failed', `${registry}: ${(r.stderr || r.stdout).trim().split('\n').slice(-2).join(' | ')}`);
+        return r.stdout.trim();
+      });
+    },
+
     /** Everything short of publishing: what would go, under which versions and tag, and what is left out and why. */
     plan: async ({ ref } = {}) => {
       const p = prepare(ref);
@@ -159,16 +185,12 @@ export const makeDevPublisher = ({ files, run, env, keys, journal, clock, work, 
      * run left. `dev-latest` moves only once every package is present.
      */
     publish: async ({ ref, by } = {}) => {
-      const token = await keys.read(config.key, 'steward');
+      await keys.read(config.key, 'steward'); // no key, no clone
       const p = prepare(ref);
-      const host = registry.replace(/^https?:/, '');
-      const npmrc = `${p.runDir}/.npmrc`;
-      const npm = args => run('npm', [...args, '--userconfig', root.path(npmrc), '--registry', registry], { env: toolEnv, cwd: p.dir, timeoutMs: 5 * 60 * 1000 });
-      const present = x => npm(['view', `${x.name}@${x.version}`, 'version']).stdout.trim() === x.version;
       const published = [];
       const skipped = [];
-      try {
-        root.writeBytes(npmrc, `${host}/:_authToken=${token}\n`, 0o600);
+      await withToken(p.runDir, async npm => {
+        const present = x => npm(['view', `${x.name}@${x.version}`, 'version']).stdout.trim() === x.version;
         for (const x of p.packages) {
           if (present(x)) {
             skipped.push(x.name);
@@ -184,9 +206,7 @@ export const makeDevPublisher = ({ files, run, env, keys, journal, clock, work, 
           const r = npm(['dist-tag', 'add', `${x.name}@${x.version}`, SHARED_TAG]);
           if (r.status !== 0) refuse('tag-failed', `${SHARED_TAG} for ${x.name}@${x.version}: ${(r.stderr || r.stdout).trim().split('\n').slice(-2).join(' | ')}`);
         }
-      } finally {
-        root.remove(npmrc);
-      }
+      });
       root.remove(p.runDir);
       const result = summary(p, { published: published.length, skipped: skipped.length, [SHARED_TAG]: p.packages.length, by: by ?? null });
       await journal?.note('steward', `dev-publish: ${config.repository} ${config.ref} at ${p.release.commit.slice(0, 12)} to ${registry} as ${p.release.tag} and ${SHARED_TAG}: ${published.length} published, ${skipped.length} already there, ${p.excluded.length} excluded${by ? `; asked by ${by}` : ''}.`);
