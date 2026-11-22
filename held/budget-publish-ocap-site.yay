@@ -1,0 +1,17 @@
+after: []
+arc: "maintainer"
+attempts: 0
+body: "Publish the garden's budget as an ocap.site through minion.town: a static foreground, with powers to subscribe to the latest budget and to read the history, paginated. The maintainer asked for this, parked until the garden has a minion.town guest account to publish with.\n\nWhat there is to publish: once a day the leader writes journal:budget/days/<date>.yay. It holds each subscription pool's weekly total, the fraction of the week gone, and for the maintainer's discretion, the foreman's discretion and every arc: credit, spent, swept and available. Spending is the week's to date; a day's spending is the difference between two days. The model is shed:designs/budget.md, under \"The garden's version: envelopes\". Past weeks are folded into journal:budget/weeks/ at a quiescence.\n\nThe site:\n- a static foreground that charts each pool's envelopes over the week, and spending per day by the maintainer, the foreman and each arc;\n- a power to subscribe to the latest day's record, and a power to page backward through the days, read-only;\n- nothing the garden must not make public: the records carry no keys, logins or private repository names. Check that and say so.\n\nDesign how the garden publishes to it, as an ocap.site on minion.town with the guest account. Cover what credential that takes, which the maintainer sets as a key file (shed:designs/keys.md), and which service in shed:src/ pushes each new day. Design first, then build what the design settles. Report the site's address and what remains.\n\nGate: held until the garden has minion.town guest account access. Release with `garden board release budget-publish-ocap-site --by <maintainer>`."
+hold:
+  at: "2026-11-22T20:08:09Z"
+  reason: "awaiting a minion.town guest account for the garden"
+id: "budget-publish-ocap-site"
+level: 0
+plans: 0
+posted_at: "2026-11-22T20:08:09Z"
+posted_by: "endolin-garden-ece02cb4"
+priority: 5
+projects: []
+requires: []
+role: "designer"
+title: "Publish the budget as an ocap.site through minion.town"
