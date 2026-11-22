@@ -14,7 +14,20 @@
 import { parse } from './yay.js';
 import { clockNote, outcome as classify } from './wrapup.js';
 import { scrub } from './keys.js';
-import { harden } from './harden.js';
+import { harden, refuse } from './harden.js';
+
+/**
+ * The worker command for a job's tier. A tier names a model (config
+ * worker.tiers: {<tier>: {model}}); the model goes in before the command's
+ * last word, its prompt. A job with no tier runs on the harness's default.
+ * An unknown tier is refused: a job asked to run at the top never runs lower.
+ */
+export const argvFor = (argv, tiers, tier) => {
+  if (!tier) return argv;
+  const spec = tiers?.[tier];
+  if (!spec?.model) refuse('unknown-tier', `no tier ${tier} in config worker.tiers`);
+  return [...argv.slice(0, -1), '--model', spec.model, argv.at(-1)];
+};
 
 export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilities, hostinfo, files, clock, config = {}, worker, log = () => {} }) => {
   const defaultWindow = config.worker?.window_seconds ?? 2400;
@@ -90,7 +103,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
         GARDEN_DEADLINE_EPOCH: String(deadlineEpoch),
         GARDEN_HOOK_STATE: tree.path('.hook-state'),
       };
-      result = await slots.run(slot, { argv: worker.argv, env, windowS, killAfterS: worker.killAfterS ?? 30, logFile: worker.logFile(job.id) });
+      result = await slots.run(slot, { argv: argvFor(worker.argv, worker.tiers, job.tier), env, windowS, killAfterS: worker.killAfterS ?? 30, logFile: worker.logFile(job.id) });
     } catch (err) {
       log(`${job.id}: could not run: ${err.message}`);
     }
@@ -117,7 +130,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     const kind = classify({ timedOut: result.timed_out, status: result.status, handoff, report });
     const usage = worker.usage ? await worker.usage(job.id) : { source: 'none' };
     const cost = { tokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0) + (usage.cache_creation_tokens ?? 0), elapsed_s: result.elapsed_s ?? 0 };
-    if (budget) await budget.recordUsage({ id: job.id, arc: job.arc, role: job.role, level: job.level, outcome: kind, elapsed_s: cost.elapsed_s, ...usage });
+    if (budget) await budget.recordUsage({ id: job.id, arc: job.arc, ...(job.envelope && job.envelope !== (job.arc ?? 'unallocated') ? { envelope: job.envelope } : {}), role: job.role, level: job.level, outcome: kind, elapsed_s: cost.elapsed_s, ...usage });
 
     // Every write back names the generation this run was claimed under. If
     // the lease ran out and the job was re-let, the board refuses them all:

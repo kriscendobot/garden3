@@ -1,5 +1,6 @@
-// The budget: per-arc throttles become a weekly slate; spend is summed from
-// each host's own usage branch; admission reserves a flat amount per job.
+// The budget: weekly envelopes per pool (maintainer, arcs, foreman); spend is
+// summed from each host's own usage branch; admission reserves a flat amount
+// per job and names the envelope it draws on.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkGarden } from './helpers.js';
@@ -61,19 +62,75 @@ test('spend is summed from every host branch; level plays no part in admission',
   assert.equal(budget.weekStart('2026-10-31T17:00:00Z', '2026-11-17T00:00:00Z'), Date.parse('2026-11-14T17:00:00Z') / 1000);
 });
 
-test('the claim gate: arc rank orders, reservations hold, no snapshot refuses', async t => {
+test('envelopes: the maintainer releases to the arcs, and everything tapers to the foreman', () => {
+  const at = (f, spent) => budget.envelopes({ total: 1000, shares: { ironhorse: 0.25, endo: 0.5 }, f, spent });
+  const credit = e => Object.fromEntries(Object.entries(e).map(([k, v]) => [k, v.available]));
+  assert.deepEqual(credit(at(0)), { ironhorse: 0, endo: 0, maintainer: 1000, foreman: 0 }, 'the week starts with the maintainer');
+  assert.deepEqual(credit(at(0.25)), { ironhorse: 125, endo: 250, maintainer: 625, foreman: 0 }, 'half released by a quarter of the week');
+  assert.deepEqual(credit(at(0.5)), { ironhorse: 250, endo: 500, maintainer: 250, foreman: 0 }, 'all released by mid-week; the unshared quarter stays with the maintainer');
+  assert.deepEqual(credit(at(0.75)), { ironhorse: 125, endo: 250, maintainer: 125, foreman: 500 }, 'half of every balance tapered by three quarters');
+  assert.deepEqual(credit(at(1)), { ironhorse: 0, endo: 0, maintainer: 0, foreman: 1000 }, 'the foreman holds it all at the end');
+  const spent = at(0.75, { ironhorse: 200, foreman: 100 });
+  assert.deepEqual([spent.ironhorse.available, spent.ironhorse.swept, spent.foreman.credit, spent.foreman.available], [25, 25, 400, 300], 'only the unspent balance tapers, and the foreman spends from what came to it');
+  const over = at(0.25, { endo: 400 });
+  assert.equal(over.endo.available, -150, 'an envelope can be overdrawn by a run that cost more than its reservation');
+});
+
+test('shares and pools: fractions of the week, set by maintainers, never past the whole', async t => {
   const { g, a } = await setup(t);
-  await a.setThrottle({ by: 'kriskowal', arc: 'endo', throttle: 3 });
-  await a.setThrottle({ by: 'kriskowal', arc: 'tiny', throttle: 0.2 });
+  await a.setShare({ by: 'kriskowal', arc: 'ironhorse', share: 0.25, summary: 'the test262 ratchet' });
+  await assert.rejects(a.setShare({ by: 'kriskowal', arc: 'endo', share: 0.8 }), { code: 'over' });
+  await assert.rejects(a.setShare({ by: 'kriskowal', arc: 'maintainer', share: 0.1 }), { code: 'invalid' });
+  await assert.rejects(a.setShare({ by: 'mallory', arc: 'endo', share: 0.1 }), { code: 'not-maintainer' });
+  await assert.rejects(a.setPool({ by: 'mallory', pool: 'p1', weekly_tokens: 1 }), { code: 'not-maintainer' });
+  await a.setPool({ by: 'kriskowal', pool: 'p1', weekly_tokens: 100000000, hosts: ['host-a'] });
+  const pools = parse(g.show('journal', 'config/pools.yay')).pools;
+  assert.deepEqual(pools.map(p => [p.pool, p.weekly_tokens]), [['p1', 100000000], ['p2', 40000000]]);
+  g.clock.set('2026-11-18T05:00:00Z'); // half the week from 2026-11-14T17:00Z
+  const snap = await a.refresh();
+  assert.deepEqual(snap.slate.arcs.map(x => [x.arc, x.share]), [['ironhorse', 0.25], ['unallocated', 0]], 'once any arc has a share, an arc without one has none');
+  assert.equal(snap.pool, 'p1', 'a host draws on the pool that lists it');
+  const p1 = snap.pools.find(p => p.pool === 'p1');
+  assert.equal(p1.total, 90000000);
+  assert.ok(Math.abs(p1.envelopes.ironhorse.credit - 22500000) <= 2, 'a quarter of the total, all released at mid-week');
+  assert.equal(p1.envelopes.maintainer.credit, 90000000 - p1.envelopes.ironhorse.credit);
+});
+
+test('the claim gate: maintainer discretion early, arcs as released, the foreman when an arc is dry', async t => {
+  const { g, a } = await setup(t);
+  await a.setShare({ by: 'kriskowal', arc: 'ironhorse', share: 0.25 });
   const h = g.host('host-a');
   const board = makeBoardService({ shards: h.shards, host: 'host-a', clock: g.clock, budget: a });
-  for (const i of [1, 2, 3]) await board.post({ id: `t${i}`, role: 'builder', title: 't', arc: 'tiny' });
-  await board.post({ id: 'e1', role: 'builder', title: 'e', arc: 'endo', priority: 9 });
+  await board.post({ id: 'm1', role: 'builder', title: 'm', arc: 'maintainer' });
+  await board.post({ id: 'i1', role: 'builder', title: 'i', arc: 'ironhorse', priority: 0 });
   assert.equal(await board.claim({ worker: 'w' }), null, 'with no budget snapshot nothing is claimed');
-  const snap = await a.refresh();
-  assert.equal(cap(snap, 'tiny'), 4285714);
-  assert.equal((await board.claim({ worker: 'w0' })).id, 'e1', 'the higher-ranked arc is drawn first, whatever the priority');
-  assert.equal((await board.claim({ worker: 'w1' })).id, 't1');
-  assert.equal((await board.claim({ worker: 'w2' })).id, 't2', 'two reservations fit in 4.28M');
-  assert.equal(await board.claim({ worker: 'w3' }), null, 'the third is held by the two in flight');
+  g.clock.set('2026-11-14T17:00:30Z'); // the week has just begun
+  await a.refresh();
+  const first = await board.claim({ worker: 'w0' });
+  assert.deepEqual([first.id, first.envelope], ['m1', 'maintainer'], 'only the maintainer has tokens at the start');
+  assert.equal(await board.claim({ worker: 'w1' }), null, 'the arc has nothing released yet, and the foreman nothing');
+  g.clock.set('2026-11-20T05:00:00Z'); // past the release, well into the taper
+  await a.refresh();
+  const second = await board.claim({ worker: 'w2' });
+  assert.deepEqual([second.id, second.envelope], ['i1', 'ironhorse']);
+  await a.recordUsage({ id: 'i0', arc: 'ironhorse', input_tokens: 50000000 });
+  await board.post({ id: 'i2', role: 'builder', title: 'i', arc: 'ironhorse' });
+  await a.refresh();
+  const third = await board.claim({ worker: 'w3' });
+  assert.deepEqual([third.id, third.envelope], ['i2', 'foreman'], 'an overdrawn arc is carried by the foreman');
+  await a.recordUsage({ id: 'i2', arc: 'ironhorse', envelope: 'foreman', input_tokens: 1000 });
+  assert.equal((await a.refresh()).spend.by_envelope.foreman, 1000, 'and charged to it');
+});
+
+test('the day is recorded once, with every envelope of every pool', async t => {
+  const { g, a } = await setup(t);
+  await a.setShare({ by: 'kriskowal', arc: 'ironhorse', share: 0.25 });
+  g.clock.set('2026-11-19T00:00:00Z');
+  await a.refresh();
+  assert.equal(await a.recordDay(), 'budget/days/2026-11-19.yay');
+  assert.equal(await a.recordDay(), null, 'once a day');
+  const day = parse(g.show('journal', 'budget/days/2026-11-19.yay'));
+  assert.deepEqual(day.pools.map(p => p.pool), ['p1', 'p2']);
+  assert.deepEqual(Object.keys(day.pools[0].envelopes).sort(), ['foreman', 'ironhorse', 'maintainer', 'unallocated']);
+  assert.ok(day.week_fraction > 0.6 && day.week_fraction < 0.62);
 });

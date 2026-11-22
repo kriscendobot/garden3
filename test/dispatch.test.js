@@ -11,7 +11,7 @@ import { makeBudgetService } from '../src/budget.js';
 import { makeSlots } from '../src/slots.js';
 import { makePlots } from '../src/plots.js';
 import { makeJournal } from '../src/journal.js';
-import { makeDispatcher } from '../src/dispatch.js';
+import { makeDispatcher, argvFor } from '../src/dispatch.js';
 import { makeKeys, scrub } from '../src/keys.js';
 import { parse, stringify } from '../src/yay.js';
 import { mkGarden, git, SHED, WARDEN } from './helpers.js';
@@ -165,6 +165,14 @@ test('a run whose lease ran out is set aside: nothing applied, cost kept, zombie
   await other.sweep();
   assert.deepEqual(await dispatcher.reap(), ['slot01 (finish-2, generation 1)'], 'its own superseded job is reaped');
   assert.deepEqual(fs.readdirSync(path.join(g.root, 'slots')), []);
+});
+
+test('a tier puts its model before the prompt; an unknown tier is refused, never run lower', () => {
+  const argv = ['claude', '-p', '--settings', 's.json', 'Read PROMPT.md'];
+  const tiers = { mentat: { model: 'claude-fable-5-1' } };
+  assert.equal(argvFor(argv, tiers, undefined), argv);
+  assert.deepEqual(argvFor(argv, tiers, 'mentat'), ['claude', '-p', '--settings', 's.json', '--model', 'claude-fable-5-1', 'Read PROMPT.md']);
+  assert.throws(() => argvFor(argv, tiers, 'oracle'), { code: 'unknown-tier' });
 });
 
 test('keys are files with exact modes, read only by their consumer', async t => {

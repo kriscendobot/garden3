@@ -190,7 +190,7 @@ export const post = (board, spec, now) => {
     posted_by: spec.by ?? 'unknown',
     body: spec.body ?? `${spec.title}\n`,
   };
-  for (const k of ['arc', 'plot']) {
+  for (const k of ['arc', 'plot', 'tier']) {
     if (spec[k]) {
       if (!isName(spec[k])) refuse('invalid', `bad ${k}`);
       job[k] = spec[k];
@@ -290,8 +290,12 @@ export const claim = (board, { host, worker, plot, has, admit, arcRank, skip = [
     const { job } = e;
     if (!(job.requires ?? []).every(t => (t.startsWith('host=') ? t.slice(5) === host : has(t)))) continue;
     if (plot && job.plot && job.plot !== plot) continue;
-    if (admit && !admit(job, board)) continue;
+    const envelope = admit ? admit(job, board) : null;
+    if (admit && !envelope) continue;
     e.where = 'claimed';
+    // The envelope that admitted it is the one its cost is charged to.
+    if (typeof envelope === 'string') job.envelope = envelope;
+    else delete job.envelope;
     e.host = host;
     // Every claim is a lease with a generation. The generation rises with
     // each claim of the job, and everything the run writes back names it, so

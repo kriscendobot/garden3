@@ -4,7 +4,9 @@ board:
   expiry_grace_seconds: 600
 budget:
   planning_ceiling: 0.9
+  release_until: 0.5
   reservation_tokens: 2000000
+  taper_from: 0.5
 capabilities:
   base:
     - "node"
@@ -99,4 +101,8 @@ upstream:
     url: "https://github.com/kriscendobot/garden.git"
 worker:
   kill_after_seconds: 30
+  tiers:
+    mentat:
+      model: "claude-fable-5-1"
+      summary: "the most capable model, only when a maintainer asks for it"
   window_seconds: 2400

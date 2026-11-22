@@ -88,7 +88,7 @@ export const makeBoardService = ({ shards, host, clock, config = {}, owner = 'bo
         if (b.quiescence.phase !== 'idle') return null;
         const id = rules.claim(
           b,
-          { host, worker, plot, skip, has: t => has.has(t), arcRank: slate?.ranks, admit: slate ? (job, bd) => budget.admits(slate, job, bd).admit : null, lease },
+          { host, worker, plot, skip, has: t => has.has(t), arcRank: slate?.ranks, admit: slate ? (job, bd) => { const r = budget.admits(slate, job, bd); return r.admit ? r.envelope ?? true : false; } : null, lease },
           clock.now(),
         );
         if (!id) return null;
@@ -161,7 +161,7 @@ export const makeBoardService = ({ shards, host, clock, config = {}, owner = 'bo
       const offer = capabilities ? await capabilities.offer() : { available: [] };
       const slate = budget ? await budget.snapshot() : null;
       if (budget && !slate) return null;
-      return rules.nextNeeds(b, { host, plot, has: t => has.has(t), can: t => offer.available.includes(t), arcRank: slate?.ranks, admit: slate ? (job, bd) => budget.admits(slate, job, bd).admit : null });
+      return rules.nextNeeds(b, { host, plot, has: t => has.has(t), can: t => offer.available.includes(t), arcRank: slate?.ranks, admit: slate ? (job, bd) => { const r = budget.admits(slate, job, bd); return r.admit ? r.envelope ?? true : false; } : null });
     },
     /** Open jobs that no host in `hosts` (their self-descriptions) could run. */
     unplaceable: async hosts => {

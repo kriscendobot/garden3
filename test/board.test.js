@@ -38,6 +38,10 @@ test('posting, ids and dependencies', () => {
   const b = mk({ id: 'a' }, { id: 'b', after: ['a'] });
   assert.equal(B.post(b, { id: 'a', role: 'builder', title: 'again' }, NOW), false, 'posting twice is a no-op');
   assert.equal(code(() => B.post(b, { id: 'Bad Id', role: 'r', title: 't' }, NOW)), 'invalid');
+  const d = mk();
+  B.post(d, { id: 'deep', role: 'designer', title: 't', tier: 'mentat' }, NOW);
+  assert.equal(d.jobs.deep.job.tier, 'mentat', 'a job may name its tier');
+  assert.equal(code(() => B.post(d, { id: 'deep2', role: 'r', title: 't', tier: 'Top Tier' }, NOW)), 'invalid');
   assert.equal(code(() => B.post(b, { id: '../x', role: 'r', title: 't' }, NOW)), 'invalid');
   assert.equal(code(() => B.post(b, { id: 'self', role: 'r', title: 't', after: ['self'] }, NOW)), 'cycle');
   assert.equal(b.jobs.self, undefined, 'a refused post leaves nothing');

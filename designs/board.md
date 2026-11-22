@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-22"
 ---
 
 # The job board
@@ -21,13 +21,16 @@ A job is one YAY file whose directory is its state:
 | `failed/<id>.yay` | failed terminally; still blocks its dependents |
 
 Fields: `id`, `role`, `title`, `body` (a block string: what the worker reads),
-`arc`, `priority` (0 soonest to 9), `after`, `requires`, `projects`, `plot`,
+`arc` (the envelope it draws on: an arc, `maintainer` or `foreman`;
+[budget.md](budget.md)), `tier` (a model tier from `config/garden.yay`
+`worker.tiers`, such as `mentat`, posted only when a maintainer asks), `priority` (0 soonest to 9), `after`, `requires`, `projects`, `plot`,
 `window_s`, `posted_at`, `posted_by`, `source`; then what the board maintains:
 `level`, `steps`, `under`, `abandoned`, `planner`, `replaces`, `plans`,
 `plan_log`, `origin`, `cost`,
 `cost_under`, `attempts`, `generation`, `claim` (a lease: `at`, `generation`,
 `window_s`, `expires_at`), `expiries`, `expired_claims`, `late_runs`, `hold`,
-`go_ahead` ([omega.md](omega.md), [deadlines.md](deadlines.md)).
+`go_ahead` ([omega.md](omega.md), [deadlines.md](deadlines.md)), and `envelope`,
+the envelope that admitted the current claim.
 
 `watch.yay` beside the jobs is the watcher's cursor and its list of issues
 still to report on ([watcher.md](watcher.md)); `quiescence.yay` is the fleet's

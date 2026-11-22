@@ -81,6 +81,11 @@ export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board,
       }
     }
     await budget.refresh();
+    // The day's envelopes, recorded once a day by the leader, for publishing.
+    if (budget.recordDay && (await isLeader())) {
+      const day = await budget.recordDay();
+      if (day) did.push(`recorded ${day}`);
+    }
     // Say what this host is, once per start and whenever a rejuvenation or an
     // install changed it (publish writes only on a change).
     if (hostinfo && !described) {
