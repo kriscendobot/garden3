@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-20"
+updated: "2026-11-22"
 ---
 
 # Plots and the shed
@@ -13,7 +13,7 @@ The tower's parapets and vestibule, in the garden's words. Code:
 
 | Tower | Garden | Is |
 | --- | --- | --- |
-| vestibule | **the shed** | what is the same for every job and changes only by review: the common brief, the dispatching and judging roles, all code, designs, config |
+| vestibule | **the shed** | what is the same for every job and changes only through the steward, never by a job: the common brief, the dispatching and judging roles, all code, designs, config |
 | parapet | **a plot** | one of several competing variants of the working roles, as branch `plot/<name>` |
 | genome | genome | the paths a plot may hold and change: `plots/genome-paths`, plus `plot.yay` |
 

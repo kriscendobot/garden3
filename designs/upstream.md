@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-21"
+updated: "2026-11-22"
 ---
 
 # Adopting from upstream
@@ -44,7 +44,7 @@ copied. The ones here were written for this garden's mechanisms.
    repository, path and commit, the disposition, and a note.
    `test/bootstrap.test.js` checks every entry's path exists and its commit is
    a full id.
-8. **A pull request to the shed**, reviewed by a maintainer.
+8. **A change to the shed**, landed by the steward; the maintainer corrects it through use.
 
 ## A job that lacks a skill
 

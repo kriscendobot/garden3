@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-21"
+updated: "2026-11-22"
 ---
 
 # Working in the garden
@@ -33,10 +33,11 @@ leave in `outbox/` is what survives.
   ...): services write through their own clones ([WORKTREES.md](WORKTREES.md)).
 - Keys are files the maintainer sets. Never ask for one, print one, or put
   one in an environment ([designs/keys.md](designs/keys.md)).
-- Roles and skills are adopted on demand, with provenance
-  ([designs/upstream.md](designs/upstream.md)). Do not copy them in bulk.
-- A change to the shed is a pull request a maintainer reviews. Before asking:
-  `node --test`, `cargo test --offline` in `rust/`, `scripts/lint.sh`.
+- Roles and skills carry their provenance ([designs/upstream.md](designs/upstream.md));
+  the prior garden's are spread over the plots, and evolution prunes them.
+- A change to the shed lands directly on `origin/shed` once `node --test`,
+  `cargo test --offline` in `rust/` and `scripts/lint.sh` pass. The maintainer
+  does not review shed changes; they correct them through use.
 
 The designs say what is built and what is only designed. Believe the tests
 over the prose.

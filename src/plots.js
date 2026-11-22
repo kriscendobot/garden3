@@ -1,11 +1,11 @@
 // plots.js — plots: competing variants of the working roles.
 //
 // The shed is the part of the garden that is the same everywhere and changes
-// only by review. A plot is a branch, plot/<name>, holding one variant of the
-// genome: the working roles and skills that jobs improve as they learn. A job
-// runs on one plot, reads its genome there, and may change only that. This is
-// the tower's vestibule and parapets (roles/PARAPET.md, scripts/vestibule/),
-// in the garden's words. Design: designs/plots.md.
+// only through the steward, never by a job. A plot is a branch, plot/<name>,
+// holding one variant of the genome: the working roles and skills that jobs
+// improve as they learn. A job runs on one plot, reads its genome there, and
+// may change only that. This is the tower's vestibule and parapets
+// (roles/PARAPET.md, scripts/vestibule/), in the garden's words. Design: designs/plots.md.
 //
 // The tower enforces the wall with a pre-receive hook on its local hub.
 // GitHub runs no such hook, so the garden enforces it where the push is made:
