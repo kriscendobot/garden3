@@ -29,3 +29,13 @@ rows:
     role: "designer"
     source: "none"
     ts: "2026-11-22T22:26:38Z"
+  - arc: "maintainer"
+    elapsed_s: 0
+    host: "endolin-garden-ece02cb4"
+    id: "marshal-bytearray-rank-shim-fix"
+    level: 0
+    outcome: "failed"
+    pool: "claude-endolin"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-22T22:26:50Z"
