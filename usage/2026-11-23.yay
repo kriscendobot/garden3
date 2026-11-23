@@ -28,3 +28,12 @@ rows:
     role: "builder"
     source: "none"
     ts: "2026-11-23T12:44:56Z"
+  - arc: "maintainer"
+    elapsed_s: 591
+    host: "endolin-garden-ece02cb4"
+    id: "endo-dev-publish-open-closure"
+    level: 0
+    outcome: "done"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-23T12:55:47Z"
