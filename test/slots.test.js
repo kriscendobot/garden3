@@ -76,6 +76,15 @@ test('a home is the shed with the plot over it, tombstoned', { skip }, async t =
   await assert.rejects(slots.prepare('../x', job, 'alder'), { code: 'invalid' });
 });
 
+test('what dispatch lays for the run is in the home when prepare returns', { skip }, async t => {
+  const { slots } = setup(t);
+  const home = await slots.prepare('slot01', job, 'alder', undefined, [], { files: [{ file: 'PROMPT.md', text: 'Do the job.\n' }], dirs: ['.hook-state'] });
+  assert.equal(fs.readFileSync(path.join(home, 'PROMPT.md'), 'utf8'), 'Do the job.\n');
+  assert.ok(fs.statSync(path.join(home, '.hook-state')).isDirectory());
+  await assert.rejects(slots.prepare('slot02', job, 'alder', undefined, [], { files: [{ file: '../escape', text: 'x' }] }), { code: 'invalid' });
+  await assert.rejects(slots.prepare('slot02', job, 'alder', undefined, [], { dirs: ['a/../..'] }), { code: 'invalid' });
+});
+
 test('one checkout per project, and harvest carries out exactly the work', { skip }, async t => {
   const { T, repositories, slots, gitRun } = setup(t);
   const home = await slots.prepare('slot01', job, 'alder');

@@ -83,12 +83,13 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     let result = { status: 1, timed_out: false, elapsed_s: 0 };
     let home;
     try {
-      home = await slots.prepare(slot, job, plot, undefined, lent ? [lent] : []);
-      const tree = files(home);
       const deadlineEpoch = Math.floor(started / 1000) + windowS;
       const deadlineIso = new Date(deadlineEpoch * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
-      tree.write('PROMPT.md', `Read roles/COMMON.md, then roles/PLOT.md and roles/${job.role}/AGENT.md, then do the job in JOB.yay.\n\n${clockNote({ id: job.id, windowS, deadlineIso, planner: Boolean(job.planner) })}\n`);
-      tree.mkdir('.hook-state');
+      // The prompt and the hook's state are laid by prepare: once the home
+      // is the slot account's, the steward cannot write into it.
+      const prompt = `Read roles/COMMON.md, then roles/PLOT.md and roles/${job.role}/AGENT.md, then do the job in JOB.yay.\n\n${clockNote({ id: job.id, windowS, deadlineIso, planner: Boolean(job.planner) })}\n`;
+      home = await slots.prepare(slot, job, plot, undefined, lent ? [lent] : [], { files: [{ file: 'PROMPT.md', text: prompt }], dirs: ['.hook-state'] });
+      const tree = files(home);
       // The worker's environment is built from nothing: its clock, where
       // things are, and no key (keys.js). The harness gets its credential
       // through the worker command's own helper.

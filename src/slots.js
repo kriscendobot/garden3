@@ -100,9 +100,12 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
      *     .slot.yay, which harvest needs to tell the job's changes apart;
      *  6. write what the steward lends the job (`lent`, from keys.lend: the
      *     harness's login, access token only), each file mode 0600;
-     *  7. in users mode, give the home to the slot's account, mode 0700.
+     *  7. write what dispatch lays for the run (`laid`: {files: [{file,
+     *     text}], dirs}), such as the prompt. It must be here: after the next
+     *     step the steward can no longer write into the home;
+     *  8. in users mode, give the home to the slot's account, mode 0700.
      */
-    prepare: async (slot, job, plot, shed, lent = []) => {
+    prepare: async (slot, job, plot, shed, lent = [], laid = {}) => {
       check(slot);
       if (!isName(plot)) refuse('invalid', 'bad plot name');
       if (!isName(job.id)) refuse('invalid', 'bad job id');
@@ -138,9 +141,21 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
       home.write(`${REFERENCE}/reference.yay`, stringify(reference));
       ask({ op: 'plant', root: slots.root, slot, tombstones: TOMBSTONES, dirs: WORKDIRS });
       home.write('JOB.yay', stringify(job));
+      const inside = (what, file) => {
+        const parts = String(file).split('/');
+        if (parts.some(p => !p || p === '.' || p === '..')) refuse('invalid', `a ${what} must be a path inside the home, not ${file}`);
+        return parts;
+      };
+      for (const f of laid.files ?? []) {
+        inside('laid file', f.file);
+        home.write(f.file, f.text);
+      }
+      for (const d of laid.dirs ?? []) {
+        inside('laid directory', d);
+        home.mkdir(d);
+      }
       for (const l of lent) {
-        const parts = String(l.file).split('/');
-        if (!parts.length || parts.some(p => !p || p === '.' || p === '..')) refuse('invalid', `a lent file must be a path inside the home, not ${l.file}`);
+        const parts = inside('lent file', l.file);
         for (let i = 1; i < parts.length; i += 1) {
           home.mkdir(parts.slice(0, i).join('/'));
           home.chmod(parts.slice(0, i).join('/'), 0o700);

@@ -23,7 +23,8 @@ const AGENT = `
 id=$GARDEN_JOB_ID
 env | sort > outbox/env.txt
 case "$id" in
-  finish*) printf 'builder\\nLesson: read the job twice.\\n' > roles/builder/AGENT.md
+  finish*) test -f PROMPT.md && test -d .hook-state || exit 8
+           printf 'builder\\nLesson: read the job twice.\\n' > roles/builder/AGENT.md
            echo "Finished $id." > outbox/report.md ;;
   big)     printf 'done: "the survey"\\nreason: "out of time"\\nremaining: "two parts"\\n' > outbox/handoff.yay
            echo "Did the survey; two parts remain." > outbox/report.md ;;
@@ -57,7 +58,15 @@ const setup = async t => {
   await budget.refresh();
   const board = makeBoardService({ shards: h.shards, host: 'host-a', clock: g.clock, config, budget });
   fs.mkdirSync(path.join(g.root, 'slots'));
-  const slots = makeSlots({ files: makeFiles, run: h.run, warden: WARDEN, rootRepo: root, slotsRoot: path.join(g.root, 'slots'), repositories: path.join(g.root, 'repositories'), stateDir: h.stateDir, clock: g.clock, count: 1, mode: 'sim' });
+  const sim = makeSlots({ files: makeFiles, run: h.run, warden: WARDEN, rootRepo: root, slotsRoot: path.join(g.root, 'slots'), repositories: path.join(g.root, 'repositories'), stateDir: h.stateDir, clock: g.clock, count: 1, mode: 'sim' });
+  // With accounts, a prepared home is the slot account's, and the steward
+  // cannot write into it. Sim mode has no accounts, so stand in for that:
+  // the home is sealed from prepare until the run starts.
+  const slots = {
+    ...sim,
+    prepare: async (...args) => { const home = await sim.prepare(...args); fs.chmodSync(home, 0o500); return home; },
+    run: async (slot, opts) => { fs.chmodSync(path.join(g.root, 'slots', slot), 0o700); return sim.run(slot, opts); },
+  };
   const journal = makeJournal({ files: makeFiles, shards: h.shards, stateDir: h.stateDir, host: 'host-a', clock: g.clock });
   const dispatcher = makeDispatcher({
     board, slots, budget, plots, journal, files: makeFiles, clock: g.clock, config,

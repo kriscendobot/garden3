@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-21"
+updated: "2026-11-23"
 ---
 
 # Slots: an account and a home per job
@@ -45,6 +45,9 @@ whole of the separation between one job and the next in a slot.)
    `git worktree add` at any of those paths fails at once, and the file says
    what to do instead. `worktrees/`, `scratch/` and `outbox/` are made.
 5. `JOB.yay` (the record) and `.slot.yay` (what was laid down, for harvest).
+   Then what dispatch lays for the run: `PROMPT.md` and the hook's state
+   directory. They are written here because after the next step the steward
+   cannot write into the home.
 6. **Own** (`warden own`): the home is given to the slot's account, mode 0700.
    The slots directory is 0711 and the steward's, so a job can reach its own
    home and list nothing.
