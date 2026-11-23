@@ -1,9 +1,9 @@
 reports: []
 repos:
   "endojs/endo-but-for-bots":
-    cursor: "2026-11-22T23:53:29Z"
+    cursor: "2026-11-23T01:18:05Z"
     seen:
-      - 7087908082
+      - 7089034891
   "kriscendobot/cosgov":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
