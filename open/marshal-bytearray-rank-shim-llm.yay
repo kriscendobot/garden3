@@ -1,5 +1,4 @@
-after:
-  - "marshal-bytearray-rank-shim-fix"
+after: []
 arc: "maintainer"
 attempts: 0
 body: "Prove that @endo/marshal on endo-but-for-bots' llm ranks byteArrays correctly under the @endo/immutable-arraybuffer shim, and keep it so, as a pull request on endojs/endo-but-for-bots, base llm.\n\nUpstream, endojs/endo master ranks any two equal-length byteArrays as tied under the shim, because rankOrder.js builds `new Uint8Array(buffer)` on the shim's buffer, an empty view (job marshal-bytearray-rank-shim-fix fixes it there). llm replaced that code in d9b773e06 (\"feat(marshal): admit narrowed byte arrays\", #475): a byteArray is a frozen Uint8Array, and rankOrder.js copies each through `slice(0)` before compareBytes. So llm is probably not affected, but nothing proves it.\n\n1. Port the regression test from the upstream fix (read that job's branch if the steward has pushed it, or write the same cases): equal-length byteArrays with different contents, under the shim, at lengths 0, 1 and more, with the first difference at the start, middle and end, and equal contents. Run it on llm.\n2. If it passes, the pull request is the test alone. If it fails, fix rankOrder.js on llm too and say how llm's failure differs from master's.\n3. Check the other byte readers on llm the same way (encodePassable, compareKeys, patterns' key matching) and test what reads bytes.\n4. Follow llm's conventions for a changeset (none for a test-only change, unless the repo wants one).\n\nCommit on a branch named test-marshal-bytearray-rank-shim. In outbox/report.md give the pull request title and description, and what you ran with its results. You have no remote: the steward pushes the branch and opens the pull request."
@@ -15,3 +14,7 @@ requires:
   - "node"
 role: "builder"
 title: "Test byteArray ranking under the shim on llm"
+under:
+  marshal-bytearray-rank-shim-fix:
+    level: 0
+    step: false
