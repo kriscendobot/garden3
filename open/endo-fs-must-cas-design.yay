@@ -7,11 +7,9 @@ cost:
   engagements: 1
   tokens: 0
 envelope: "maintainer"
-failed_at: "2026-11-22T22:26:42Z"
 generation: 1
 id: "endo-fs-must-cas-design"
 level: 0
-outcome: "failed"
 plans: 0
 posted_at: "2026-11-22T20:07:38Z"
 posted_by: "endolin-garden-ece02cb4"
