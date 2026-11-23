@@ -1,13 +1,21 @@
 after: []
 arc: "ironhorse-test262-ratchet"
-attempts: 1
+attempts: 2
 body: "Pin the XS oracle's Math to the same source-pinned provider Ironhorse uses, so an oracle binary computes the same Math on any host. The maintainer's words: \"Let's pin libm. We want determinism for a particular binary and do not require it beyond that.\"\n\nProject: endojs/endo-but-for-bots. Start from branch fix/xs-oracle-pinned-libm (one WIP commit on llm, in the garden's mirror only).\n\nWhy: the oracle lanes (test-ironhorse-oracle, ironhorse-oracle-sanitizers) are red on every PR because ubuntu-latest became 26.04, whose glibc rounds asinh/acosh correctly; stage3-math 054/055 moved by one ULP (over-acceptance). The XS oracle links the host libm (rust/engine/xs-oracle/build.rs, -lm); ironhorse-vm uses the platform unless built with deterministic-math (libm =0.2.16, force-soft-floats; see rust/engine/ironhorse-vm/src/math.rs and rust/engine/DETERMINISM-METERING.md). PR #1613 pins the runner image instead; this job replaces that with a pin in source.\n\nWhat the WIP does: xs-oracle depends on libm =0.2.16 (soft floats); src/math.rs defines xsoracle_<f> for the 22 provider-sensitive functions ironhorse-vm selects under deterministic-math; build.rs reads that list from math.rs, force-includes csrc/xsoracle-math.h (prototypes) and defines each c_<f> macro of c/moddable/xs/platforms/xsPlatform.h (which defines them only #ifndef) to xsoracle_<f>. Not yet built: the box's first build failed on E0463 compiling build scripts (find out whether that is this box's toolchain or the change), and Cargo.lock needs the libm line for xs-oracle.\n\nTo finish:\n1. Make it build (cargo build --locked -p xs-oracle, with the lock change committed separately as 'chore: Update Cargo.lock' if the repo's convention for Cargo.lock matches its yarn.lock rule in AGENTS.md).\n2. Decide the Ironhorse side of the comparison: the oracle lane builds ironhorse-vm with default (platform) Math, so after this the two sides differ on every host for provider-sensitive cases. Make the dual-run harness compare a deterministic-math Ironhorse against the pinned oracle, without taking the platform configuration away from the lanes that test it (cargo unifies features per invocation: check what -p ironhorse-262 and --workspace builds would select). Say what you chose and why.\n3. Run the oracle lane's tests as CI does (rust/engine: cargo test --locked -p ironhorse-compile -p ironhorse-regexp -p ironhorse-262 -p ironhorse-fuzz --features ironhorse-compile/parity,ironhorse-regexp/parity, with RUST_MIN_STACK=33554432 and TEST262_DIR from rust/engine/ironhorse-262/TEST262_REVISION if you can fetch it; it is optional without IRONHORSE_*_REQUIRED). Report every expectation that changes (stage3-math, math-corpus fixtures, snapshot goldens) with old and new bits; do not lower a floor to make it pass.\n4. Update DETERMINISM-METERING.md (the C7 note that the oracle keeps its platform provider is now reversed by the maintainer) and drop the ubuntu-24.04 pin only if your change makes it unnecessary.\n5. Commit on the branch in conventional-commit form (fix(xs-oracle): ...). Leave a report: what changed, test results, what is left. The steward publishes the branch and opens the PR; you have no remote."
+claim:
+  at: "2026-11-23T11:58:05Z"
+  expires_at: "2026-11-23T13:38:35Z"
+  generation: 2
+  host: "endolin-garden-ece02cb4"
+  plot: ""
+  window_s: 5400
+  worker: "endolin-garden-ece02cb4-w"
 cost:
   elapsed_s: 0
   engagements: 1
   tokens: 0
 envelope: "ironhorse-test262-ratchet"
-generation: 1
+generation: 2
 id: "ironhorse-xs-oracle-pinned-libm"
 level: 0
 plans: 0
