@@ -9,3 +9,13 @@ rows:
     role: "builder"
     source: "none"
     ts: "2026-11-23T06:10:23Z"
+  - arc: "maintainer"
+    elapsed_s: 0
+    host: "endolin-garden-ece02cb4"
+    id: "endo-llm-flip-private-public"
+    level: 0
+    outcome: "failed"
+    pool: "claude-endolin"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-23T06:12:02Z"
