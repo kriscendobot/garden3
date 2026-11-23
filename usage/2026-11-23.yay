@@ -56,3 +56,12 @@ rows:
     role: "builder"
     source: "none"
     ts: "2026-11-23T13:17:47Z"
+  - arc: "maintainer"
+    elapsed_s: 310
+    host: "endolin-garden-ece02cb4"
+    id: "marshal-bytearray-rank-shim-llm"
+    level: 0
+    outcome: "done"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-23T13:26:17Z"
