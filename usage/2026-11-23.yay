@@ -37,3 +37,12 @@ rows:
     role: "builder"
     source: "none"
     ts: "2026-11-23T12:55:47Z"
+  - arc: "maintainer"
+    elapsed_s: 894
+    host: "endolin-garden-ece02cb4"
+    id: "endo-fs-must-cas-design"
+    level: 0
+    outcome: "done"
+    role: "designer"
+    source: "none"
+    ts: "2026-11-23T13:13:26Z"
