@@ -59,8 +59,9 @@ whole of the separation between one job and the next in a slot.)
 
 Between 7 and 8 the warden **releases** the slot: it kills whatever the
 account still runs and gives the home back to the steward, who could not read
-it while it was the job's. What a slot holds is recorded in the steward's
-state, not in the home.
+it while it was the job's. So dispatch reads the outbox (the report, the
+hand-off) only after harvest, and only what harvest carried out. What a slot
+holds is recorded in the steward's state, not in the home.
 
 The slot is cleared on every path out of dispatch, including a run that could
 not start.
@@ -131,8 +132,10 @@ real**, in the box on one host, by hand: a home built by the steward, given
 to `slot01` (uid 2001, mode 0700, unreadable to the steward), a command run
 as that account with only the named environment, unable to read the state
 directory or list the slots directory, stopped at its deadline with its
-background child, released, harvested and razed. Not run: a whole dispatch in
-`users` mode with a real harness and a project checkout. Design only: the
+background child, released, harvested and razed; and a whole dispatch, claim
+to cleared slot, with a shell for the worker and a throwaway board, ending
+done and handed off. Not run: a whole dispatch in `users` mode with a real
+harness and a project checkout. Design only: the
 steward publishing harvested branches.
 
 ## Open questions

@@ -61,11 +61,17 @@ const setup = async t => {
   const sim = makeSlots({ files: makeFiles, run: h.run, warden: WARDEN, rootRepo: root, slotsRoot: path.join(g.root, 'slots'), repositories: path.join(g.root, 'repositories'), stateDir: h.stateDir, clock: g.clock, count: 1, mode: 'sim' });
   // With accounts, a prepared home is the slot account's, and the steward
   // cannot write into it. Sim mode has no accounts, so stand in for that:
-  // the home is sealed from prepare until the run starts.
+  // the home is sealed from prepare until the run starts, and closed from
+  // the run's end until harvest releases it.
   const slots = {
     ...sim,
     prepare: async (...args) => { const home = await sim.prepare(...args); fs.chmodSync(home, 0o500); return home; },
-    run: async (slot, opts) => { fs.chmodSync(path.join(g.root, 'slots', slot), 0o700); return sim.run(slot, opts); },
+    run: async (slot, opts) => {
+      const home = path.join(g.root, 'slots', slot);
+      fs.chmodSync(home, 0o700);
+      try { return await sim.run(slot, opts); } finally { fs.chmodSync(home, 0o000); }
+    },
+    harvest: async (slot, opts) => { fs.chmodSync(path.join(g.root, 'slots', slot), 0o700); return sim.harvest(slot, opts); },
   };
   const journal = makeJournal({ files: makeFiles, shards: h.shards, stateDir: h.stateDir, host: 'host-a', clock: g.clock });
   const dispatcher = makeDispatcher({

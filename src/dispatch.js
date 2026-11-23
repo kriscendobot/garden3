@@ -114,19 +114,23 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     let handoff = null;
     let report = null;
     if (home && (await slots.info(slot))) {
-      const tree = files(home);
-      try {
-        const text = tree.readIf('outbox/handoff.yay');
-        handoff = text ? parse(text, 'outbox/handoff.yay') : null;
-      } catch (err) {
-        log(`${job.id}: its hand-off is not YAY (${err.message}); treated as none`);
-      }
-      report = tree.readIf('outbox/report.md');
+      // Harvest first: until it releases the slot, the home is the slot
+      // account's and the steward cannot read the outbox. Only what harvest
+      // carried out is read, so a report holding the lent login is not posted.
       harvest = await slots.harvest(slot, { secrets: lent ? [lent.secret] : [] });
       if (harvest.refused?.length) {
         log(`${job.id}: refused to carry out what holds its lent login: ${harvest.refused.join(', ')}`);
         if (journal) await journal.note('dispatch', `\`${job.id}\` left its lent login in ${harvest.refused.length} thing(s) it made; they were not carried out.`);
       }
+      const tree = files(home);
+      const carried = file => (harvest.outbox.includes(file) ? tree.readIf(`outbox/${file}`) : null);
+      try {
+        const text = carried('handoff.yay');
+        handoff = text ? parse(text, 'outbox/handoff.yay') : null;
+      } catch (err) {
+        log(`${job.id}: its hand-off is not YAY (${err.message}); treated as none`);
+      }
+      report = carried('report.md');
     }
     const kind = classify({ timedOut: result.timed_out, status: result.status, handoff, report });
     const usage = worker.usage ? await worker.usage(job.id) : { source: 'none' };
