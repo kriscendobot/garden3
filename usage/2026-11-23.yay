@@ -65,3 +65,12 @@ rows:
     role: "builder"
     source: "none"
     ts: "2026-11-23T13:26:17Z"
+  - arc: "maintainer"
+    elapsed_s: 866
+    host: "endolin-garden-ece02cb4"
+    id: "endo-llm-flip-private-public"
+    level: 0
+    outcome: "done"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-23T13:40:45Z"
