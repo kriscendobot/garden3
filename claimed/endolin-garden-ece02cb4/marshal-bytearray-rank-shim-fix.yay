@@ -1,13 +1,21 @@
 after: []
 arc: "maintainer"
-attempts: 1
+attempts: 2
 body: "Fix a ranking bug in @endo/marshal, as a pull request on endojs/endo, base master. The maintainer reported it, by mail through the tower:\n\n> In @endo/marshal 1.10.0, rankOrder.js compares two byteArrays by building new Uint8Array(left) and new Uint8Array(right). Under the @endo/immutable-arraybuffer shim, the shim's buffer passes the ArrayBuffer.prototype check, but constructing a Uint8Array from it gives an empty view. As a result, compareRank ranks any two byteArrays of the same length as tied, regardless of their contents. That contradicts the documented shortlex order (shorter first, then byte by byte).\n>\n> Repro: under the shim, compareRank of two equal-length immutable byteArrays that differ in their contents returns 0.\n>\n> Suggested fix: read the bytes through the shim's own accessor (for example slice() to a mutable ArrayBuffer) before comparing, and add a test of two equal-length byteArrays with different contents.\n\nConfirmed by the steward on endojs/endo master 679d9afaa: packages/marshal/src/rankOrder.js, case 'byteArray', chooses `new Uint8Array(left)` when `Object.getPrototypeOf(left) === ArrayBuffer.prototype`. Under the shim that test passes, but the view is empty.\n\n1. Write the failing test first: under the immutable-arraybuffer shim (the emulated path, not native immutable ArrayBuffers), compareRank of two equal-length byteArrays with different contents must not be 0, and must order them byte by byte. Cover lengths 0, 1 and more than 1; the first differing byte at the start, the middle and the end; and the same bytes (0). Check how marshal's tests already select the shim and follow that; if the package tests only one path, test both.\n2. Fix it the way the report suggests: always copy through the buffer's own `slice(0)` before reading bytes, or reuse @endo/bytes' compare if that is in reach on master. Keep the native path free of needless copies only if it stays obviously correct.\n3. Look for the same pattern elsewhere in marshal, pass-style and patterns, wherever bytes are read from a byteArray (encodePassable, compareKeys, key and pattern matching). List what you checked; fix what is the same bug, in the same pull request, with tests.\n4. Add a changeset for @endo/marshal (patch), and for any other package you fix, in the repo's conventions.\n5. Run the marshal tests, the tests of every package you touched, and lint for them.\n\nCommit on a branch named fix-marshal-bytearray-rank-shim. In outbox/report.md write the pull request title and description (conventional-commit title; what, why, how verified), what you ran and its results, and the other places you checked. You have no remote: the steward pushes the branch and opens the pull request."
+claim:
+  at: "2026-11-23T13:13:02Z"
+  expires_at: "2026-11-23T14:03:32Z"
+  generation: 2
+  host: "endolin-garden-ece02cb4"
+  plot: ""
+  window_s: 2400
+  worker: "endolin-garden-ece02cb4-w"
 cost:
   elapsed_s: 0
   engagements: 1
   tokens: 0
 envelope: "maintainer"
-generation: 1
+generation: 2
 id: "marshal-bytearray-rank-shim-fix"
 level: 0
 plans: 0
