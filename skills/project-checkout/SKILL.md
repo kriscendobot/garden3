@@ -1,7 +1,7 @@
 ---
 author: "builder"
 created: "2026-11-17"
-updated: "2026-11-17"
+updated: "2026-11-23"
 ---
 
 # Project checkout
@@ -24,3 +24,9 @@ garden project list
   not clone it.
 - Uncommitted work is saved to a `wip/` branch when your run ends, as a last
   resort. Commit instead.
+
+Lesson (2026-11-23): if `garden project add` fails with git's "detected
+dubious ownership" on `/home/kris/garden/repositories/...`, run
+`git config --global --add safe.directory '*'` from a directory outside the
+slot (the slot's `.git` is a tombstone, so git refuses to run there) and
+retry.
