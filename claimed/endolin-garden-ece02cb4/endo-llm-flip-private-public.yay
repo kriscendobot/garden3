@@ -1,13 +1,21 @@
 after: []
 arc: "maintainer"
-attempts: 1
+attempts: 2
 body: "Propose a pull request on endojs/endo-but-for-bots that flips the private workspaces on the llm branch to public, so that the garden can publish them to npm.minion.town as dev-* releases. The maintainer asked for this.\n\nWhat to flip: every workspace marked \"private\": true, except\n- test fixtures,\n- demos and examples,\n- workspaces never meant to be installed (the repository root, internal tooling, benchmarks, test-only harnesses, skeletons and the like).\nThe rule is the maintainer's; applying it is yours. When a workspace is a close call, decide, and say why in the report. Do not leave a call unexplained.\n\nWhy this is safe to do on llm: these workspaces stay private on the endo repository's main branch, and llm is never simply merged there, so the flip cannot open them upstream by accident. Say so in the pull request description. Note also the history: @endo/daemon and @endo/cli were made private upstream in 986af720a (Erik Marks, 2024-02-15), \"to prevent accidentally publishing @endo/daemon and @endo/cli\". This change reverses that on llm only.\n\nThe base is pinned. This project keeps a pull request's base on a frozen snapshot of llm, named llm-<short sha>. Branch from llm's tip as your checkout has it (0368767 when this was posted; llm-0368767 already exists), name the branch llm-flip-private-public, and record the exact base commit in the report. Do not rebase onto anything newer.\n\nFor each workspace you flip:\n- remove \"private\": true, and give it what a published package in this repository has: check scripts/check-package-uniformity.mjs and a recently published sibling for the fields (license, repository, files, publishConfig with public access, and so on), and make yarn test:package-uniformity pass;\n- check that it packs to a usable tarball (yarn pack:all): its files list, its built artifacts, and anything it needs at run time, such as @endo/ocapn-noise's wasm;\n- check its version is one the registry can take as a base for a dev prerelease (0.0.0 is fine).\nAfter the flip, no public workspace may depend at run time on a private one. Check that over the whole workspace graph and list any that still does, with the reason. Known from an earlier look at 0368767: @endo/exo-git needs @endo/pubsub; @endo/agentry needs @endo/daemon, which needs @endo/daemon-cas, @endo/git, @endo/host-spawner, @endo/ocapn-noise and @endo/relay-server; @endo/agent-tools needs @endo/exo-git.\n\nMake sure the master release path is not changed by this: if Changesets or scripts/release-npm.mjs would now version, tag or publish the flipped packages in a way the repository's maintainers would not expect, say so in the report rather than redesigning the release. Follow the repository's conventions for a changeset and for commit messages.\n\nSteps:\n1. Inventory every private workspace at the base: name, path, version, and flip or keep with the reason.\n2. Make the change; run the package-uniformity test, lint for what you touched, and yarn pack:all.\n3. Commit on the branch. In outbox/report.md write the pull request title (conventional commit) and description: what and why, the base commit, the table of flipped workspaces, the table of those kept private with reasons, the 2024 history, and how it was verified, with what you ran and its results.\nYou have no remote: the steward pushes the branch and opens the pull request against the pinned base."
+claim:
+  at: "2026-11-23T06:11:59Z"
+  expires_at: "2026-11-23T07:02:29Z"
+  generation: 2
+  host: "endolin-garden-ece02cb4"
+  plot: ""
+  window_s: 2400
+  worker: "endolin-garden-ece02cb4-w"
 cost:
   elapsed_s: 0
   engagements: 1
   tokens: 0
 envelope: "maintainer"
-generation: 1
+generation: 2
 id: "endo-llm-flip-private-public"
 level: 0
 plans: 0
