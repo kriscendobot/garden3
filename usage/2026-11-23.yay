@@ -19,3 +19,12 @@ rows:
     role: "builder"
     source: "none"
     ts: "2026-11-23T06:12:02Z"
+  - arc: "ironhorse-test262-ratchet"
+    elapsed_s: 2531
+    host: "endolin-garden-ece02cb4"
+    id: "ironhorse-xs-oracle-pinned-libm"
+    level: 0
+    outcome: "done"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-23T12:44:56Z"
