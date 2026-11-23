@@ -46,3 +46,13 @@ rows:
     role: "designer"
     source: "none"
     ts: "2026-11-23T13:13:26Z"
+  - arc: "maintainer"
+    elapsed_s: 277
+    host: "endolin-garden-ece02cb4"
+    id: "marshal-bytearray-rank-shim-fix"
+    level: 0
+    outcome: "done"
+    pool: "claude-endolin"
+    role: "builder"
+    source: "none"
+    ts: "2026-11-23T13:17:47Z"
