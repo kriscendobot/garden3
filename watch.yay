@@ -1,7 +1,4 @@
-reports:
-  - issue: 131
-    job: "kriscendobot-garden-issue-131"
-    repo: "kriscendobot/garden"
+reports: []
 repos:
   "endojs/endo-but-for-bots":
     cursor: "2026-11-23T07:11:41Z"
