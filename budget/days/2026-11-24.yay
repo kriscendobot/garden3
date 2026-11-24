@@ -1,0 +1,36 @@
+arcs:
+  - arc: "ironhorse-test262-ratchet"
+    share: 0.25
+    status: "active"
+  - arc: "unallocated"
+    share: 0
+    status: "active"
+at: "2026-11-24T00:12:27Z"
+date: "2026-11-24"
+pools:
+  - envelopes:
+      foreman:
+        available: 0
+        credit: 0
+        spent: 0
+        swept: 0
+      ironhorse-test262-ratchet:
+        available: 44511046
+        credit: 44511046
+        spent: 0
+        swept: 0
+      maintainer:
+        available: 226388953
+        credit: 226388953
+        spent: 0
+        swept: 0
+      unallocated:
+        available: 0
+        credit: 0
+        spent: 0
+        swept: 0
+    pool: "claude-endolin"
+    total: 270900000
+    weekly_tokens: 301000000
+week_fraction: 0.3286
+week_start: "2026-11-21T17:00:00Z"
