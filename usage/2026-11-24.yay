@@ -1,0 +1,11 @@
+rows:
+  - arc: "maintainer"
+    elapsed_s: 24
+    host: "endolin-garden-ece02cb4"
+    id: "kriscendobot-garden-issue-131"
+    level: 0
+    outcome: "done"
+    pool: "claude-endolin"
+    role: "steward"
+    source: "none"
+    ts: "2026-11-24T03:12:05Z"
