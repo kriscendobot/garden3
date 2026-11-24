@@ -1,0 +1,22 @@
+after: []
+arc: "maintainer"
+attempts: 0
+body: `
+  Please acknowledge that @kriscendobot is watching this venue.
+
+id: "kriscendobot-garden-issue-131"
+level: 0
+origin:
+  by: "kriskowal"
+  issue: 131
+  repo: "kriscendobot/garden"
+  url: "https://github.com/kriscendobot/garden/issues/131"
+plans: 0
+posted_at: "2026-11-24T03:11:16Z"
+posted_by: "kriskowal"
+priority: 5
+projects: []
+requires: []
+role: "steward"
+source: "https://github.com/kriscendobot/garden/issues/131"
+title: "Garden 3 Live Test"
