@@ -1,0 +1,43 @@
+after: []
+arc: "maintainer"
+attempts: 1
+body: `
+  Please acknowledge that @kriscendobot is watching this venue.
+
+completed_at: "2026-11-24T03:12:14Z"
+cost:
+  elapsed_s: 24
+  engagements: 1
+  tokens: 0
+envelope: "maintainer"
+generation: 1
+id: "kriscendobot-garden-issue-131"
+level: 0
+origin:
+  by: "kriskowal"
+  issue: 131
+  repo: "kriscendobot/garden"
+  url: "https://github.com/kriscendobot/garden/issues/131"
+outcome: "done"
+plans: 0
+posted_at: "2026-11-24T03:11:16Z"
+posted_by: "kriskowal"
+priority: 5
+projects: []
+report: `
+  Acknowledged: @kriscendobot is watching this venue.
+
+  This issue (kriscendobot/garden#131, opened by kriskowal, a maintainer) reached
+  the garden's board through the watcher and was run as job
+  `kriscendobot-garden-issue-131` by a steward worker in a slot. The steward
+  posts this report back on the issue, so this comment is the acknowledgment.
+
+  What was done: read the job and the briefs, confirmed from
+  `designs/watcher.md` and `src/steward.js` that reports return to the issue that
+  asked for them, and wrote this report. No project was changed and nothing was
+  committed; none was needed.
+
+requires: []
+role: "steward"
+source: "https://github.com/kriscendobot/garden/issues/131"
+title: "Garden 3 Live Test"
