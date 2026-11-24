@@ -28,8 +28,9 @@ repos:
     cursor: "2026-11-19T16:19:19Z"
     seen: []
   "kriscendobot/list":
-    cursor: "2026-08-21T00:49:14Z"
-    seen: []
+    cursor: "2026-08-21T00:49:35Z"
+    seen:
+      - 5363839052
   "kriscendobot/minion.town":
     cursor: "2026-11-10T15:59:29Z"
     seen: []
