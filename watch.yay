@@ -1,9 +1,8 @@
 reports: []
 repos:
   "endojs/endo-but-for-bots":
-    cursor: "2026-11-23T07:11:41Z"
-    seen:
-      - 7094078712
+    cursor: "2026-11-17T05:30:01Z"
+    seen: []
   "kriscendobot/cosgov":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
@@ -14,27 +13,23 @@ repos:
     cursor: "2026-11-18T03:18:32Z"
     seen: []
   "kriscendobot/finbot":
-    cursor: "2026-10-18T17:35:09Z"
-    seen:
-      - 6252986718
+    cursor: "2026-07-25T06:10:48Z"
+    seen: []
   "kriscendobot/garden":
-    cursor: "2026-11-18T18:22:33Z"
+    cursor: "2026-11-18T02:47:13Z"
     seen: []
   "kriscendobot/garden-book":
-    cursor: "2026-11-04T05:59:59Z"
-    seen:
-      - "rv5763932509"
+    cursor: "2026-10-03T04:40:21Z"
+    seen: []
   "kriscendobot/garden3":
     cursor: "2026-11-19T16:19:19Z"
     seen: []
   "kriscendobot/list":
-    cursor: "2026-08-21T00:49:35Z"
-    seen:
-      - 5363839052
+    cursor: "2026-08-21T00:49:14Z"
+    seen: []
   "kriscendobot/minion.town":
-    cursor: "2026-11-18T02:48:55Z"
-    seen:
-      - 6967508293
+    cursor: "2026-11-10T15:59:29Z"
+    seen: []
   "kriscendobot/moddable":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
@@ -42,13 +37,11 @@ repos:
     cursor: "2026-11-18T03:18:32Z"
     seen: []
   "kriscendobot/oros-ckm-data-readiness":
-    cursor: "2026-09-29T16:55:19Z"
-    seen:
-      - 5894768382
+    cursor: "2026-09-17T15:01:20Z"
+    seen: []
   "kriscendobot/proposal-compartments":
-    cursor: "2026-09-04T00:58:39Z"
-    seen:
-      - "rv5108200446"
+    cursor: "2026-08-16T21:40:23Z"
+    seen: []
   "kriscendobot/test262":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
