@@ -1,9 +1,17 @@
 after: []
 arc: "maintainer"
-attempts: 16
+attempts: 17
 body: "@kriscendobot please review:\n\n - https://github.com/dckc/vattr97/pull/68\n\nthat is: run a gauntlet\n"
+claim:
+  at: "2026-11-25T02:33:13Z"
+  expires_at: "2026-11-25T03:23:43Z"
+  generation: 17
+  host: "endolin-garden-ece02cb4"
+  plot: ""
+  window_s: 2400
+  worker: "endolin-garden-ece02cb4-w"
 envelope: "maintainer"
-generation: 16
+generation: 17
 id: "kriscendobot-garden-issue-132"
 level: 0
 origin:
