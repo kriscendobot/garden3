@@ -1,6 +1,6 @@
 after: []
 arc: "maintainer"
-attempts: 0
+attempts: 1
 body: `
   Ingest the skills of dckc/mad-skills into the library. A maintainer (kriskowal) asked for this on 2026-11-25.
 
@@ -10,6 +10,16 @@ body: `
 
   Also answer, at the top of the report: which of these skills overlap with skills the garden or its plots already hold (name both sides), and which look worth adopting as skills here. Adopt none yourself: that is a separate job by skills/upstream-adoption.
 
+claim:
+  at: "2026-11-25T17:56:26Z"
+  expires_at: "2026-11-25T18:46:56Z"
+  generation: 1
+  host: "endolin-garden-ece02cb4"
+  plot: "maple"
+  window_s: 2400
+  worker: "endolin-garden-ece02cb4-w"
+envelope: "maintainer"
+generation: 1
 id: "scholar-ingest-dckc-mad-skills"
 level: 0
 plans: 0
