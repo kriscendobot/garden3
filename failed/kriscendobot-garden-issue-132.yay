@@ -2,15 +2,12 @@ after: []
 arc: "maintainer"
 attempts: 395
 body: "@kriscendobot please review:\n\n - https://github.com/dckc/vattr97/pull/68\n\nthat is: run a gauntlet\n"
-claim:
-  at: "2026-11-25T17:56:16Z"
-  expires_at: "2026-11-25T18:46:46Z"
-  generation: 395
-  host: "endolin-garden-ece02cb4"
-  plot: ""
-  window_s: 2400
-  worker: "endolin-garden-ece02cb4-w"
+cost:
+  elapsed_s: 3
+  engagements: 1
+  tokens: 0
 envelope: "maintainer"
+failed_at: "2026-11-25T17:56:39Z"
 generation: 395
 id: "kriscendobot-garden-issue-132"
 level: 0
@@ -19,6 +16,7 @@ origin:
   issue: 132
   repo: "kriscendobot/garden"
   url: "https://github.com/kriscendobot/garden/issues/132"
+outcome: "failed"
 plans: 0
 posted_at: "2026-11-25T01:49:33Z"
 posted_by: "dckc"
