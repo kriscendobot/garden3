@@ -1,0 +1,20 @@
+after: []
+arc: "maintainer"
+attempts: 0
+body: "@kriscendobot please review:\n\n - https://github.com/dckc/vattr97/pull/68\n\nthat is: run a gauntlet\n"
+id: "kriscendobot-garden-issue-132"
+level: 0
+origin:
+  by: "dckc"
+  issue: 132
+  repo: "kriscendobot/garden"
+  url: "https://github.com/kriscendobot/garden/issues/132"
+plans: 0
+posted_at: "2026-11-25T01:49:33Z"
+posted_by: "dckc"
+priority: 5
+projects: []
+requires: []
+role: "steward"
+source: "https://github.com/kriscendobot/garden/issues/132"
+title: "toybox += `endo define`: please review"
