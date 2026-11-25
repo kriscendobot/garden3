@@ -9,3 +9,13 @@ rows:
     role: "steward"
     source: "none"
     ts: "2026-11-25T17:56:33Z"
+  - arc: "maintainer"
+    elapsed_s: 3
+    host: "endolin-garden-ece02cb4"
+    id: "scholar-ingest-dckc-mad-skills"
+    level: 0
+    outcome: "failed"
+    pool: "claude-endolin"
+    role: "scholar"
+    source: "none"
+    ts: "2026-11-25T17:56:43Z"
