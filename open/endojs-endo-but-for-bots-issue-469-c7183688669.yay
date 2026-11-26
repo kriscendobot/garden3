@@ -4,14 +4,6 @@ attempts: 2
 body: `
   Please refresh.
 
-claim:
-  at: "2026-11-26T05:46:32Z"
-  expires_at: "2026-11-26T06:37:02Z"
-  generation: 2
-  host: "endolin-garden-ece02cb4"
-  plot: ""
-  window_s: 2400
-  worker: "endolin-garden-ece02cb4-w"
 envelope: "maintainer"
 generation: 2
 id: "endojs-endo-but-for-bots-issue-469-c7183688669"
