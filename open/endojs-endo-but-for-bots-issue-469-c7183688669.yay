@@ -1,0 +1,23 @@
+after: []
+arc: "maintainer"
+attempts: 0
+body: `
+  Please refresh.
+
+id: "endojs-endo-but-for-bots-issue-469-c7183688669"
+level: 0
+origin:
+  by: "kriskowal"
+  comment: 7183688669
+  issue: 469
+  repo: "endojs/endo-but-for-bots"
+  url: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7183688669"
+plans: 0
+posted_at: "2026-11-26T05:43:39Z"
+posted_by: "kriskowal"
+priority: 5
+projects: []
+requires: []
+role: "steward"
+source: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7183688669"
+title: "Please refresh."
