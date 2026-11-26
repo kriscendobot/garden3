@@ -4,9 +4,9 @@ reports:
     repo: "kriscendobot/garden"
 repos:
   "endojs/endo-but-for-bots":
-    cursor: "2026-11-26T11:38:02Z"
+    cursor: "2026-11-26T12:22:34Z"
     seen:
-      - 7190975493
+      - 7191920872
   "kriscendobot/cosgov":
     cursor: "2026-11-18T03:18:32Z"
     seen: []
