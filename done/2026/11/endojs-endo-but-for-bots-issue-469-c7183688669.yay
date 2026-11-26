@@ -1,0 +1,30 @@
+after: []
+arc: "maintainer"
+attempts: 5
+body: "Please refresh.\n"
+completed_at: "2026-11-26T05:59:12Z"
+cost:
+  elapsed_s: 391
+  engagements: 1
+  tokens: 0
+envelope: "maintainer"
+generation: 5
+id: "endojs-endo-but-for-bots-issue-469-c7183688669"
+level: 0
+origin:
+  by: "kriskowal"
+  comment: 7183688669
+  issue: 469
+  repo: "endojs/endo-but-for-bots"
+  url: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7183688669"
+outcome: "done"
+plans: 0
+posted_at: "2026-11-26T05:43:39Z"
+posted_by: "kriskowal"
+priority: 5
+projects: []
+report: "---\nauthor: \"steward\"\ncreated: \"2026-11-26\"\nupdated: \"2026-11-26\"\n---\n\n# Refresh of endojs/endo-but-for-bots#469\n\nkriskowal asked on #469: \"Please refresh.\" (comment 7183688669).\n\n#469 is \"chore: merge upstream endojs/endo:master into llm\". Its head,\n`chore/merge-upstream-master-into-llm` at `596b4c118` (June 18), conflicts\nwith `llm`. The upstream commits it carried (through `a7ff1913f`) are all in\n`llm` already. So the refresh is a new merge of the current upstream master\ninto the current `llm`, done here from scratch rather than by replaying the\nJune branch.\n\n## What is on the job branch\n\nBranch `job/endojs-endo-but-for-bots-issue-469-c7183688669/5` in\n`worktrees/endojs/endo-but-for-bots`, three commits on `llm` at `036876777`:\n\n1. `7959a2383` **Merge upstream master into llm (2026-11-26)**: a true\n   two-parent merge of `endojs/endo` master at `679d9afaa` (#3376), adding\n   the 27 upstream commits `llm` lacked since `aaf9ea4f4`. Conflicts and how\n   I resolved them:\n   - `package.json`: kept `llm`'s `ava` resolution and added upstream's\n     `configstore`, `eshost` (patch), `nconf` and `socket.io` resolutions.\n   - `packages/errors/package.json`: `llm` dropped `tsd`, and upstream\n     dropped `ses0.18.3` in favor of its legacy-assert fixture. I dropped\n     both.\n   - `packages/immutable-arraybuffer/src/lib.js`: the only conflicting hunk\n     was the `Object`/`Reflect` imports, resolved as their union. Upstream's\n     `insistArrayBuffer` and its pruning of optional properties merged\n     cleanly into `llm`'s emulation.\n   - `scripts/pack-all.mjs`: kept `llm`'s ts-node-pack driver. It no longer\n     runs `git clean`, so upstream's `.yarn/install-state.gz` exclusion does\n     not apply.\n   - `yarn.lock`: kept `llm`'s in the merge, as #1363 did.\n2. `89e5a1554` **regenerate yarn.lock** with `yarn install\n   --mode=update-lockfile`.\n3. `37dc744e6` **carry upstream's lockfile refreshes**: regenerating from\n   `llm`'s lockfile lost upstream's Dependabot refreshes (tar, js-yaml, the\n   glob matchers, rollup, the socket stack, semver, lodash, node-gyp,\n   undici, markdown-it). `yarn up -R` on those packages brought them back.\n   I checked with a script that every descriptor upstream bumped now\n   resolves at or above upstream's version.\n\nThe merge also brings in upstream changes to `.github/workflows/ci.yml` and\n`depcheck.yml`, so **the push needs a credential with workflow scope.**\n\n## Verified (I ran each of these)\n\n- `yarn install --immutable` (yarn 4.13.0, pnpm linker) passes on the final\n  tree, so the lockfile is consistent.\n- `@endo/immutable-arraybuffer`: 245 tests pass; `tsc` is clean; eslint\n  reports 0 errors (warnings only).\n- `@endo/errors`: passes under the lockdown, lockdown-unsafe and shims-only\n  configs (10 tests each) and the legacy-assert config (1 test).\n- `ses`: the full ava suite gives 403 passed, 1 known failure, 2 skipped,\n  including upstream's new frozen-null-pill tests.\n- `@endo/pass-style` (75 tests) and `@endo/bytes` (34 tests) pass.\n- `garden prose diff` finds nothing.\n\nI did not run the whole monorepo's tests or lint. CI will.\n\n## Not done, and what should happen\n\n- **Upstream has moved past the garden's copy.** The garden's\n  `endojs/endo` repository stops at `679d9afaa` (Oct 29). GitHub's master is\n  at `04974c806` (#3387), which is 8 commits further (CI SHA fixes, yargs\n  for Node 26, playwright upgrades, the cycle check through yarn). I had no\n  way to fetch them, so this refresh is up to date with what the garden\n  holds, not with the live tip. Once the garden fetches `endojs/endo`, a\n  follow-up refresh can merge those 8 commits on top of this one.\n- **Publishing.** The new branch does not descend from #469's head, so\n  updating #469 means force-pushing to `chore/merge-upstream-master-into-llm`\n  with a lease on `596b4c118`. The PR description should then name the new\n  upstream tip (`679d9afaa`) and the new list of upstream changes; the\n  current one describes the June merge. The other option is to close #469\n  and open a new PR; the maintainer should choose.\n- `packages/immutable-arraybuffer/designs/immutable-arraybuffer.md` still\n  quotes the \"underlying platform lacks ...\" errors that upstream's change\n  removed. That doc fix is small and belongs to a separate change; I left\n  the doc as it was.\n\n## Host problems found (for the garden, not the project)\n\n- `garden project add` failed with git's \"detected dubious ownership\":\n  the bare repositories under `/home/kris/garden/repositories/` belong to\n  `steward`, and the slot runs as `slot01`. I worked around it by adding the\n  two repositories to `safe.directory` in this slot's own `~/.gitconfig`,\n  which is discarded with the slot. The fix belongs in the host: a system\n  `safe.directory` entry, or in `src/project.js`, `-c safe.directory=<bare>`\n  on the clone. This job had already been attempted 5 times, and this may be\n  why the earlier attempts failed.\n- corepack's yarn fails under `~/.cache` with \"Dynamic require of util is\n  not supported\", because the home's `package.json` makes node load the\n  cached `yarn.js` as ESM. Setting `COREPACK_HOME` outside the home fixes\n  it.\n- Under the pnpm linker, `node_modules/.bin/ava` was missing after\n  `--mode=skip-build`, so I ran ava as `node node_modules/ava/entrypoints/cli.js`.\n"
+requires: []
+role: "steward"
+source: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7183688669"
+title: "Please refresh."
