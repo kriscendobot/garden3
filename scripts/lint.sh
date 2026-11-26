@@ -22,24 +22,33 @@ fi
 if command -v cargo >/dev/null 2>&1; then
   ( cd rust && cargo fmt --check ) && note "cargo fmt --check" ok || { note "cargo fmt --check" FAILED; rc=1; }
   ( cd rust && cargo clippy --offline --quiet --all-targets -- -D warnings ) && note "cargo clippy" ok || { note "cargo clippy" FAILED; rc=1; }
-  ( cd rust/conformance && cargo fmt --check && cargo clippy --offline --quiet --all-targets -- -D warnings ) && note "conformance fmt, clippy" ok || { note "conformance fmt, clippy" FAILED; rc=1; }
+  # The conformance crate's build scripts and proc-macros run on the host: they
+  # need the host's standard library and a C linker, which the box does not have
+  # (designs/services.md).
+  hostlib="$(rustc --print sysroot)/lib/rustlib/$(rustc -vV | sed -n 's/^host: //p')/lib"
+  if [ -d "$hostlib" ] && command -v cc >/dev/null 2>&1; then
+    ( cd rust/conformance && cargo fmt --check && cargo clippy --offline --quiet --all-targets -- -D warnings ) && note "conformance fmt, clippy" ok || { note "conformance fmt, clippy" FAILED; rc=1; }
+  else
+    ( cd rust/conformance && cargo fmt --check ) && note "conformance fmt" ok || { note "conformance fmt" FAILED; rc=1; }
+    note "conformance clippy" "SKIPPED: no host standard library or C linker here"
+  fi
 else
   note cargo "SKIPPED: not installed"
 fi
 
 # Documents on the shed carry strict YAY front matter; data files are YAY.
 node --input-type=module -e '
-import fs from "node:fs"; import path from "node:path";
+import fs from "node:fs";
 import { parse, parseYaydown } from "./src/yay.js";
 let bad = 0;
-const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => [".git", "node_modules", "target", "vendor"].includes(e.name) || e.name.startsWith(".tmp-") ? [] : e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
-const mine = new Set(fs.readFileSync(0, "utf8").split("\n").filter(Boolean));
-for (const f of walk(".")) {
-  const rel = f.replace(/^\.\//, "");
-  if (!mine.has(rel)) continue;
+// Only what git lists is read: the tree also holds slot homes that belong to
+// other accounts and cannot be walked.
+const skip = rel => rel.split("/").some(s => ["node_modules", "target", "vendor"].includes(s) || s.startsWith(".tmp-"));
+const mine = fs.readFileSync(0, "utf8").split("\n").filter(rel => rel && !skip(rel) && fs.existsSync(rel));
+for (const rel of mine) {
   try {
-    if (rel.endsWith(".yay")) parse(fs.readFileSync(f, "utf8"), rel);
-    else if (rel.endsWith(".md") && (!rel.startsWith("scripts/shards/seed/") || rel.startsWith("scripts/shards/seed/main/"))) parseYaydown(fs.readFileSync(f, "utf8"), rel);
+    if (rel.endsWith(".yay")) parse(fs.readFileSync(rel, "utf8"), rel);
+    else if (rel.endsWith(".md") && (!rel.startsWith("scripts/shards/seed/") || rel.startsWith("scripts/shards/seed/main/"))) parseYaydown(fs.readFileSync(rel, "utf8"), rel);
   } catch (e) { bad += 1; console.error(`${rel}: ${e.message}`); }
 }
 process.exit(bad ? 1 : 0);
