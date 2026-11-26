@@ -29,15 +29,23 @@ export const argvFor = (argv, tiers, tier) => {
   return [...argv.slice(0, -1), '--model', spec.model, argv.at(-1)];
 };
 
-export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilities, hostinfo, files, clock, config = {}, worker, log = () => {} }) => {
+/**
+ * `serial` is the steward's one pair of hands (harden.js makeSerial): a run
+ * that ends while the supervisor's tick is at work settles after it, never
+ * in the middle of it. Whoever calls `start` already holds the turn.
+ */
+export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilities, hostinfo, files, clock, config = {}, worker, serial = fn => fn(), log = () => {} }) => {
   const defaultWindow = config.worker?.window_seconds ?? 2400;
   const pickPlot = job => job.plot || (config.plots ?? ['alder'])[Math.abs([...job.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7)) % (config.plots ?? ['alder']).length];
 
   /**
-   * Run at most one job. Returns null when there is nothing to claim or no
-   * free slot, else {id, outcome, slot, plot, cost}.
+   * Claim at most one job, prepare its slot and set it running. Returns null
+   * when there is nothing to claim or no free slot, else {id, slot, done}:
+   * `done` is a promise for {id, outcome, slot, plot, cost, harvest, lessons},
+   * kept once the run has ended and been settled. The caller does not wait
+   * for it to start the next job or to do anything else.
    */
-  const once = async ({ workerId = 'w1' } = {}) => {
+  const start = async ({ workerId = 'w1' } = {}) => {
     const slot = await slots.free();
     if (!slot) return null;
     // Install before claiming. If the next job this host would take needs a
@@ -80,23 +88,24 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
       await board.release(job.id, { generation }).catch(() => {});
       return null;
     }
-    let result = { status: 1, timed_out: false, elapsed_s: 0 };
-    let home;
+    const failed = { status: 1, timed_out: false, elapsed_s: 0 };
+    const run = { job, slot, plot, generation, windowS, lent, home: undefined };
+    let going;
     try {
       const deadlineEpoch = Math.floor(started / 1000) + windowS;
       const deadlineIso = new Date(deadlineEpoch * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
       // The prompt and the hook's state are laid by prepare: once the home
       // is the slot account's, the steward cannot write into it.
       const prompt = `Read roles/COMMON.md, then roles/PLOT.md and roles/${job.role}/AGENT.md, then do the job in JOB.yay.\n\n${clockNote({ id: job.id, windowS, deadlineIso, planner: Boolean(job.planner) })}\n`;
-      home = await slots.prepare(slot, job, plot, undefined, lent ? [lent] : [], { files: [{ file: 'PROMPT.md', text: prompt }], dirs: ['.hook-state'] });
-      const tree = files(home);
+      run.home = await slots.prepare(slot, job, plot, undefined, lent ? [lent] : [], { files: [{ file: 'PROMPT.md', text: prompt }], dirs: ['.hook-state'] });
+      const tree = files(run.home);
       // The worker's environment is built from nothing: its clock, where
       // things are, and no key (keys.js). The harness gets its credential
       // through the worker command's own helper.
       const env = {
         ...scrub(worker.env ?? {}),
-        HOME: home,
-        GARDEN_JOB_HOME: home,
+        HOME: run.home,
+        GARDEN_JOB_HOME: run.home,
         GARDEN_JOB_ID: job.id,
         GARDEN_PLOT: plot,
         GARDEN_REPOSITORIES: worker.repositories,
@@ -104,12 +113,24 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
         GARDEN_DEADLINE_EPOCH: String(deadlineEpoch),
         GARDEN_HOOK_STATE: tree.path('.hook-state'),
       };
-      result = await slots.run(slot, { argv: argvFor(worker.argv, worker.tiers, job.tier), env, windowS, killAfterS: worker.killAfterS ?? 30, logFile: worker.logFile(job.id) });
+      const request = { argv: argvFor(worker.argv, worker.tiers, job.tier), env, windowS, killAfterS: worker.killAfterS ?? 30, logFile: worker.logFile(job.id) };
+      going = () => slots.run(slot, request);
     } catch (err) {
       log(`${job.id}: could not run: ${err.message}`);
+      // Nothing ran. The caller holds the turn, so this settles here.
+      return harden({ id: job.id, slot, done: Promise.resolve(await finish(run, failed)) });
     }
+    const done = going()
+      .catch(err => {
+        log(`${job.id}: could not run: ${err.message}`);
+        return failed;
+      })
+      .then(result => serial(() => finish(run, result)));
+    return harden({ id: job.id, slot, done });
+  };
 
-    // Whatever happened, carry the work out, then settle.
+  /** Whatever happened, carry the work out, then settle. */
+  const finish = async ({ job, slot, plot, generation, windowS, lent, home }, result) => {
     let harvest = { projects: [], genome_changed: [], outbox: [] };
     let handoff = null;
     let report = null;
@@ -173,6 +194,12 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     return harden({ id: job.id, outcome: superseded ? 'superseded' : kind, slot, plot, cost, harvest, lessons });
   };
 
+  /** Run at most one job, to its end. Null when there was none to run. */
+  const once = async opts => {
+    const started = await start(opts);
+    return started ? started.done : null;
+  };
+
   /**
    * Reap this host's own zombies: a slot still holding a job whose claim this
    * host no longer has (it crashed, slept or lost the network, and the lease
@@ -191,5 +218,5 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     return reaped;
   };
 
-  return harden({ once, reap });
+  return harden({ start, once, reap });
 };

@@ -13,17 +13,36 @@ const mk = ({ duty, phase = 'idle', leader = false, claimed = 0, jobs = [], swep
     hostService: { caughtUp: async () => 'q-0', rejuvenate: async o => (calls.push(['rejuvenate', o]), { shed: o.shed }), verify: async () => ({ ok: true, capabilities: { node: 'p' }, drift: [] }), markCaughtUp: rec('caught-up') },
     board: { read: async () => ({ jobs: Object.fromEntries(Array.from({ length: claimed }, (_, i) => [`j${i}`, { where: 'claimed', host: 'h' }])) }), sweep: async () => (calls.push(['sweep']), swept) },
     budget: { refresh: rec('refresh') },
-    dispatcher: { once: async () => queue.shift() ?? null, reap: async () => zombies },
+    dispatcher: { start: async () => (queue.length ? (j => ({ id: j.id, slot: 'slot01', done: j.done ?? Promise.resolve(j) }))(queue.shift()) : null), reap: async () => zombies },
     journal: { press: async o => (calls.push(['press', o]), []) },
     ...(heard ? { watcher: { tick: async () => (calls.push(['watch']), heard) }, steward: { report: async () => (calls.push(['report']), ['done issue-1']) } } : {}),
   });
   return { sup, calls, names: () => calls.map(c => c[0]) };
 };
 
-test('a running host refreshes its budget and dispatches until nothing is left', async () => {
+test('a running host refreshes its budget and starts jobs until nothing is left', async () => {
   const { sup, names } = mk({ duty: 'run', jobs: [{ id: 'a', outcome: 'done' }, { id: 'b', outcome: 'handoff' }] });
-  assert.deepEqual(await sup.tick(), ['a: done', 'b: handoff']);
+  assert.deepEqual(await sup.tick(), ['a: started in slot01', 'b: started in slot01']);
   assert.deepEqual(names(), ['sweep', 'refresh', 'press']);
+  assert.deepEqual(await sup.drain(), ['a: done', 'b: handoff']);
+});
+
+test('a tick does not wait on a running job: the next one hears, and says how the job ended', async () => {
+  let end;
+  const done = new Promise(resolve => { end = resolve; });
+  const { sup, names } = mk({ duty: 'run', leader: true, heard: ['post issue-2'], jobs: [{ id: 'long', done }] });
+  assert.deepEqual(await sup.tick(), ['heard: post issue-2', 'reported: done issue-1', 'long: started in slot01']);
+  assert.deepEqual(await sup.tick(), ['heard: post issue-2', 'reported: done issue-1'], 'the job still runs, and the watcher is heard');
+  assert.equal(names().filter(n => n === 'watch').length, 2);
+  end({ id: 'long', outcome: 'done' });
+  await done;
+  assert.deepEqual((await sup.tick()).slice(0, 1), ['long: done']);
+});
+
+test('a run that cannot be settled is said, and its slot named', async () => {
+  const { sup } = mk({ duty: 'run', jobs: [{ id: 'bad', done: Promise.reject(Object.assign(new Error('the harvest threw'), { code: 'ENOBUFS' })) }] });
+  await sup.tick();
+  assert.deepEqual(await sup.drain(), ['bad: ran, and could not be settled (ENOBUFS the harvest threw); slot01 holds its work']);
 });
 
 test('quiescing: a host with running jobs waits; an idle one presses and acknowledges', async () => {

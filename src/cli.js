@@ -10,7 +10,7 @@
 // not be read.
 
 import path from 'node:path';
-import { makeNodePowers, makeFiles, run } from './powers/node.js';
+import { makeNodePowers, makeFiles, run, runAsync } from './powers/node.js';
 import { makeShards } from './shard.js';
 import { makeBoardService } from './boardService.js';
 import { makeBudgetService } from './budget.js';
@@ -36,7 +36,7 @@ import { makeDevPublisher } from './devpublish.js';
 import * as wrapup from './wrapup.js';
 import { parse, stringify } from './yay.js';
 import { fromArgs } from './shon.js';
-import { Refusal } from './harden.js';
+import { Refusal, makeSerial } from './harden.js';
 
 // Exit only once the reply is written: a pipe takes a large reply in pieces,
 // and exiting at once would cut it off.
@@ -81,7 +81,7 @@ export const assemble = (powers = makeNodePowers()) => {
   const capabilities = lazy(() => makeCapabilities({ files: makeFiles, run, sha256File: powers.sha256File, sha256: powers.sha256, clock, arch: powers.arch(), root: capRoot, manifestsDir: path.join(rootRepo, 'capabilities'), stateDir, base: config.capabilities?.base ?? [], env, log: powers.log }));
   const budget = lazy(() => makeBudgetService({ shards, host, clock, config }));
   const board = lazy(() => makeBoardService({ shards, host, clock, config, capabilities, budget: env.GARDEN_BUDGET === 'off' ? undefined : budget }));
-  const slots = lazy(() => makeSlots({ files: makeFiles, run, warden: env.GARDEN_WARDEN ?? path.join(capRoot, 'bin/warden'), rootRepo, slotsRoot: env.GARDEN_SLOTS ?? path.join(rootRepo, 'slots'), repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), stateDir, upstream: path.join(stateDir, 'upstream/garden.git'), clock, count: config.slots.count, uidBase: config.slots.uid_base, mode: env.GARDEN_SLOT_MODE ?? 'users', log: powers.log }));
+  const slots = lazy(() => makeSlots({ files: makeFiles, run, runAsync, warden: env.GARDEN_WARDEN ?? path.join(capRoot, 'bin/warden'), rootRepo, slotsRoot: env.GARDEN_SLOTS ?? path.join(rootRepo, 'slots'), repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), stateDir, upstream: path.join(stateDir, 'upstream/garden.git'), clock, count: config.slots.count, uidBase: config.slots.uid_base, mode: env.GARDEN_SLOT_MODE ?? 'users', log: powers.log }));
   /**
    * Build the warden from this shed's source, for this host's architecture,
    * with the pinned Rust toolchain capability, and put it where the
@@ -135,13 +135,16 @@ export const assemble = (powers = makeNodePowers()) => {
     steward,
     supervisor: lazy(() => {
       const services = assemble(powers);
+      // The tick and the settling of each run that ends take turns.
+      const serial = makeSerial();
       const dispatcher = makeDispatcher({
+        serial,
         board, slots, budget, plots: services.plots, journal: services.journal, capabilities, hostinfo, files: makeFiles, clock, config, log: powers.log,
         // The worker command is the harness capability's; until it is pinned a host names its own.
         worker: { argv: env.GARDEN_WORKER ? env.GARDEN_WORKER.split(' ') : ['claude', '-p', '--settings', '.claude-worker.json', 'Read PROMPT.md in this directory, and do what it says.'], lend: () => keys.lend('claude-login'), env: { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` }, repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), logFile: id => (makeFiles(stateDir).mkdir('runs'), path.join(stateDir, 'runs', `${id}.log`)), killAfterS: config.worker.kill_after_seconds, tiers: config.worker.tiers },
       });
       const isLeader = async () => parse((await shardRead('journal', 'config/hosts.yay')) ?? 'leader: null\n').leader === host;
-      const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, hostinfo, watcher, steward, clock, log: powers.log });
+      const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, hostinfo, watcher, steward, clock, serial, log: powers.log });
       const sleep = ms => new Promise(r => setTimeout(r, ms));
       /**
        * Tick forever. A host that cannot take part yet (no repository to talk
@@ -169,13 +172,23 @@ export const assemble = (powers = makeNodePowers()) => {
           await sleep(intervalMs);
         }
       };
-      return { tick: sup.tick, run: runForever };
+      // One tick by hand stays until the jobs it started have ended: the
+      // process exits with its reply, and would abandon them.
+      const tickToEnd = async () => [...(await sup.tick()), ...(await sup.drain())];
+      return { tick: tickToEnd, run: runForever };
     }),
     board,
     budget,
     // `garden watcher preview` looks without acting; `garden watcher adopt
     // <record>` takes a YAY record's `cursors` ([{repo, cursor}]) onto the board.
-    watcher: lazy(() => ({ preview: () => watcher.preview(), adopt: file => watcher.adopt(Object.fromEntries(parse(root.read(file), file).cursors.map(c => [c.repo, c.cursor])), `cursors from ${file}`) })),
+    watcher: lazy(() => {
+      const cursorsOf = file => Object.fromEntries(parse(root.read(file), file).cursors.map(c => [c.repo, c.cursor]));
+      return {
+        preview: file => watcher.preview(file ? cursorsOf(file) : {}),
+        adopt: file => watcher.adopt(cursorsOf(file), `cursors from ${file}`),
+        resume: file => watcher.adopt(cursorsOf(file), `resumed from the cursors in ${file}`, { back: true }),
+      };
+    }),
     capabilities,
     slots,
     quiescence: lazy(() => makeQuiescenceService({ shards, host, clock, config })),

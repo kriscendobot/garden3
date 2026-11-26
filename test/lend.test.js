@@ -109,6 +109,27 @@ test('a home is lent the access token, mode 0600, and harvest carries out nothin
   assert.ok(!carried.includes(ACCESS));
 });
 
+test('harvest judges only what the job added: the project\'s own history may hold the token', async t => {
+  const { T, repositories, slots, write } = setup(t);
+  // The mirror's history already holds the string, on a branch the job starts from.
+  const src = path.join(T, 'src');
+  write(src, 'old.md', `long ago: ${ACCESS}\n`);
+  git(src, 'add', '-A'); git(src, 'commit', '--quiet', '-m', 'history');
+  git(path.join(repositories, 'o-p.git'), 'fetch', '--quiet', src, '+main:main');
+  const home = await slots.prepare('slot01', job, 'alder');
+  // As `garden project add` leaves a checkout: shared with the mirror, no remote.
+  const wt = path.join(home, 'worktrees/o/p');
+  git(T, 'clone', '--quiet', '--shared', path.join(repositories, 'o-p.git'), wt);
+  git(wt, 'remote', 'remove', 'origin');
+  git(wt, 'checkout', '--quiet', '-b', 'job/lent-job/1');
+  write(wt, 'work.md', 'honest work\n');
+  git(wt, 'add', '-A'); git(wt, '-c', 'user.name=j', '-c', 'user.email=j@j', 'commit', '--quiet', '-m', 'work');
+  const h = await slots.harvest('slot01', { secrets: [ACCESS] });
+  assert.equal(h.refused, undefined);
+  assert.deepEqual(h.projects, [{ project: 'o/p', branches: 1, wip: false }]);
+  assert.notEqual(git(path.join(repositories, 'o-p.git'), 'for-each-ref', 'refs/heads/job'), '', 'the branch reached the mirror');
+});
+
 test('a login that would expire inside the window is not lent: the job goes back, untouched', async () => {
   const released = [];
   const prepared = [];

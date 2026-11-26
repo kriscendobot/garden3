@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { harden } from '../harden.js';
 
 /** Files, narrowed to a root directory: no path may escape it. */
@@ -95,11 +95,30 @@ export const run = (cmd, args, { cwd, env, input, timeoutMs } = {}) => {
   return { status: r.status ?? 124, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
 };
 
+/**
+ * Run a program without waiting on it: the same contract as `run`, as a
+ * promise, so the caller's other work goes on while the program runs. For
+ * what runs long, such as a job under the warden.
+ */
+export const runAsync = (cmd, args, { cwd, env, input } = {}) =>
+  new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, { cwd, env, stdio: ['pipe', 'pipe', 'pipe'] });
+    const out = [];
+    const err = [];
+    child.stdout.on('data', d => out.push(d));
+    child.stderr.on('data', d => err.push(d));
+    child.on('error', reject);
+    child.on('close', status => resolve({ status: status ?? 124, stdout: Buffer.concat(out).toString('utf8'), stderr: Buffer.concat(err).toString('utf8') }));
+    child.stdin.on('error', () => {}); // a program that reads no input may close it first
+    child.stdin.end(input ?? '');
+  });
+
 export const makeNodePowers = ({ env = process.env } = {}) =>
   // Frozen at the top only: the process environment cannot be deep-frozen.
   Object.freeze({
     env,
     run,
+    runAsync,
     files: makeFiles,
     clock: { now: () => (env.GARDEN_NOW ? env.GARDEN_NOW : new Date().toISOString().replace(/\.\d+Z$/, 'Z')) },
     hostname: () => env.GARDEN_HOST ?? os.hostname().split('.')[0],

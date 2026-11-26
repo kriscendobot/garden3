@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-22"
+updated: "2026-11-23"
 ---
 
 # Services: what the garden is written in
@@ -68,7 +68,9 @@ over), `garden` (the launcher, on the host), `scripts/shards/bootstrap.sh`
 The prior garden is some sixty timers, each a script that wakes, clones a
 branch, does one thing and exits, sharing state through files and the journal.
 Here one process per host holds the services and ticks
-([hosts.md](hosts.md)). A service is an object made by a `make*` function from
+([hosts.md](hosts.md)). A tick starts jobs, one to a free slot, and does not
+wait on them; only the warden's run of a job is awaited apart
+(`runAsync`), and everything else the steward does takes turns. A service is an object made by a `make*` function from
 the powers it is handed; its methods are async and take and return plain data.
 
 What still shells out, and where it is isolated:

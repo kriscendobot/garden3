@@ -42,3 +42,17 @@ export const isName = s =>
   /^[a-z0-9][a-z0-9._-]{0,99}$/.test(s) &&
   !s.includes('..') &&
   !s.endsWith('.lock');
+
+/**
+ * One thing at a time: `serial(fn)` runs `fn` after everything given before
+ * it has settled, and returns its result. For work that shares state which
+ * must not be interleaved, such as a shard's clone.
+ */
+export const makeSerial = () => {
+  let last = Promise.resolve();
+  return fn => {
+    const mine = last.then(() => fn());
+    last = mine.catch(() => {});
+    return mine;
+  };
+};

@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { makeFiles } from '../src/powers/node.js';
+import { makeFiles, runAsync } from '../src/powers/node.js';
 import { makeBoardService } from '../src/boardService.js';
 import { makeBudgetService } from '../src/budget.js';
 import { makeSlots } from '../src/slots.js';
@@ -31,12 +31,14 @@ case "$id" in
   big-plan) grep -q 'handed off' PROMPT.md JOB.yay || exit 9
            printf 'steps:\\n  - id: "big-1"\\n    title: "First half"\\n  - after:\\n      - "big-1"\\n    id: "big-2"\\n    title: "Second half"\\n' > outbox/handoff.yay
            echo "Planned two steps." > outbox/report.md ;;
+  wait*)   while [ ! -f "$GARDEN_REPOSITORIES/go" ]; do sleep 0.1; done
+           echo "Waited, $id." > outbox/report.md ;;
   sleepy)  echo partial > scratch/notes; sleep 30 ;;
   *)       exit 3 ;;
 esac
 `;
 
-const setup = async t => {
+const setup = async (t, { count = 1 } = {}) => {
   const g = mkGarden(t, { hostBranches: ['host-a'] });
   const root = path.join(g.root, 'root');
   fs.mkdirSync(root);
@@ -58,7 +60,7 @@ const setup = async t => {
   await budget.refresh();
   const board = makeBoardService({ shards: h.shards, host: 'host-a', clock: g.clock, config, budget });
   fs.mkdirSync(path.join(g.root, 'slots'));
-  const sim = makeSlots({ files: makeFiles, run: h.run, warden: WARDEN, rootRepo: root, slotsRoot: path.join(g.root, 'slots'), repositories: path.join(g.root, 'repositories'), stateDir: h.stateDir, clock: g.clock, count: 1, mode: 'sim' });
+  const sim = makeSlots({ files: makeFiles, run: h.run, runAsync, warden: WARDEN, rootRepo: root, slotsRoot: path.join(g.root, 'slots'), repositories: path.join(g.root, 'repositories'), stateDir: h.stateDir, clock: g.clock, count, mode: 'sim' });
   // With accounts, a prepared home is the slot account's, and the steward
   // cannot write into it. Sim mode has no accounts, so stand in for that:
   // the home is sealed from prepare until the run starts, and closed from
@@ -87,6 +89,24 @@ const setup = async t => {
   const rec = (branch, id) => { const f = g.ls(branch).find(x => x.endsWith(`/${id}.yay`)); return f ? { file: f, ...parse(g.show(branch, f)) } : null; };
   return { g, h, board, budget, dispatcher, rec };
 };
+
+test('jobs run side by side: starting one does not wait on another', { skip }, async t => {
+  const { g, board, dispatcher, rec } = await setup(t, { count: 2 });
+  await board.post({ id: 'wait-1', role: 'builder', title: 'Wait', body: 'Wait.\n' });
+  await board.post({ id: 'wait-2', role: 'builder', title: 'Wait', body: 'Wait.\n' });
+  await board.post({ id: 'wait-3', role: 'builder', title: 'Wait', body: 'Wait.\n' });
+  const a = await dispatcher.start();
+  const b = await dispatcher.start();
+  assert.deepEqual([a.id, a.slot, b.id, b.slot], ['wait-1', 'slot01', 'wait-2', 'slot02'], 'the second starts while the first runs');
+  assert.equal(await dispatcher.start(), null, 'and a third waits for a slot');
+  assert.deepEqual(Object.values((await board.read()).jobs).map(e => e.where).sort(), ['claimed', 'claimed', 'open']);
+  fs.mkdirSync(path.join(g.root, 'repositories'), { recursive: true });
+  fs.writeFileSync(path.join(g.root, 'repositories/go'), '');
+  assert.deepEqual((await Promise.all([a.done, b.done])).map(r => r.outcome), ['done', 'done']);
+  assert.deepEqual([rec('archive', 'wait-1').report, rec('archive', 'wait-2').report], ['Waited, wait-1.\n', 'Waited, wait-2.\n']);
+  assert.equal((await dispatcher.once()).id, 'wait-3', 'a slot that was cleared is used again');
+  assert.equal(await dispatcher.once(), null);
+});
 
 test('a job that finishes: archived with its cost, lessons landed, slot razed', { skip }, async t => {
   const { g, h, board, dispatcher, rec } = await setup(t);

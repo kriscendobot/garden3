@@ -109,3 +109,16 @@ test('the hand-off example in the wrap-it-up skill is YAY a worker could write',
   assert.match(W.clockNote({ id: 'j', windowS: 2400, deadlineIso: 'x' }), /Do not name a successor/);
   assert.match(W.clockNote({ id: 'j', windowS: 2400, deadlineIso: 'x', planner: true }), /You are a planner.*all the way to completion/);
 });
+
+test('serial: one thing at a time, in the order asked, whatever each one does', async () => {
+  const { makeSerial } = await import('../src/harden.js');
+  const serial = makeSerial();
+  const seen = [];
+  const slow = serial(async () => { seen.push('a starts'); await new Promise(r => setTimeout(r, 20)); seen.push('a ends'); return 1; });
+  const failing = serial(async () => { seen.push('b'); throw new Error('no'); });
+  const last = serial(() => (seen.push('c'), 3));
+  assert.equal(await slow, 1);
+  await assert.rejects(failing, /no/);
+  assert.equal(await last, 3);
+  assert.deepEqual(seen, ['a starts', 'a ends', 'b', 'c']);
+});

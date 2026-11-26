@@ -44,6 +44,7 @@ test('decide: cursor and seen discard what was handled; closed issues and the bo
   assert.deepEqual(first.actions.map(a => [a.do, a.spec?.id ?? a.id]), [['post', 'issue-7'], ['release', 'held1']]);
   assert.deepEqual(first.state, { cursor: '2026-11-17T10:00:01Z', seen: [3] });
   assert.deepEqual(first.actions[0].spec.origin, { repo: 'o/r', issue: 7, url: 'https://github.com/o/r/issues/7#1', by: 'kris' });
+  assert.deepEqual(first.actions.filter(a => a.do === 'post').map(a => a.spec.arc), ['maintainer'], 'what a maintainer asks for draws on the maintainer\'s discretion');
   const again = decide({ events: g(ev('issue', 1, 'kris', '2026-11-17T10:00:00Z'), ev('comment', 3, 'bot', '2026-11-17T10:00:01Z'), ev('comment', 4, 'kris', '2026-11-17T10:00:01Z', { body: '@bot status' })), state: first.state, board, bot: 'bot', repo: 'o/r' });
   assert.deepEqual(again.actions.map(a => a.do), ['status'], 'only the event not yet seen at the cursor\'s own second');
   assert.deepEqual(again.state.seen, [3, 4]);
@@ -244,4 +245,23 @@ test('adopting cursors: an older one does not move a later one back; an adopted 
   assert.deepEqual(look.map(p => [p.repo, p.actions.length]), [[HOME, 0], [OTHER, 1]], 'preview says what a poll would do');
   assert.deepEqual(ghs[OTHER].writes, [], 'and does none of it');
   assert.deepEqual(await watcher.tick(), [`${OTHER}: post kriscendobot-garden3-issue-2`]);
+});
+
+test('resuming from an earlier cursor: the watch goes back, the preview says what that hears, and a job already posted is not posted twice', async t => {
+  const { ghs, watcher, later, watch } = await setup(t, ['host-a'], { watches: [{ repo: HOME, issues: true }], firstTick: false });
+  const pure = adopt({ repos: { a: { cursor: 't5', seen: [1] }, b: { cursor: 't4', seen: [2] } }, strangers: [], reports: [] }, { a: 't3', b: 't4' }, { back: true });
+  assert.deepEqual([pure.adopted, pure.watch.repos], [['a'], { a: { cursor: 't3', seen: [] }, b: { cursor: 't4', seen: [2] } }], 'a cursor already there is left with what it has seen');
+  const from = later(-120);
+  ghs[HOME].openIssue(1, 'kriskowal', 'Heard', 'posted the first time', later(-100));
+  ghs[HOME].openIssue(2, 'kriskowal', 'Passed over', 'the cursor was moved past this', later(-50));
+  await watcher.adopt({ [HOME]: from });
+  assert.deepEqual(await watcher.tick(), ['post issue-1', 'post issue-2']);
+  const after = watch().repos[HOME].cursor;
+  const look = await watcher.preview({ [HOME]: from });
+  assert.deepEqual([look[0].cursor, look[0].events], [from, 2], 'the preview reads from the cursor given');
+  assert.equal(watch().repos[HOME].cursor, after, 'and moves nothing');
+  assert.deepEqual(await watcher.adopt({ [HOME]: from }, 'resumed', { back: true }), [HOME]);
+  assert.equal(watch().repos[HOME].cursor, from);
+  assert.deepEqual((await watcher.tick()).filter(x => x.startsWith('post')), [], 'what was heard before opens no second job');
+  assert.equal(watch().repos[HOME].cursor, after, 'and the cursor is where it was');
 });

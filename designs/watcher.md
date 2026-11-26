@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-20"
+updated: "2026-11-23"
 ---
 
 # The watcher and the steward: steering from GitHub
@@ -88,6 +88,13 @@ comment cursors there was nothing but the bot's own comments. `garden
 watcher preview` says what the next poll of each would do, and does none of
 it.
 
+**Resuming.** `garden watcher resume <record>` takes the record's cursors
+even where the board's are later, so the next poll hears again what came
+after them; `garden watcher preview <record>` says first what that would do.
+A job already on the board is not posted twice. Run on 2026-11-24 with
+`upstream/watch-cursors.yay`: eight cursors went back, over 126 events, and
+none of them asked for anything.
+
 ## The garden's version
 
 **The gate** (`gate`) is one function and the only place the question is
@@ -109,6 +116,11 @@ noted once in the journal with the URL.
 | comments `@<bot> status` | a reply with the board's counts |
 | comments without addressing the bot | nothing: maintainers talking |
 
+A job the watcher opens names the `maintainer` envelope as its arc
+([budget.md](budget.md)): only a maintainer's words pass the gate, so what
+they ask for draws on the maintainer's discretion. With no arc it would wait
+on `unallocated`, which holds nothing unless a share is set for it.
+
 The verbs are a closed list. A malformed one gets a reply saying what it
 needs. An issue already closed when first seen asks nothing. The bot's own
 comments are skipped.
@@ -120,6 +132,11 @@ comment both try to push; one lands; the other starts again from a board whose
 cursor is already past it and does nothing. Only the host whose commit landed
 goes on to acknowledge. (The supervisor also runs the watcher on the leader
 only, so that one host polls.)
+
+**The watcher is heard while jobs run.** A tick starts jobs and does not wait
+on them (`dispatch.start`), so the next tick polls as usual. A run that ends
+is settled between ticks, never during one: the tick and each settling take
+turns (`makeSerial`), because both write through the same clones.
 
 **State is bounded.** `board:watch.yay` holds, per repository, one cursor and
 the few ids at it; fifty strangers' logins; and the list of issue-born jobs

@@ -35,6 +35,13 @@ export const gate = (events, maintainers) => {
   });
 };
 
+/**
+ * The envelope that work a maintainer asks for draws on: the maintainer's
+ * discretion (designs/budget.md). Only a maintainer's words pass the gate,
+ * and a job with no arc would wait on an envelope that holds nothing.
+ */
+export const ASKED = 'maintainer';
+
 /** The verbs a maintainer's comment may begin with, after "@<bot> ". */
 export const VERBS = harden(['release', 'abandon', 'throttle', 'retire', 'status']);
 
@@ -69,14 +76,16 @@ export const jobPrefix = (repo, home) => (repo === home ? '' : `${repo.toLowerCa
 /**
  * Take cursors from elsewhere (the prior garden's, say) into the board's
  * record. Pure. A repository the board already has a later cursor for keeps
- * its own; an adopted cursor starts with nothing seen at its second. Returns
- * {watch, adopted}: the new record and the repositories whose cursor it set.
+ * its own, unless `back` is set: then the cursor given is taken whichever
+ * is later, to hear again what came after it. An adopted cursor starts with
+ * nothing seen at its second. Returns {watch, adopted}: the new record and
+ * the repositories whose cursor it set.
  */
-export const adopt = (watch, cursors) => {
+export const adopt = (watch, cursors, { back = false } = {}) => {
   const repos = { ...watch.repos };
   const adopted = [];
   for (const [repo, cursor] of Object.entries(cursors)) {
-    if (repos[repo]?.cursor && repos[repo].cursor >= cursor) continue;
+    if (repos[repo]?.cursor && (back ? repos[repo].cursor === cursor : repos[repo].cursor >= cursor)) continue;
     repos[repo] = { cursor, seen: [] };
     adopted.push(repo);
   }
@@ -106,7 +115,7 @@ export const decide = ({ events, state = {}, board, bot, repo, prefix = '' }) =>
       if (e.state === 'closed') continue; // closed before the garden saw it: nothing is asked
       const id = `${prefix}issue-${e.number}`;
       if (board.jobs[id]) continue;
-      actions.push({ do: 'post', event: e, spec: { id, role: 'steward', title: e.title || `Issue ${e.number}`, body: `${e.body || e.title}\n`, source: e.url, origin, by: e.author } });
+      actions.push({ do: 'post', event: e, spec: { id, role: 'steward', arc: ASKED, title: e.title || `Issue ${e.number}`, body: `${e.body || e.title}\n`, source: e.url, origin, by: e.author } });
       continue;
     }
     const said = address(e.body, bot);
@@ -133,7 +142,7 @@ export const decide = ({ events, state = {}, board, bot, repo, prefix = '' }) =>
         break;
       default: {
         const id = `${prefix}issue-${e.number}-c${e.id}`;
-        if (!board.jobs[id]) actions.push({ do: 'post', event: e, spec: { id, role: 'steward', title: said.text.split('\n')[0].slice(0, 100), body: `${said.text}\n`, source: e.url, origin, by: e.author } });
+        if (!board.jobs[id]) actions.push({ do: 'post', event: e, spec: { id, role: 'steward', arc: ASKED, title: said.text.split('\n')[0].slice(0, 100), body: `${said.text}\n`, source: e.url, origin, by: e.author } });
       }
     }
   }
@@ -271,14 +280,16 @@ export const makeWatcher = ({ github, watches, home, board, budget, steward, jou
    * What the next poll of each watched repository would do, from its cursor
    * on the board, without polling's effects: nothing is written to the board
    * or to GitHub. For looking before resuming a watch whose cursor is old.
+   * With `cursors`, {repo: cursor}, those repositories are read from the
+   * cursor given instead of the board's: what resuming from there would do.
    */
-  const preview = async () => {
+  const preview = async (cursors = {}) => {
     const allowed = maintainers();
     const watch = readWatch(await board.tree());
     const b = await board.read();
     const out = [];
     for (const w of watches) {
-      const state = watch.repos[w.repo];
+      const state = cursors[w.repo] ? { cursor: cursors[w.repo], seen: [] } : watch.repos[w.repo];
       if (!state) {
         out.push({ repo: w.repo, cursor: null, note: 'no cursor: its first poll starts from that moment' });
         continue;
@@ -290,11 +301,16 @@ export const makeWatcher = ({ github, watches, home, board, budget, steward, jou
     return harden(out);
   };
 
-  /** Adopt cursors, {repo: cursor}, into the board's record, in one commit. */
-  const adoptCursors = async (cursors, why = 'adopted') => {
+  /**
+   * Adopt cursors, {repo: cursor}, into the board's record, in one commit.
+   * With `back`, a cursor is taken even where the board's is later, and the
+   * next poll hears again what came after it. A job already on the board is
+   * not posted twice, and a reply already made is not repeated.
+   */
+  const adoptCursors = async (cursors, why = 'adopted', { back = false } = {}) => {
     let adopted = [];
     await board.transact(`watch: ${why}`, (_b, tree) => {
-      const r = adopt(readWatch(tree), cursors);
+      const r = adopt(readWatch(tree), cursors, { back });
       adopted = r.adopted;
       if (!adopted.length) return false;
       tree.write(WATCH, stringify(r.watch));

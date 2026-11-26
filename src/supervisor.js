@@ -6,16 +6,24 @@
 // part? is the budget fresh? is there upkeep? is there a job and a free slot?
 // Leader-only duties (advancing and truncating a quiescence) are gated on the
 // journal's hosts.yay; there is no election, as before (designs/hosts.md).
+//
+// A tick does not wait on a job. It starts as many as there are jobs and free
+// slots, and goes on: the next tick hears the maintainers, watches the
+// deadlines and starts more while those run. A run that ends is settled
+// between ticks, never during one (`serial`, the steward's one pair of
+// hands), and the tick after says how it ended.
 
-import { harden } from './harden.js';
+import { harden, makeSerial } from './harden.js';
 
-export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board, budget, dispatcher, journal, capabilities, hostinfo, watcher, steward, clock, log = () => {} }) => {
+export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board, budget, dispatcher, journal, capabilities, hostinfo, watcher, steward, clock, serial = makeSerial(), log = () => {} }) => {
+  // Jobs this process set running, by id, and how those since ended.
+  const running = new Map();
+  const ended = [];
   let lastPress = '';
   let described = false;
   const shownUnplaceable = new Set();
-  /** One tick. Returns what it did, as a short list of words. */
-  const tick = async () => {
-    const did = [];
+  const work = async () => {
+    const did = ended.splice(0);
     const duty = await quiescence.duty(await hostService.caughtUp());
     if (duty === 'quiesce') {
       // Running jobs end at their own deadlines (wrap-it-up bounds the wait);
@@ -102,9 +110,17 @@ export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board,
       }
     }
     for (;;) {
-      const r = await dispatcher.once({ workerId: `${host}-w` });
-      if (!r) break;
-      did.push(`${r.id}: ${r.outcome}`);
+      const s = await dispatcher.start({ workerId: `${host}-w` });
+      if (!s) break;
+      did.push(`${s.id}: started in ${s.slot}`);
+      const settled = s.done.then(
+        r => ended.push(`${r.id}: ${r.outcome}`),
+        // The slot is left as it stands, with the work in it, for a hand to
+        // carry out: clearing it here would destroy what could not be saved.
+        err => ended.push(`${s.id}: ran, and could not be settled (${err.code ?? ''} ${err.message}); ${s.slot} holds its work`),
+      );
+      running.set(s.id, settled);
+      settled.then(() => running.delete(s.id));
     }
     const today = clock.now().slice(0, 10);
     if (journal && today !== lastPress) {
@@ -115,8 +131,16 @@ export const makeSupervisor = ({ host, isLeader, quiescence, hostService, board,
     return harden(did);
   };
 
+  /** One tick. Returns what it did, as a short list of words. */
+  const tick = () => serial(work);
+
   return harden({
     tick,
+    /** Wait for every job this process set running to end and be settled; returns how each ended. */
+    drain: async () => {
+      while (running.size) await Promise.all([...running.values()]);
+      return harden(ended.splice(0));
+    },
     /** Tick forever. A failed tick is logged and the loop goes on. */
     run: async ({ intervalMs = 60000, sleep }) => {
       for (;;) {

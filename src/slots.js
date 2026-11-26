@@ -34,7 +34,7 @@ const isSlot = s => /^slot[0-9]{2}$/.test(s);
  * `upstream` is the bare repository holding the prior garden at the commit
  * the steward pinned (`plots.fetchUpstream`), as refs/upstream/garden.
  */
-export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositories, stateDir, upstream = null, clock, count = 4, uidBase = 2000, mode = 'users', log = () => {} }) => {
+export const makeSlots = ({ files, run, runAsync, warden, rootRepo, slotsRoot, repositories, stateDir, upstream = null, clock, count = 4, uidBase = 2000, mode = 'users', log = () => {} }) => {
   const slots = files(slotsRoot);
   const state = files(stateDir);
   const git = (args, opts = {}) => {
@@ -42,12 +42,15 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
     if (r.status !== 0 && !opts.allowFail) throw new Error(`git ${args.join(' ')}: ${r.stderr.trim()}`);
     return r.stdout.trim();
   };
-  const ask = request => {
-    const r = run(warden, toArgs(request));
+  const heard = (request, r) => {
     const reply = parse(r.stdout || 'ok: false\ncode: "silent"\nerror: "the warden said nothing"\n');
     if (!reply.ok) throw new Refusal(reply.code, `warden ${request.op}: ${reply.error}`);
     return reply;
   };
+  const ask = request => heard(request, run(warden, toArgs(request)));
+  // A job's run is the one request that takes long. With `runAsync` the
+  // steward does not wait on it: its tick goes on, and other slots run.
+  const askLong = async request => heard(request, await (runAsync ?? run)(warden, toArgs(request)));
   const account = slot => (mode === 'users' ? { uid: uidBase + Number(slot.slice(4)), gid: uidBase + Number(slot.slice(4)) } : {});
   const check = slot => (isSlot(slot) ? slot : refuse('invalid', `bad slot name ${slot}`));
   // What a slot holds is recorded in the steward's state, not in the slot's
@@ -171,7 +174,7 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
 
     /** Run the job's command in its slot, as its account, until its deadline. */
     run: async (slot, { argv, env = {}, windowS, killAfterS = 30, logFile }) =>
-      ask({ op: 'run', root: slots.root, slot: check(slot), argv, env, window_s: windowS, kill_after_s: killAfterS, log: logFile, ...account(slot) }),
+      askLong({ op: 'run', root: slots.root, slot: check(slot), argv, env, window_s: windowS, kill_after_s: killAfterS, log: logFile, ...account(slot) }),
 
     /**
      * Carry a finished job's work out of its slot, before the slot is cleared.
@@ -230,9 +233,22 @@ export const makeSlots = ({ files, run, warden, rootRepo, slotsRoot, repositorie
           }
           const refs = git(['-C', wt, 'for-each-ref', '--format=%(refname)', `refs/heads/job/${id}/${gen}`, `refs/heads/wip/${id}/${gen}`]).split('\n').filter(Boolean);
           let fetched = 0;
+          // What the job added: commits the mirror does not already hold. The
+          // checkout has no remote to name them by (project add removes it),
+          // so the mirror's own tips are the exclusions. A history too large
+          // to read is not known to be clean, and is refused like a leak.
+          const held = git(['-C', bare, 'for-each-ref', '--format=^%(objectname)'], { allowFail: true });
+          const leaks = ref => {
+            if (!secrets.some(Boolean)) return false;
+            try {
+              return holds(git(['-C', wt, 'log', '-p', '--format=%H%n%B', '--ignore-missing', '--stdin'], { allowFail: true, input: `${ref}\n${held}\n` }));
+            } catch (err) {
+              log(`${id}: could not read what ${ref} adds (${err.code ?? err.message}); not carried out`);
+              return true;
+            }
+          };
           for (const ref of refs) {
-            // What the job added: commits not already on the mirror's branches.
-            if (holds(git(['-C', wt, 'log', '-p', '--format=%H%n%B', ref, '--not', '--remotes'], { allowFail: true }))) {
+            if (leaks(ref)) {
               refused.push(`${org}/${name} ${ref}`);
               continue;
             }
