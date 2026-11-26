@@ -1,0 +1,11 @@
+rows:
+  - arc: "maintainer"
+    elapsed_s: 391
+    host: "endolin-garden-ece02cb4"
+    id: "endojs-endo-but-for-bots-issue-469-c7183688669"
+    level: 0
+    outcome: "done"
+    pool: "claude-endolin"
+    role: "steward"
+    source: "none"
+    ts: "2026-11-26T05:59:06Z"
