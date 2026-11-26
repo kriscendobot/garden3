@@ -2,9 +2,6 @@ reports:
   - issue: 132
     job: "kriscendobot-garden-issue-132"
     repo: "kriscendobot/garden"
-  - issue: 469
-    job: "endojs-endo-but-for-bots-issue-469-c7183688669"
-    repo: "endojs/endo-but-for-bots"
 repos:
   "endojs/endo-but-for-bots":
     cursor: "2026-11-26T05:39:38Z"
