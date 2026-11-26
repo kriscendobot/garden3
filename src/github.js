@@ -114,6 +114,20 @@ export const makeGitHub = ({ request, repo, perPage = 100 }) => {
       const on = { issue: `issues/${number}`, review: `issues/${number}`, comment: `issues/comments/${id}`, 'review-comment': `pulls/comments/${id}` }[kind];
       return call('POST', `/repos/${repo}/${on}/reactions`, { body: { content }, ok: [200, 201] });
     },
+    /**
+     * A pull request, as {number, state, head: {ref, sha, repo}, base: {ref}},
+     * or null when the number is an issue's. `head.repo` is the head's
+     * repository (a fork's, say), or null when that repository is gone.
+     */
+    pull: async number => {
+      try {
+        const p = await call('GET', `/repos/${repo}/pulls/${number}`);
+        return { number, state: p.state, head: { ref: p.head.ref, sha: p.head.sha, repo: p.head.repo?.full_name ?? null }, base: { ref: p.base.ref } };
+      } catch (err) {
+        if (err.status === 404) return null;
+        throw err;
+      }
+    },
     comments: async number => (await pages(`/repos/${repo}/issues/${number}/comments`, {})).map(c => ({ id: c.id, author: c.user?.login ?? '', body: c.body ?? '' })),
     comment: async (number, body) => call('POST', `/repos/${repo}/issues/${number}/comments`, { body: { body }, ok: [201] }),
   });

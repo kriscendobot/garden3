@@ -28,7 +28,7 @@ import { makeSupervisor } from './supervisor.js';
 import { makeClientWatch } from './clients.js';
 import { makeGitHub, curlTransport } from './github.js';
 import { makeWatcher } from './watcher.js';
-import { makeSteward } from './steward.js';
+import { makeSteward, makeMirrors } from './steward.js';
 import { makeHostInfo } from './hostinfo.js';
 import { makeLogin } from './login.js';
 import { makeProse, parseLists, SKILL } from './prose.js';
@@ -125,7 +125,7 @@ export const assemble = (powers = makeNodePowers()) => {
   // one, the home repository's issues alone.
   const watches = config.github.watch ?? [{ repo: config.github.repo, issues: true }];
   const journal = lazy(() => makeJournal({ files: makeFiles, shards, stateDir, host, clock }));
-  const steward = lazy(() => makeSteward({ github, home: config.github.repo, board, shards, host, shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
+  const steward = lazy(() => makeSteward({ github, home: config.github.repo, board, shards, host, mirrors: makeMirrors({ run, repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories') }), shed: run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), log: powers.log }));
   const watcher = lazy(() => makeWatcher({ github, watches, home: config.github.repo, board, budget, steward, journal, hostinfo, shards, clock, bot: config.github.bot, overlapSeconds: config.github.overlap_seconds, pollSeconds: config.github.poll_seconds, log: powers.log }));
   const hostinfo = lazy(() => makeHostInfo({ shards, host, clock, probe: powers.probe, capabilities, slots: config.slots.count, shed: () => run('git', ['-C', rootRepo, 'rev-parse', 'HEAD']).stdout.trim(), client: () => root.exists('CLIENT-CONSENT.yay') }));
   return {

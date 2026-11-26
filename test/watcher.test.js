@@ -6,11 +6,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeGitHub, curlTransport } from '../src/github.js';
 import { gate, address, decide, adopt, jobPrefix, makeWatcher, readWatch, summary } from '../src/watcher.js';
-import { makeSteward } from '../src/steward.js';
+import { makeSteward, makeMirrors } from '../src/steward.js';
 import { makeBoardService } from '../src/boardService.js';
 import { makeBudgetService } from '../src/budget.js';
 import { makeJournal } from '../src/journal.js';
-import { makeFiles } from '../src/powers/node.js';
+import { makeFiles, run } from '../src/powers/node.js';
+import { execFileSync } from 'node:child_process';
 import { parse, stringify } from '../src/yay.js';
 import { mkGarden } from './helpers.js';
 import { makeFakeGitHub } from './fixtures/github.js';
@@ -165,6 +166,57 @@ test('the steward reports a finished job on its issue, once, and follows a hand-
   assert.deepEqual(await steward.report(), ['failed issue-31-plan']);
   assert.match(gh.writes[2].body, /failed and is waiting for a maintainer/);
   assert.deepEqual(await steward.report(), [], 'one notice per failure');
+});
+
+test('a finished job\'s branch is pushed to the pull request it answers, with a lease, and a head it never saw is left alone', async t => {
+  const { g, gh, board, watcher, later } = await setup(t);
+  const T = fs.mkdtempSync(path.join(g.root, 'mirrors-'));
+  const sh = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', env: { ...process.env, GIT_AUTHOR_NAME: 'a', GIT_AUTHOR_EMAIL: 'a@a', GIT_COMMITTER_NAME: 'a', GIT_COMMITTER_EMAIL: 'a@a' } }).trim();
+  // GitHub's copy, and the garden's mirror of it, holding the pull request's head.
+  const remote = path.join(T, 'github.git');
+  const mirror = path.join(T, 'repositories', `${HOME.replace('/', '-')}.git`);
+  const work = path.join(T, 'work');
+  sh(T, 'init', '--quiet', '--bare', remote);
+  sh(T, 'init', '--quiet', '-b', 'topic', work);
+  fs.writeFileSync(path.join(work, 'a'), 'old\n');
+  sh(work, 'add', 'a'); sh(work, 'commit', '--quiet', '-m', 'old head');
+  const old = sh(work, 'rev-parse', 'HEAD');
+  sh(work, 'push', '--quiet', remote, 'topic');
+  sh(T, 'clone', '--quiet', '--mirror', remote, mirror);
+  // The job's branch, as the harvest leaves it: a fresh start, not on the old head.
+  sh(work, 'checkout', '--quiet', '--orphan', 'job');
+  fs.writeFileSync(path.join(work, 'a'), 'new\n');
+  sh(work, 'add', 'a'); sh(work, 'commit', '--quiet', '-m', 'refreshed');
+  const tip = sh(work, 'rev-parse', 'HEAD');
+  const mirrors = makeMirrors({ run, repositories: path.join(T, 'repositories'), remote: () => remote });
+  const steward = makeSteward({ github: () => makeGitHub({ request: gh.request, repo: HOME }), home: HOME, board, shards: g.host('host-a').shards, host: 'host-a', mirrors });
+  const finish = async n => {
+    const j = await board.claim({ worker: 'w' });
+    sh(work, 'push', '--quiet', mirror, `job:refs/heads/job/${j.id}/${j.claim.generation}`);
+    await board.complete(j.id, 'done', { generation: j.claim.generation, report: `Refreshed ${n}.\n` });
+    return j;
+  };
+
+  gh.openPull(50, 'kriskowal', later(1), { head: { ref: 'topic', sha: old } });
+  gh.addComment(50, 'kriskowal', '@kriscendobot please refresh', later(2), { pull: true });
+  await watcher.tick();
+  const j = await finish(50);
+  assert.deepEqual(await steward.report(), [`done ${j.id}`]);
+  assert.equal(sh(T, '-C', remote, 'rev-parse', 'topic'), tip, 'the head is now the job\'s branch');
+  assert.equal(sh(T, '-C', mirror, 'rev-parse', `refs/garden/superseded/pr-50/${j.id}`), old, 'and the head it replaced is kept');
+  const said = gh.writes.find(w => w.comment === 50).body;
+  assert.match(said, new RegExp(`^Refreshed 50\\.\\n\\nPushed to \`topic\`: \`${old.slice(0, 9)}\` → \`${tip.slice(0, 9)}\`\\.`));
+
+  // Someone pushes while the next job runs: the garden never saw that head.
+  gh.openPull(51, 'kriskowal', later(3), { head: { ref: 'other', sha: old } });
+  sh(work, 'push', '--quiet', remote, `${old}:refs/heads/other`);
+  gh.addComment(51, 'kriskowal', '@kriscendobot please refresh', later(4), { pull: true });
+  await watcher.tick();
+  const k = await finish(51);
+  gh.movePull(51, 'f'.repeat(40));
+  assert.deepEqual(await steward.report(), [`done ${k.id}`], 'the report is still posted');
+  assert.equal(sh(T, '-C', remote, 'rev-parse', 'other'), old, 'a head it never saw is not overwritten');
+  assert.match(gh.writes.find(w => w.comment === 51).body, new RegExp(`Not pushed: \`other\` is at \`fffffffff\`, which the garden had not seen when the job ran\\. The job's branch is \`job/${k.id}/`));
 });
 
 test('when GitHub refuses, the cursor holds and nothing is lost', async t => {

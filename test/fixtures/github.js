@@ -23,7 +23,8 @@ export const makeFakeGitHub = ({ repo = 'kriscendobot/garden', perPage = 100, is
     if (issuesOff && method === 'GET' && (rel === '/issues' || rel === '/issues/comments')) return { status: 410, json: { message: 'Issues are disabled for this repo' } };
     if (method === 'GET' && rel === '/pulls') return { status: 200, json: page([...pulls].sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1)), query) };
     if (method === 'GET' && rel === '/pulls/comments') return { status: 200, json: page(inline.filter(c => c.updated_at >= (query.since ?? '')), query) };
-    if (method === 'GET' && (m = /^\/pulls\/(\d+)\/reviews$/.exec(rel))) return { status: 200, json: page(reviews.filter(r => r.pull === Number(m[1])), query) };
+    if (method === 'GET' && (m = /^\/pulls\/(\d+)$/.exec(rel))) { const p = pulls.find(x => x.number === Number(m[1])); return p ? { status: 200, json: p } : { status: 404, json: { message: 'Not Found' } }; }
+    if (method === 'GET' && (m = /^\/pulls\/(\d+)\/reviews$/.exec(rel)))return { status: 200, json: page(reviews.filter(r => r.pull === Number(m[1])), query) };
     if (method === 'POST' && (m = /^\/pulls\/comments\/(\d+)\/reactions$/.exec(rel))) { writes.push({ react: 'review-comment', id: Number(m[1]), content: body.content }); return { status: 201, json: { id: (nextId += 1), content: body.content } }; }
     if (method === 'GET' && rel === '/issues') return { status: 200, json: page(issues.filter(i => i.updated_at >= (query.since ?? '')), query) };
     if (method === 'GET' && rel === '/issues/comments') return { status: 200, json: page(comments.filter(c => c.updated_at >= (query.since ?? '')), query) };
@@ -46,12 +47,14 @@ export const makeFakeGitHub = ({ repo = 'kriscendobot/garden', perPage = 100, is
     openIssue: (number, login, title, body, at, extra = {}) => {
       issues.push({ id: 1000 + number, number, title, body, state: 'open', user: user(login), created_at: at, updated_at: at, html_url: `${web}/issues/${number}`, ...extra });
     },
-    /** A pull request, touched at `at`. */
-    openPull: (number, login, at) => {
+    /** A pull request, touched at `at`; `head` is {ref, sha}, in this repository. */
+    openPull: (number, login, at, { head = { ref: `topic-${number}`, sha: '0'.repeat(40) }, base = 'main' } = {}) => {
       const p = pulls.find(x => x.number === number);
       if (p) p.updated_at = at;
-      else pulls.push({ id: 5000 + number, number, user: user(login), state: 'open', created_at: at, updated_at: at, html_url: `${web}/pull/${number}` });
+      else pulls.push({ id: 5000 + number, number, user: user(login), state: 'open', created_at: at, updated_at: at, html_url: `${web}/pull/${number}`, head: { ref: head.ref, sha: head.sha, repo: { full_name: repo } }, base: { ref: base } });
     },
+    /** Someone else pushes to a pull request's head. */
+    movePull: (number, sha) => { pulls.find(x => x.number === number).head.sha = sha; },
     /** An inline comment on a pull request's diff; it touches the pull request. */
     addReviewComment: (number, login, body, at) => {
       const id = (nextId += 1);

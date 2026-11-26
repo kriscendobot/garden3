@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-22"
+updated: "2026-11-26"
 ---
 
 # Steward
@@ -98,5 +98,8 @@ what they asked.
 
 (Issues and comments on the garden's own repository reach the board through
 the watcher, and acknowledgments and reports go back through
-`src/steward.js`: [designs/watcher.md](../../designs/watcher.md). Publishing
-branches and pull requests is not built yet.)
+`src/steward.js`: [designs/watcher.md](../../designs/watcher.md). A finished
+job asked for on a pull request has its branch pushed to that pull
+request's head before the report is posted, every time; the maintainer has
+said so. Opening a pull request for a branch is not built yet: do that by
+hand, and push a finished job's branch by hand where the steward could not.)

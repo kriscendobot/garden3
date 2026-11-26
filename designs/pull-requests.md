@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-21"
-updated: "2026-11-21"
+updated: "2026-11-26"
 ---
 
 # Pull requests
@@ -40,9 +40,8 @@ flight per base.
 
 ## The seam
 
-What the steward does, around each job, is the part not built
-([roles/steward](../roles/steward/AGENT.md): "publishing branches and pull
-requests is not built yet").
+What the steward does around each job. Of this, only the publishing push is
+built.
 
 - **Before a job: fetch.** The project's bare repository under
   `repositories/<org>-<name>.git` is fetched, with the pull request's head
@@ -54,7 +53,12 @@ requests is not built yet").
 - **After a settled run: publish.** The harvested `job/<id>/<generation>`
   branch is pushed to the pull request's head branch with
   `--force-with-lease=<head>:<recorded head>`, so a push that raced anything
-  fails rather than overwriting it. Its report is posted as one comment
+  fails rather than overwriting it. Built (`src/steward.js`, `publish`): the
+  recorded head is the head as the mirror holds it, or one the job's branch
+  already contains, and a head the garden never saw is left alone and said
+  so. The push goes over SSH, since a change to `.github/workflows/` needs a
+  token with the workflow scope and the bot's key needs none, and the head it
+  replaces is kept in the mirror under `refs/garden/superseded/`. Its report is posted as one comment
   carrying a marker with the job id, looked for first, so a repeat is
   recognized ([deadlines.md](deadlines.md) § Side effects).
 - **Between jobs: watch CI.** The drive's tick reads the check runs on each
@@ -127,13 +131,14 @@ the credential never leaves the steward.
 
 ## Status
 
-Design only. Nothing in this document is built. To build, in order:
+Design only, except for the push in step 3 (2026-11-26). To build, in order:
 
 1. The roles: `shepherd`, `conductor`, and the `retcon` skill, adapted.
 2. The fetch: a project's bare repository, a pull request's head, its
    check runs and failed logs, into a job's home.
 3. Publishing: a settled run's branch to the pull request's head, under a
-   lease, and its report as one marked comment.
+   lease, and its report as one marked comment. Built for a job that a
+   comment on the pull request asked for; not yet for opening one.
 4. The drive: the record, scatter, the CI watch, the reduce, merging,
    closing as carried, frozen bases, and the coverage report.
 5. A first run, against one pull request, by hand.
