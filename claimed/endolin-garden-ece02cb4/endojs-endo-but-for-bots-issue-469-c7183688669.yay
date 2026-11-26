@@ -1,11 +1,19 @@
 after: []
 arc: "maintainer"
-attempts: 3
+attempts: 4
 body: `
   Please refresh.
 
+claim:
+  at: "2026-11-26T05:50:49Z"
+  expires_at: "2026-11-26T06:41:19Z"
+  generation: 4
+  host: "endolin-garden-ece02cb4"
+  plot: ""
+  window_s: 2400
+  worker: "endolin-garden-ece02cb4-w"
 envelope: "maintainer"
-generation: 3
+generation: 4
 id: "endojs-endo-but-for-bots-issue-469-c7183688669"
 level: 0
 origin:
