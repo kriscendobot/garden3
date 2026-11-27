@@ -1,0 +1,23 @@
+after: []
+arc: "maintainer"
+attempts: 0
+body: `
+  Having arrived at a push, the next step is always to shepherd until CI is green.
+
+id: "endojs-endo-but-for-bots-issue-469-c7206534456"
+level: 0
+origin:
+  by: "kriskowal"
+  comment: 7206534456
+  issue: 469
+  repo: "endojs/endo-but-for-bots"
+  url: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7206534456"
+plans: 0
+posted_at: "2026-11-27T00:32:53Z"
+posted_by: "kriskowal"
+priority: 5
+projects: []
+requires: []
+role: "steward"
+source: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7206534456"
+title: "Having arrived at a push, the next step is always to shepherd until CI is green."
