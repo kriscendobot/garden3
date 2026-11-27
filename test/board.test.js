@@ -328,3 +328,13 @@ test('a re-claim bumps the generation, and the superseded run is fenced', () => 
   B.leave(b, 'a', 'done');
   assert.equal(B.late(b, 'a', old), false, 'once the job has left, a late report has nothing to charge');
 });
+
+test('lends: only a credential the garden lends; a plan\'s steps inherit the poster\'s grant and cannot widen it', () => {
+  const b = mk({ id: 'asked', lends: ['github'] }, { id: 'plain' });
+  assert.deepEqual([b.jobs.asked.job.lends, 'lends' in b.jobs.plain.job], [['github'], false]);
+  assert.equal(code(() => mk({ id: 'x', lends: ['aws'] })), 'invalid');
+  handAndPlan(b, 'asked', 10, { id: 'step-1', lends: ['github', 'aws'] });
+  assert.deepEqual(b.jobs['step-1'].job.lends, ['github'], 'the step has what its parent had, whatever the plan says');
+  handAndPlan(b, 'plain', 10, { id: 'step-2', lends: ['github'] });
+  assert.equal('lends' in b.jobs['step-2'].job, false, 'and a plan cannot grant what its parent was not given');
+});

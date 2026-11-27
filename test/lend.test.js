@@ -144,3 +144,43 @@ test('a login that would expire inside the window is not lent: the job goes back
   assert.equal(await dispatcher(async () => { throw Object.assign(new Error('no login'), { code: 'no-key' }); }).once({ workerId: 'w' }), null, 'no login: nothing is claimed');
   assert.equal(released.length, 1);
 });
+
+test('the bot\'s GitHub login is lent as gh\'s store and the ssh key as it is; the secrets are said', async t => {
+  const T = fs.mkdtempSync(path.join(os.tmpdir(), 'garden-lend-'));
+  t.after(() => fs.rmSync(T, { recursive: true, force: true }));
+  const TOKEN = 'gho_BOT-TOKEN-4417';
+  const KEY = '-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQ\n-----END OPENSSH PRIVATE KEY-----\n';
+  const registry = 'keys:\n  github-bot:\n    consumer: "steward"\n    file: "steward/.config/gh/hosts.yml"\n    lend: "gh"\n    lend_as: ".config/gh/hosts.yml"\n    provider: "gh"\n  github-ssh:\n    consumer: "steward"\n    file: "steward/.ssh/id_ed25519"\n    lend: "whole"\n    lend_as: ".ssh/id_ed25519"\n';
+  let token = TOKEN;
+  const fakeGh = (cmd, args, opts) => (cmd === 'gh' ? { status: 0, stdout: `${token}\n`, stderr: '' } : gitRun(cmd, args, opts));
+  const keys = makeKeys({ files: makeFiles, stateDir: T, registryText: registry, run: fakeGh });
+  fs.mkdirSync(path.join(T, 'steward/.config/gh'), { recursive: true });
+  fs.mkdirSync(path.join(T, 'steward/.ssh'), { recursive: true });
+  fs.writeFileSync(path.join(T, 'steward/.config/gh/hosts.yml'), `github.com:\n    oauth_token: ${TOKEN}\n    user: kriscendobot\n`, { mode: 0o600 });
+  fs.writeFileSync(path.join(T, 'steward/.ssh/id_ed25519'), KEY, { mode: 0o600 });
+  const gh = await keys.lend('github-bot');
+  assert.deepEqual([gh.file, gh.secret, gh.expires_at], ['.config/gh/hosts.yml', TOKEN, null]);
+  assert.ok(gh.text.includes(TOKEN));
+  const ssh = await keys.lend('github-ssh');
+  assert.deepEqual([ssh.file, ssh.text], ['.ssh/id_ed25519', KEY]);
+  assert.equal(ssh.secret, KEY.split('\n')[1], 'the key\'s longest line is what harvest looks for');
+  token = 'gho_IN-A-KEYRING';
+  await assert.rejects(keys.lend('github-bot'), { code: 'not-lendable' }, 'a token gh keeps in a keyring is not in the store, so the store would lend nothing');
+});
+
+test('a job that lends github is given the files for its run, and secrets to refuse; a host that cannot lend gives it back', async () => {
+  const released = [];
+  const prepared = [];
+  const lendingJob = { ...job, lends: ['github'], claim: { generation: 2 } };
+  const board = { claim: async () => lendingJob, release: async (id, o) => { released.push([id, o.generation]); return true; } };
+  const slots = { free: async () => 'slot01', prepare: async (...a) => { prepared.push(a); throw new Error('stop here'); } };
+  const github = async () => [{ file: '.config/gh/hosts.yml', text: 't', secret: 'gho_T' }, { file: '.ssh/id_ed25519', text: 'k', secret: 'K' }, { file: '.ssh/config', text: 'c' }];
+  const dispatcher = lends => makeDispatcher({ board, slots, files: makeFiles, clock: { now: () => '2026-11-20T10:00:00Z' }, config: {}, worker: { argv: ['true'], lends, killAfterS: 30, logFile: () => '/dev/null' }, journal: null });
+  await dispatcher({ github }).start({ workerId: 'w' }).catch(() => {});
+  assert.deepEqual(prepared[0][4].map(l => l.file), ['.config/gh/hosts.yml', '.ssh/id_ed25519', '.ssh/config'], 'the lent files are laid in the home');
+  released.length = 0;
+  assert.equal(await dispatcher({}).start({ workerId: 'w' }), null, 'a host that lends no github');
+  assert.equal(await dispatcher({ github: async () => { throw Object.assign(new Error('not logged in'), { code: 'no-key' }); } }).start({ workerId: 'w' }), null, 'or whose bot is not logged in');
+  assert.deepEqual(released, [['lent-job', 2], ['lent-job', 2]], 'gives the job back');
+  assert.equal(prepared.length, 1);
+});

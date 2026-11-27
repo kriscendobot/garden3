@@ -10,7 +10,7 @@
 // open, held, claimed, failed, and `job` is the record that is written to
 // <where>/[<host>/]<id>.yay.
 
-import { Refusal, refuse, isName } from './harden.js';
+import { Refusal, refuse, isName, harden } from './harden.js';
 
 export const ZERO_COST = Object.freeze({ tokens: 0, elapsed_s: 0, engagements: 0 });
 
@@ -167,6 +167,13 @@ const list = (xs, check, what) => {
   return out;
 };
 
+/**
+ * The credentials a job may be lent for its run (`lends`): `github` is the
+ * bot's gh login and ssh key (designs/keys.md). Only the poster grants them;
+ * a plan's steps inherit them and cannot widen them.
+ */
+export const LENDABLE = harden(['github']);
+
 /** Post a job. Returns false when a job with that id is already on the board. */
 export const post = (board, spec, now) => {
   if (!isName(spec.id)) refuse('invalid', 'a job id matches [a-z0-9][a-z0-9._-]*');
@@ -190,6 +197,8 @@ export const post = (board, spec, now) => {
     posted_by: spec.by ?? 'unknown',
     body: spec.body ?? `${spec.title}\n`,
   };
+  const lends = list(spec.lends, x => LENDABLE.includes(x), 'credential');
+  if (lends.length) job.lends = lends;
   for (const k of ['arc', 'plot', 'tier']) {
     if (spec[k]) {
       if (!isName(spec[k])) refuse('invalid', `bad ${k}`);
@@ -431,6 +440,7 @@ export const handoff = (board, id, note, { host, generation, cost }, now) => {
         `What it says remains: ${note.remaining ?? note.reason ?? '(not stated)'}\n` +
         `Its work is on the branch job/${id}/${job.claim?.generation ?? 0} of each project it checked out.\n${suggested}`,
       projects: job.projects,
+      lends: job.lends,
       priority: job.priority,
       arc: job.arc,
       source: job.source,
@@ -499,6 +509,7 @@ const planUnchecked = (board, id, plan, { cost, reviewFrom }, now) => {
         after: s.after,
         requires: s.requires,
         projects: s.projects ?? job.projects,
+        lends: job.lends,
         priority: job.priority,
         arc: job.arc,
         source: job.source,

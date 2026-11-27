@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-20"
+updated: "2026-11-27"
 ---
 
 # Keys are files
@@ -42,7 +42,8 @@ credential through a helper the harness calls. One exception remains:
 3. **A registry** (`keys/registry.yay`, on the shed) names each key, what it is
    for, where it lives, and its one **consumer**. `read` is refused for any
    other consumer, and for a file whose mode is not exactly 0600.
-4. **Jobs hold no GitHub credential.** Only the steward does.
+4. **A job holds a GitHub credential only when its record lends one**
+   (`lends: ["github"]`, below). Otherwise only the steward does.
 5. **The model credential.** Jobs run on the operator's Claude subscription,
    as the prior gardens' workers did, lent as described below
    (`claude-login`). An API key (`anthropic-worker`, through the harness's
@@ -85,6 +86,32 @@ The worker runs `claude -p --settings .claude-worker.json` with its prompt
 pointing at `PROMPT.md`. `.claude-worker.json` (in the shed, so in every home)
 grants the run its permissions inside the slot, turns off the auto-updater,
 and installs the deadline hook (`garden hook`, after every tool).
+
+## The bot's GitHub login, lent to jobs that need it
+
+The maintainer decided (2026-11-27, on endojs/endo-but-for-bots#469) that
+jobs needing the bot's credentials get them: a job that shepherds a pull
+request must read CI and its logs, and fetch what the garden does not hold.
+
+- **Which jobs.** A job's record names what it is lent, `lends`, and
+  `github` is the only credential that can be named (`board.js`
+  `LENDABLE`). The watcher sets it on every job a maintainer asks for. A
+  planner and the steps it plans inherit their parent's grant and cannot
+  widen it, so a plan can never grant itself a credential.
+- **What is lent.** gh's store as it stands (`github-bot`, `lend: gh`, to
+  `.config/gh/hosts.yml`), the ssh key (`github-ssh`, `lend: whole`, to
+  `.ssh/id_ed25519`), and the pinned host keys with the same ssh config as
+  the steward's (`login.js` `sshFiles`). All are mode 0600 in 0700
+  directories, and the home is then the slot account's. A host whose bot is
+  not logged in, or whose gh keeps its token in a keyring, gives the job back.
+- **Nothing carried out holds them.** Harvest refuses anything carrying the
+  token or the key's body, as it does for the model login.
+- **What it costs.** Unlike the model login, neither can be made to expire
+  with the run: the token has the bot's whole scope (`repo`,
+  `admin:public_key`) for as long as it is valid, and a job has the network.
+  Harvest stops a leak through what is carried out, not one over the network.
+  A narrower credential for jobs (a fine-grained token limited to the
+  projects, or a GitHub App's hour-long token) would bound that; not built.
 
 ## The bot's GitHub login
 

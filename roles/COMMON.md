@@ -1,7 +1,7 @@
 ---
 author: "steward"
 created: "2026-11-17"
-updated: "2026-11-21"
+updated: "2026-11-27"
 ---
 
 # Common brief
@@ -23,8 +23,15 @@ garden.
   project. Do not clone anything.
 - Some names in your home are **tombstones**: files that say there is nothing
   there for you. Believe them.
-- You have no credential and no remote. Do not try to push, open a pull
-  request or comment. Say what should happen in `outbox/`.
+- You have no credential and no remote, unless `JOB.yay` has `lends:
+  ["github"]`. Without it, do not try to push, open a pull request or
+  comment; say what should happen in `outbox/`.
+- With `lends: ["github"]`, your home holds the bot's GitHub login for this
+  run: `gh` works, and `git` reaches `git@github.com:<org>/<name>.git`
+  over ssh. Use it to read pull requests, CI and failed logs, and to fetch
+  what the garden does not have. Leave pushing your job's branch and
+  posting your report to the steward, which does both when you finish. Never
+  copy the login anywhere: anything carried out that holds it is refused.
 - Scratch goes in `scratch/`. It will be deleted.
 
 ## What survives you

@@ -10,11 +10,24 @@
 // request it answers before the report is posted (designs/pull-requests.md,
 // "After a settled run: publish"); opening a pull request is not here yet.
 
-import { parse, stringify } from './yay.js';
+import { parse, parseYaydown, stringify } from './yay.js';
 import { readWatch } from './watcher.js';
 import { harden, refuse } from './harden.js';
 
 const marker = key => `<!-- garden:${key} -->`;
+
+/**
+ * What a comment says, without front matter. A job's report is a document,
+ * with YAY front matter for the garden; a comment on GitHub is only its body.
+ */
+export const bodyOf = text => {
+  if (!text.startsWith('---\n')) return text;
+  try {
+    return parseYaydown(text).body;
+  } catch {
+    return text.replace(/^---\n[\s\S]*?\n---\n+/, '');
+  }
+};
 const short = sha => `\`${sha.slice(0, 9)}\``;
 const isRepo = s => /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(s) && !s.includes('..');
 const isBranch = s => /^[A-Za-z0-9._][A-Za-z0-9._/-]*$/.test(s) && !s.includes('..') && !s.endsWith('.lock');
@@ -95,7 +108,7 @@ export const makeSteward = ({ github, home, board, shards, host, shed = '', mirr
     const m = marker(key);
     const gh = github(repo);
     if ((await gh.comments(number)).some(c => c.body.includes(m))) return false;
-    await gh.comment(number, `${text.trim()}${footer}\n${m}`);
+    await gh.comment(number, `${bodyOf(text).trim()}${footer}\n${m}`);
     return true;
   };
 

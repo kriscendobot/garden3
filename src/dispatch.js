@@ -78,6 +78,19 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
     if (capabilities) await capabilities.used((job.requires ?? []).filter(t => !t.startsWith('host=')));
     const plot = pickPlot(job);
     const { generation } = job.claim;
+    // The credentials the job's record lends it (`lends`), for this run only.
+    // A host that cannot lend one gives the job back.
+    const borrowed = [];
+    for (const name of job.lends ?? []) {
+      try {
+        if (!worker.lends?.[name]) refuse('not-lendable', `this host lends no ${name}`);
+        borrowed.push(...(await worker.lends[name]()));
+      } catch (err) {
+        log(`${job.id}: cannot lend it ${name} (${err.code ?? ''} ${err.message}); given back`);
+        await board.release(job.id, { generation }).catch(() => {});
+        return null;
+      }
+    }
     const windowS = job.window_s ?? defaultWindow;
     const started = Date.parse(clock.now());
     // A lent login cannot be refreshed by the job: it must outlast the whole
@@ -89,7 +102,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
       return null;
     }
     const failed = { status: 1, timed_out: false, elapsed_s: 0 };
-    const run = { job, slot, plot, generation, windowS, lent, home: undefined };
+    const run = { job, slot, plot, generation, windowS, lent, borrowed, home: undefined };
     let going;
     try {
       const deadlineEpoch = Math.floor(started / 1000) + windowS;
@@ -97,7 +110,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
       // The prompt and the hook's state are laid by prepare: once the home
       // is the slot account's, the steward cannot write into it.
       const prompt = `Read roles/COMMON.md, then roles/PLOT.md and roles/${job.role}/AGENT.md, then do the job in JOB.yay.\n\n${clockNote({ id: job.id, windowS, deadlineIso, planner: Boolean(job.planner) })}\n`;
-      run.home = await slots.prepare(slot, job, plot, undefined, lent ? [lent] : [], { files: [{ file: 'PROMPT.md', text: prompt }], dirs: ['.hook-state'] });
+      run.home = await slots.prepare(slot, job, plot, undefined, [...(lent ? [lent] : []), ...borrowed], { files: [{ file: 'PROMPT.md', text: prompt }], dirs: ['.hook-state'] });
       const tree = files(run.home);
       // The worker's environment is built from nothing: its clock, where
       // things are, and no key (keys.js). The harness gets its credential
@@ -130,7 +143,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
   };
 
   /** Whatever happened, carry the work out, then settle. */
-  const finish = async ({ job, slot, plot, generation, windowS, lent, home }, result) => {
+  const finish = async ({ job, slot, plot, generation, windowS, lent, borrowed = [], home }, result) => {
     let harvest = { projects: [], genome_changed: [], outbox: [] };
     let handoff = null;
     let report = null;
@@ -138,7 +151,7 @@ export const makeDispatcher = ({ board, slots, budget, plots, journal, capabilit
       // Harvest first: until it releases the slot, the home is the slot
       // account's and the steward cannot read the outbox. Only what harvest
       // carried out is read, so a report holding the lent login is not posted.
-      harvest = await slots.harvest(slot, { secrets: lent ? [lent.secret] : [] });
+      harvest = await slots.harvest(slot, { secrets: [lent, ...borrowed].map(l => l?.secret).filter(Boolean) });
       if (harvest.refused?.length) {
         log(`${job.id}: refused to carry out what holds its lent login: ${harvest.refused.join(', ')}`);
         if (journal) await journal.note('dispatch', `\`${job.id}\` left its lent login in ${harvest.refused.length} thing(s) it made; they were not carried out.`);

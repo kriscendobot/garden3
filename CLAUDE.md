@@ -10,9 +10,9 @@ You are in the shed, or in a job's home that is a copy of it. Which, matters.
 
 **If there is a `JOB.yay` beside this file, you are a worker in a slot.** Read
 [roles/COMMON.md](roles/COMMON.md), then `roles/PLOT.md` and the brief for the
-role your job names, then do the job. You have no credential and no remote;
-your home is deleted when you finish; what you commit on your job's branch and
-leave in `outbox/` is what survives.
+role your job names, then do the job. You have no credential and no remote
+unless your job lends one; your home is deleted when you finish; what you
+commit on your job's branch and leave in `outbox/` is what survives.
 
 **Otherwise you are working on the garden itself**, in the shed's checkout.
 

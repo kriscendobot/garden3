@@ -30,7 +30,7 @@ import { makeGitHub, curlTransport } from './github.js';
 import { makeWatcher } from './watcher.js';
 import { makeSteward, makeMirrors } from './steward.js';
 import { makeHostInfo } from './hostinfo.js';
-import { makeLogin } from './login.js';
+import { makeLogin, sshFiles } from './login.js';
 import { makeProse, parseLists, SKILL } from './prose.js';
 import { makeDevPublisher } from './devpublish.js';
 import * as wrapup from './wrapup.js';
@@ -141,7 +141,7 @@ export const assemble = (powers = makeNodePowers()) => {
         serial,
         board, slots, budget, plots: services.plots, journal: services.journal, capabilities, hostinfo, files: makeFiles, clock, config, log: powers.log,
         // The worker command is the harness capability's; until it is pinned a host names its own.
-        worker: { argv: env.GARDEN_WORKER ? env.GARDEN_WORKER.split(' ') : ['claude', '-p', '--settings', '.claude-worker.json', 'Read PROMPT.md in this directory, and do what it says.'], lend: () => keys.lend('claude-login'), env: { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` }, repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), logFile: id => (makeFiles(stateDir).mkdir('runs'), path.join(stateDir, 'runs', `${id}.log`)), killAfterS: config.worker.kill_after_seconds, tiers: config.worker.tiers },
+        worker: { argv: env.GARDEN_WORKER ? env.GARDEN_WORKER.split(' ') : ['claude', '-p', '--settings', '.claude-worker.json', 'Read PROMPT.md in this directory, and do what it says.'], lend: () => keys.lend('claude-login'), lends: { github: async () => [await keys.lend('github-bot'), await keys.lend('github-ssh'), ...sshFiles(root.read('config/github-known-hosts'))] }, env: { PATH: `${path.join(capRoot, 'bin')}:/usr/bin:/bin` }, repositories: env.GARDEN_REPOSITORIES ?? path.join(rootRepo, 'repositories'), logFile: id => (makeFiles(stateDir).mkdir('runs'), path.join(stateDir, 'runs', `${id}.log`)), killAfterS: config.worker.kill_after_seconds, tiers: config.worker.tiers },
       });
       const isLeader = async () => parse((await shardRead('journal', 'config/hosts.yay')) ?? 'leader: null\n').leader === host;
       const sup = makeSupervisor({ host, isLeader, quiescence: services.quiescence, hostService: services.host, board, budget, dispatcher, journal: services.journal, capabilities, hostinfo, watcher, steward, clock, serial, log: powers.log });

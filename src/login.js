@@ -19,6 +19,16 @@
 
 import { harden } from './harden.js';
 
+/**
+ * What ssh needs beside the bot's key, in a home: only the pinned host keys
+ * (nothing is trusted on first use) and a config that uses that key and no
+ * other. The steward's home has these, and so does a job lent `github`.
+ */
+export const sshFiles = knownHostsText => [
+  { file: '.ssh/known_hosts', text: knownHostsText.split('\n').filter(l => l && !l.startsWith('#')).join('\n') + '\n', mode: 0o644 },
+  { file: '.ssh/config', text: 'Host github.com\n  User git\n  IdentityFile ~/.ssh/id_ed25519\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n  UserKnownHostsFile ~/.ssh/known_hosts\n', mode: 0o600 },
+];
+
 export const makeLogin = ({ run, files, home, knownHostsText, bot, identity }) => {
   const tree = files(home);
   const env = { HOME: home, GH_CONFIG_DIR: tree.path('.config/gh'), PATH: process.env.PATH ?? '/usr/bin:/bin' };
@@ -35,9 +45,7 @@ export const makeLogin = ({ run, files, home, knownHostsText, bot, identity }) =
     tree.chmod('.', 0o700);
     tree.mkdir('.ssh');
     tree.chmod('.ssh', 0o700);
-    // Only the pinned keys: nothing is trusted on first use.
-    tree.writeBytes('.ssh/known_hosts', knownHostsText.split('\n').filter(l => l && !l.startsWith('#')).join('\n') + '\n', 0o644);
-    tree.writeBytes('.ssh/config', 'Host github.com\n  User git\n  IdentityFile ~/.ssh/id_ed25519\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n  UserKnownHostsFile ~/.ssh/known_hosts\n', 0o600);
+    for (const f of sshFiles(knownHostsText)) tree.writeBytes(f.file, f.text, f.mode);
     tree.writeBytes('.gitconfig', `[user]\n\tname = ${identity.name}\n\temail = ${identity.email}\n[init]\n\tdefaultBranch = shed\n`, 0o644);
   };
 

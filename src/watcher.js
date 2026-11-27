@@ -42,6 +42,12 @@ export const gate = (events, maintainers) => {
  */
 export const ASKED = 'maintainer';
 
+/**
+ * What a job a maintainer asks for is lent: the bot's GitHub credentials, so
+ * that it can read CI, push and shepherd (designs/keys.md).
+ */
+export const LENT = harden(['github']);
+
 /** The verbs a maintainer's comment may begin with, after "@<bot> ". */
 export const VERBS = harden(['release', 'abandon', 'throttle', 'retire', 'status']);
 
@@ -115,7 +121,7 @@ export const decide = ({ events, state = {}, board, bot, repo, prefix = '' }) =>
       if (e.state === 'closed') continue; // closed before the garden saw it: nothing is asked
       const id = `${prefix}issue-${e.number}`;
       if (board.jobs[id]) continue;
-      actions.push({ do: 'post', event: e, spec: { id, role: 'steward', arc: ASKED, title: e.title || `Issue ${e.number}`, body: `${e.body || e.title}\n`, source: e.url, origin, by: e.author } });
+      actions.push({ do: 'post', event: e, spec: { id, role: 'steward', arc: ASKED, lends: LENT, title: e.title || `Issue ${e.number}`, body: `${e.body || e.title}\n`, source: e.url, origin, by: e.author } });
       continue;
     }
     const said = address(e.body, bot);
@@ -142,7 +148,7 @@ export const decide = ({ events, state = {}, board, bot, repo, prefix = '' }) =>
         break;
       default: {
         const id = `${prefix}issue-${e.number}-c${e.id}`;
-        if (!board.jobs[id]) actions.push({ do: 'post', event: e, spec: { id, role: 'steward', arc: ASKED, title: said.text.split('\n')[0].slice(0, 100), body: `${said.text}\n`, source: e.url, origin, by: e.author } });
+        if (!board.jobs[id]) actions.push({ do: 'post', event: e, spec: { id, role: 'steward', arc: ASKED, lends: LENT, title: said.text.split('\n')[0].slice(0, 100), body: `${said.text}\n`, source: e.url, origin, by: e.author } });
       }
     }
   }

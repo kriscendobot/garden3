@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeGitHub, curlTransport } from '../src/github.js';
 import { gate, address, decide, adopt, jobPrefix, makeWatcher, readWatch, summary } from '../src/watcher.js';
-import { makeSteward, makeMirrors } from '../src/steward.js';
+import { makeSteward, makeMirrors, bodyOf } from '../src/steward.js';
 import { makeBoardService } from '../src/boardService.js';
 import { makeBudgetService } from '../src/budget.js';
 import { makeJournal } from '../src/journal.js';
@@ -46,6 +46,7 @@ test('decide: cursor and seen discard what was handled; closed issues and the bo
   assert.deepEqual(first.state, { cursor: '2026-11-17T10:00:01Z', seen: [3] });
   assert.deepEqual(first.actions[0].spec.origin, { repo: 'o/r', issue: 7, url: 'https://github.com/o/r/issues/7#1', by: 'kris' });
   assert.deepEqual(first.actions.filter(a => a.do === 'post').map(a => a.spec.arc), ['maintainer'], 'what a maintainer asks for draws on the maintainer\'s discretion');
+  assert.deepEqual(first.actions.filter(a => a.do === 'post').map(a => a.spec.lends), [['github']], 'and is lent the bot\'s GitHub login');
   const again = decide({ events: g(ev('issue', 1, 'kris', '2026-11-17T10:00:00Z'), ev('comment', 3, 'bot', '2026-11-17T10:00:01Z'), ev('comment', 4, 'kris', '2026-11-17T10:00:01Z', { body: '@bot status' })), state: first.state, board, bot: 'bot', repo: 'o/r' });
   assert.deepEqual(again.actions.map(a => a.do), ['status'], 'only the event not yet seen at the cursor\'s own second');
   assert.deepEqual(again.state.seen, [3, 4]);
@@ -149,7 +150,7 @@ test('the steward reports a finished job on its issue, once, and follows a hand-
   gh.writes.length = 0;
   assert.deepEqual(await steward.report(), [], 'nothing has ended yet');
   const a = await board.claim({ worker: 'w' });
-  await board.complete(a.id, 'done', { generation: a.claim.generation, cost: { tokens: 1200 }, report: 'Did the thing; the tests pass.\n' });
+  await board.complete(a.id, 'done', { generation: a.claim.generation, cost: { tokens: 1200 }, report: '---\nauthor: "steward"\ncreated: "2026-11-27"\nupdated: "2026-11-27"\n---\n\nDid the thing; the tests pass.\n' });
   const b = await board.claim({ worker: 'w' });
   await board.handoff(b.id, { reason: 'out of time' }, { generation: b.claim.generation, cost: { tokens: 300 } });
   assert.deepEqual(await steward.report(), ['done issue-30', 'handed-off issue-31']);
@@ -316,4 +317,10 @@ test('resuming from an earlier cursor: the watch goes back, the preview says wha
   assert.equal(watch().repos[HOME].cursor, from);
   assert.deepEqual((await watcher.tick()).filter(x => x.startsWith('post')), [], 'what was heard before opens no second job');
   assert.equal(watch().repos[HOME].cursor, after, 'and the cursor is where it was');
+});
+
+test('a comment on GitHub carries no front matter', () => {
+  assert.equal(bodyOf('---\nauthor: "steward"\n---\n\n# Done\n'), '# Done\n');
+  assert.equal(bodyOf('---\nauthor: steward\n---\n\n\n# Loose\n'), '# Loose\n', 'front matter that is not strict Yaydown comes off too');
+  assert.equal(bodyOf('No front matter.\n\n---\n\nA rule.\n'), 'No front matter.\n\n---\n\nA rule.\n');
 });

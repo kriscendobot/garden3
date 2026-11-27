@@ -51,6 +51,13 @@ export const makeKeys = ({ files, stateDir, registryText, run, env = {} }) => {
   // has exactly one home, that provider's own store, and is read through it:
   // there is no second copy to drift.
   const fileOf = name => registry[name]?.file ?? `secrets/${name}`;
+  // The token stays in gh's store; gh prints it to a pipe only we read.
+  const ghToken = () => {
+    const r = run('gh', ['auth', 'token', '--hostname', 'github.com'], { env });
+    const token = r.stdout.trim();
+    if (r.status !== 0 || !token) refuse('no-key', 'gh has no token for github.com on this host');
+    return token;
+  };
   const known = name => {
     if (!isName(name)) refuse('invalid', 'bad key name');
     return registry[name] ?? refuse('unknown-key', `${name} is not in the key registry (keys/registry.yay)`);
@@ -86,29 +93,36 @@ export const makeKeys = ({ files, stateDir, registryText, run, env = {} }) => {
      * no key at all.
      */
     /**
-     * Lend a key to a job, as the registry allows (`lend: access-only`):
-     * {file, text, expires_at, secret}, `file` being where in the job's home
-     * it goes (`lend_as`). The steward's copy is untouched.
+     * Lend a key to a job, as the registry allows: {file, text, expires_at,
+     * secret}, `file` being where in the job's home it goes (`lend_as`), and
+     * `secret` what harvest must refuse to carry out. The steward's copy is
+     * untouched. `lend` says how:
+     * - `access-only`: a subscription login without its refresh token;
+     * - `gh`: gh's store as it stands, which holds the token;
+     * - `whole`: the file as it is (an ssh key).
      */
     lend: async name => {
       const spec = known(name);
-      if (spec.lend !== 'access-only' || !spec.lend_as) refuse('not-lendable', `${name} is not lent to jobs`);
-      if (!state.exists(fileOf(name))) refuse('no-key', `no ${name} on this host: log in with ./garden (the claude session)`);
+      if (!['access-only', 'gh', 'whole'].includes(spec.lend) || !spec.lend_as) refuse('not-lendable', `${name} is not lent to jobs`);
+      if (!state.exists(fileOf(name))) refuse('no-key', `no ${name} on this host${spec.lend === 'access-only' ? ': log in with ./garden (the claude session)' : ''}`);
       if (state.mode(fileOf(name)) !== 0o600) refuse('bad-mode', `${name} is readable by others; treat it as leaked and replace it`);
-      return harden({ file: spec.lend_as, ...accessOnly(state.read(fileOf(name))) });
+      const text = state.read(fileOf(name));
+      if (spec.lend === 'access-only') return harden({ file: spec.lend_as, ...accessOnly(text) });
+      if (spec.lend === 'gh') {
+        const token = ghToken();
+        if (!text.includes(token)) refuse('not-lendable', 'gh keeps its token outside its store (in a keyring), so the store cannot be lent');
+        return harden({ file: spec.lend_as, text, expires_at: null, secret: token });
+      }
+      // An ssh key's longest line is the one no other text would hold.
+      const secret = text.split('\n').reduce((a, l) => (l.trim().length > a.length ? l.trim() : a), '');
+      return harden({ file: spec.lend_as, text, expires_at: null, secret });
     },
     read: async (name, consumer) => {
       const spec = known(name);
       if (spec.consumer !== consumer) refuse('wrong-consumer', `${name} is for ${spec.consumer}, not ${consumer}`);
       if (!state.exists(fileOf(name))) refuse('no-key', `no ${name} key on this host`);
       if (state.mode(fileOf(name)) !== 0o600) refuse('bad-mode', `${name} is readable by others; treat it as leaked and replace it`);
-      if (spec.provider === 'gh') {
-        // The token stays in gh's store; gh prints it to a pipe only we read.
-        const r = run('gh', ['auth', 'token', '--hostname', 'github.com'], { env });
-        const token = r.stdout.trim();
-        if (r.status !== 0 || !token) refuse('no-key', `gh has no token for github.com on this host`);
-        return token;
-      }
+      if (spec.provider === 'gh') return ghToken();
       return state.read(fileOf(name)).replace(/\n$/, '');
     },
   });
