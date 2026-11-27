@@ -1,0 +1,30 @@
+after: []
+arc: "maintainer"
+attempts: 1
+body: "Having arrived at a push, the next step is always to shepherd until CI is green.\n"
+completed_at: "2026-11-27T00:35:07Z"
+cost:
+  elapsed_s: 51
+  engagements: 1
+  tokens: 0
+envelope: "maintainer"
+generation: 1
+id: "endojs-endo-but-for-bots-issue-469-c7206534456"
+level: 0
+origin:
+  by: "kriskowal"
+  comment: 7206534456
+  issue: 469
+  repo: "endojs/endo-but-for-bots"
+  url: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7206534456"
+outcome: "done"
+plans: 0
+posted_at: "2026-11-27T00:32:53Z"
+posted_by: "kriskowal"
+priority: 5
+projects: []
+report: "---\nauthor: \"steward\"\ncreated: \"2026-11-27\"\nupdated: \"2026-11-27\"\n---\n\n# Shepherd after every push\n\nThe request: kriskowal, on endojs/endo-but-for-bots#469\n(https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7206534456):\n\"Having arrived at a push, the next step is always to shepherd until CI is green.\"\n\n## What I did\n\nI added a norm to the steward's brief, `roles/steward/AGENT.md`, under Norms.\nIt says that a push to a pull request is never where the work stops. The\nsteward reads CI on the head it pushed. When CI is red, it posts a `shepherd`\njob, publishes that job's branch, and reads CI again. It repeats this until\nevery check is green or a shepherd names an impasse. Its report says CI is\nstill being shepherded, and it posts again once CI is green. The norm credits\nthe maintainer and links the comment.\n\n## Verified\n\n- `garden prose check roles/steward/AGENT.md` passes, with no findings.\n- No project checkout was needed. No project commits were made.\n\n## Not done, and what should happen\n\n- I have no credential, so I could not read CI on #469's current head. The\n  steward should read the check runs on that head now. If any are red, it\n  should post a `shepherd` job for #469, carrying the checks and the\n  failed-log tails as `designs/pull-requests.md` describes.\n- The rule is only written down as a norm. Nothing enforces it in code yet.\n  The CI watch between jobs is still design only: step 4, \"the drive,\" in\n  `designs/pull-requests.md`. Until it is built, the steward has to follow\n  the rule by hand after each publish. A natural place to build it is\n  `src/steward.js` `publish`, which could record the pushed head for the watch.\n"
+requires: []
+role: "steward"
+source: "https://github.com/endojs/endo-but-for-bots/pull/469#issuecomment-7206534456"
+title: "Having arrived at a push, the next step is always to shepherd until CI is green."
