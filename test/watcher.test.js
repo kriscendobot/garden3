@@ -36,6 +36,9 @@ test('the address gate and the verbs', () => {
   assert.deepEqual(address('@kriscendobot release fix-a please', 'kriscendobot'), { verb: 'release', args: ['fix-a', 'please'], text: 'release fix-a please' });
   assert.deepEqual(address('@kriscendobot throttle endo 2.5', 'kriscendobot').args, ['endo', '2.5']);
   assert.deepEqual(address('@kriscendobot please look at the\nflaky test', 'kriscendobot'), { verb: 'ask', args: [], text: 'please look at the\nflaky test' });
+  assert.deepEqual(address('> @kriscendobot release fix-a\r\n> more\r\n\r\n@kriscendobot Please shepherd.', 'kriscendobot'), { verb: 'ask', args: [], text: 'Please shepherd.' }, 'a quote reply is addressed by its first line after the quote');
+  assert.equal(address('> @kriscendobot release fix-a\n\nI would not.', 'kriscendobot'), null, 'an address inside the quote is not this comment\'s');
+  assert.equal(address('> @kriscendobot release fix-a', 'kriscendobot'), null);
 });
 
 test('decide: cursor and seen discard what was handled; closed issues and the bot are skipped', () => {

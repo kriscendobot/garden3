@@ -1,7 +1,7 @@
 ---
 author: "designer"
 created: "2026-11-17"
-updated: "2026-11-23"
+updated: "2026-11-27"
 ---
 
 # The watcher and the steward: steering from GitHub
@@ -59,7 +59,8 @@ the forks are at 300), each with its own cursor and its own board commit.
   `kriscendobot/garden`, the prior garden's, kept online until the house is
   consolidated): a maintainer opening an issue asks for work, as below.
 - **Every watch**: a maintainer's comment or review addressed to the bot
-  (`@kriscendobot ` at the start) is heard, from three surfaces: issue and
+  (`@kriscendobot ` at the start, or at the start of the first line after a
+  leading quote, as GitHub's "quote reply" writes) is heard, from three surfaces: issue and
   pull-request conversation comments, inline review comments, and the bodies
   of submitted reviews. Reviews have no `since`, so they are read from the
   pull requests updated since the cursor. A fork's Issues are off by default

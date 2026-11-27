@@ -52,16 +52,20 @@ export const LENT = harden(['github']);
 export const VERBS = harden(['release', 'abandon', 'throttle', 'retire', 'status']);
 
 /**
- * Read a trusted comment addressed to the bot. The first line must start
- * exactly "@<bot> " (the prior garden's address gate); otherwise the comment
- * is maintainers talking to each other and nothing is done. Returns null, or
+ * Read a trusted comment addressed to the bot. The first line that is not
+ * quoted (GitHub's "quote reply" puts "> ..." lines and a blank one first)
+ * must start exactly "@<bot> " (the prior garden's address gate); otherwise
+ * the comment is maintainers talking to each other and nothing is done. An
+ * address inside the quote is the quoted comment's, not this one's. Returns
+ * null, or
  * {verb, args, text} where verb is one of VERBS or 'ask' (anything else: a
  * request for the steward).
  */
 export const address = (body, bot) => {
   const prefix = `@${bot} `;
-  if (!body.startsWith(prefix)) return null;
-  const text = body.slice(prefix.length).trim();
+  const said = body.replace(/^(?:[ \t]*(?:>[^\n]*)?\r?\n)+/, '');
+  if (!said.startsWith(prefix)) return null;
+  const text = said.slice(prefix.length).trim();
   const first = text.split('\n')[0].trim().split(/\s+/);
   const verb = VERBS.includes(first[0]) ? first[0] : 'ask';
   return { verb, args: verb === 'ask' ? [] : first.slice(1), text };
